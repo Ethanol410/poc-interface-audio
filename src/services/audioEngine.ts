@@ -14,6 +14,7 @@ import type {
 class AudioEngine {
   private static instance: AudioEngine;
   private player: Tone.Player | null = null;
+  private originalPlayer: Tone.Player | null = null; // For A/B comparison
   private lowPassFilter: Tone.Filter | null = null;
   private highPassFilter: Tone.Filter | null = null;
   private pitchShift: Tone.PitchShift | null = null;
@@ -21,6 +22,8 @@ class AudioEngine {
   private currentBuffer: AudioBufferInfo | null = null;
   private isInitialized = false;
   private listeners: Map<string, Set<Function>> = new Map();
+  private isProcessedMode = true; // true = processed, false = original
+  private crossFade: Tone.CrossFade | null = null;
 
   private constructor() {
     // Private constructor for singleton
@@ -46,7 +49,10 @@ class AudioEngine {
       await Tone.start();
 
       // Create audio nodes
-      this.player = new Tone.Player().toDestination();
+      this.player = new Tone.Player();
+      this.originalPlayer = new Tone.Player();
+      this.crossFade = new Tone.CrossFade(1); // Start with processed (1)
+      
       this.lowPassFilter = new Tone.Filter({
         type: 'lowpass',
         frequency: 8000,
@@ -57,18 +63,26 @@ class AudioEngine {
         frequency: 200,
         Q: 1,
       });
-      this.pitchShift = new Tone.PitchShift(0);
+      this.pitchShift = new Tone.PitchShift({
+        pitch: 0,
+        windowSize: 0.1,
+        delayTime: 0,
+        feedback: 0,
+      });
       this.analyzer = new Tone.Analyser('waveform', 2048);
 
-      // Connect audio graph: player → filters → pitchShift → analyzer → destination
-      this.player.disconnect();
+      // Connect audio graph:
+      // originalPlayer → crossFade.a
+      // player → filters → pitchShift → crossFade.b
+      // crossFade → analyzer → destination
+      this.originalPlayer.connect(this.crossFade.a);
       this.player.chain(
         this.lowPassFilter,
         this.highPassFilter,
         this.pitchShift,
-        this.analyzer,
-        Tone.getDestination()
+        this.crossFade.b
       );
+      this.crossFade.chain(this.analyzer, Tone.getDestination());
 
       this.isInitialized = true;
       this.emit('initialized');
@@ -82,14 +96,18 @@ class AudioEngine {
    * Load audio file from URL
    */
   public async loadAudio(url: string, name: string): Promise<void> {
-    if (!this.isInitialized || !this.player) {
+    if (!this.isInitialized || !this.player || !this.originalPlayer) {
       throw new Error('Audio engine not initialized');
     }
 
     try {
       this.emit('loading', true);
 
-      await this.player.load(url);
+      // Load into both players for A/B comparison
+      await Promise.all([
+        this.player.load(url),
+        this.originalPlayer.load(url),
+      ]);
 
       this.currentBuffer = {
         buffer: this.player.buffer.get() as AudioBuffer,
@@ -111,11 +129,14 @@ class AudioEngine {
    * Play audio
    */
   public play(): void {
-    if (!this.player || !this.currentBuffer) {
+    if (!this.player || !this.originalPlayer || !this.currentBuffer) {
       throw new Error('No audio loaded');
     }
 
-    this.player.start();
+    // Sync both players
+    const now = Tone.now();
+    this.player.start(now);
+    this.originalPlayer.start(now);
     this.emit('play');
   }
 
@@ -123,8 +144,9 @@ class AudioEngine {
    * Pause audio
    */
   public pause(): void {
-    if (!this.player) return;
+    if (!this.player || !this.originalPlayer) return;
     this.player.stop();
+    this.originalPlayer.stop();
     this.emit('pause');
   }
 
@@ -132,12 +154,16 @@ class AudioEngine {
    * Seek to position (seconds)
    */
   public seek(time: number): void {
-    if (!this.player) return;
-    // Tone.Player doesn't have direct seek, need to restart from position
+    if (!this.player || !this.originalPlayer) return;
     const wasPlaying = this.player.state === 'started';
+    
     this.player.stop();
+    this.originalPlayer.stop();
+    
     if (wasPlaying) {
-      this.player.start(undefined, time);
+      const now = Tone.now();
+      this.player.start(now, time);
+      this.originalPlayer.start(now, time);
     }
     this.emit('seek', time);
   }
@@ -179,6 +205,33 @@ class AudioEngine {
     if (!this.pitchShift) return;
     this.pitchShift.pitch = semitones;
     this.emit('pitchShift', semitones);
+  }
+
+  /**
+   * Toggle A/B comparison (original vs processed)
+   */
+  public toggleComparison(useProcessed: boolean): void {
+    if (!this.crossFade) return;
+    
+    this.isProcessedMode = useProcessed;
+    const fadeTime = 0.1; // 100ms crossfade
+    
+    if (useProcessed) {
+      // Fade to processed (b channel)
+      this.crossFade.fade.rampTo(1, fadeTime);
+    } else {
+      // Fade to original (a channel)
+      this.crossFade.fade.rampTo(0, fadeTime);
+    }
+    
+    this.emit('comparison', useProcessed);
+  }
+
+  /**
+   * Get comparison mode state
+   */
+  public isInProcessedMode(): boolean {
+    return this.isProcessedMode;
   }
 
   /**
