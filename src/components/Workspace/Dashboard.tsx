@@ -10,20 +10,18 @@ import {
   AudioMeter,
   ParameterDisplay,
 } from '@/components/Visualization';
-import { getMainEvidence } from '@/assets/audioManifest';
 
 const Dashboard = memo(() => {
   const navigate = useNavigate();
-  const { isPlaying, currentTime, duration } = useAudioStore();
+  const { isPlaying, currentTime, duration, audioUrls } = useAudioStore();
   const { loadAudio } = useAudioControls();
 
   // Load main evidence audio on mount
   useEffect(() => {
-    const mainEvidence = getMainEvidence();
-    if (mainEvidence) {
-      loadAudio(mainEvidence.url, mainEvidence.name);
+    if (audioUrls?.evidenceDistorted) {
+      loadAudio(audioUrls.evidenceDistorted, 'Message du Corbeau');
     }
-  }, [loadAudio]);
+  }, [loadAudio, audioUrls]);
 
   // Format time (seconds to MM:SS) - memoized
   const formatTime = useCallback((seconds: number) => {
@@ -111,7 +109,7 @@ const Dashboard = memo(() => {
               <h3 className="text-lg font-bold text-forensics-cyan font-mono mb-3">
                 🌊 FORME D'ONDE
               </h3>
-              <Waveform />
+              <Waveform audioUrl={audioUrls?.evidenceDistorted} />
             </motion.div>
 
             {/* Spectrogram */}
@@ -123,7 +121,7 @@ const Dashboard = memo(() => {
               <h3 className="text-lg font-bold text-forensics-cyan font-mono mb-3">
                 📊 SPECTROGRAMME
               </h3>
-              <Spectrogram />
+              <Spectrogram audioUrl={audioUrls?.evidenceDistorted} />
             </motion.div>
 
             {/* Frequency Bars */}

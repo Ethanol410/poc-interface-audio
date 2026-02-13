@@ -6,7 +6,19 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AudioState, FilterConfig, PitchShiftConfig } from '@/types/audio';
 
+interface AudioUrls {
+  evidenceDistorted: string;
+  evidenceClean: string;
+  suspect1: string;
+  suspect2: string;
+  suspect3: string;
+}
+
 interface AudioStore extends AudioState {
+  // Audio URLs
+  audioUrls: AudioUrls | null;
+  setAudioUrls: (urls: AudioUrls) => void;
+  
   // Playback state
   setIsPlaying: (isPlaying: boolean) => void;
   setCurrentTime: (time: number) => void;
@@ -38,6 +50,7 @@ interface AudioStore extends AudioState {
 }
 
 const initialState = {
+  audioUrls: null,
   isPlaying: false,
   currentTime: 0,
   duration: 0,
@@ -69,6 +82,9 @@ export const useAudioStore = create<AudioStore>()(
   persist(
     (set) => ({
       ...initialState,
+
+      // Audio URL actions
+      setAudioUrls: (audioUrls) => set({ audioUrls }),
 
       // Playback actions
       setIsPlaying: (isPlaying) => set({ isPlaying }),

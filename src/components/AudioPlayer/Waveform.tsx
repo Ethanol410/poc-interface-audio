@@ -22,11 +22,19 @@ const Waveform = memo(({
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const { setIsPlaying, setCurrentTime, setDuration } = useAudioStore();
 
   useEffect(() => {
     if (!containerRef.current) return;
+    if (!audioUrl) {
+      setError('Aucun fichier audio');
+      return;
+    }
+
+    let isDestroyed = false;
+    console.log('Waveform: Initialisation avec URL:', audioUrl);
 
     // Initialize Wavesurfer
     const wavesurfer = WaveSurfer.create({
@@ -48,40 +56,62 @@ const Waveform = memo(({
 
     // Event listeners
     wavesurfer.on('ready', () => {
+      if (isDestroyed) return;
+      console.log('Waveform: Prêt !');
       setIsReady(true);
       setDuration(wavesurfer.getDuration());
       onReady?.();
     });
 
     wavesurfer.on('play', () => {
+      if (isDestroyed) return;
       setIsPlaying(true);
     });
 
     wavesurfer.on('pause', () => {
+      if (isDestroyed) return;
       setIsPlaying(false);
     });
 
     wavesurfer.on('audioprocess', () => {
+      if (isDestroyed) return;
       setCurrentTime(wavesurfer.getCurrentTime());
     });
 
     wavesurfer.on('interaction', () => {
+      if (isDestroyed) return;
       setCurrentTime(wavesurfer.getCurrentTime());
     });
 
-    wavesurfer.on('error', (error: Error) => {
-      console.error('Wavesurfer error:', error);
-      onError?.(error);
+    wavesurfer.on('error', (err: Error) => {
+      if (isDestroyed) return;
+      // Ignore AbortError en mode dev (React StrictMode)
+      if (err.name === 'AbortError') {
+        console.log('Waveform: Chargement annulé (normal en mode dev)');
+        return;
+      }
+      console.error('Wavesurfer error:', err);
+      setError(err.message || 'Erreur de chargement');
+      onError?.(err);
     });
 
-    // Load audio if URL provided
-    if (audioUrl) {
-      wavesurfer.load(audioUrl);
-    }
+    // Load audio
+    console.log('Waveform: Chargement de l\'audio...');
+    wavesurfer.load(audioUrl);
 
     // Cleanup
     return () => {
-      wavesurfer.destroy();
+      isDestroyed = true;
+      console.log('Waveform: Nettoyage');
+      // Destroy silencieusement sans propager les erreurs d'abort
+      try {
+        wavesurfer.destroy();
+      } catch (err) {
+        // Ignore AbortError pendant le cleanup (normal en React StrictMode)
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error('Error during wavesurfer cleanup:', err);
+        }
+      }
     };
   }, [audioUrl, height, setIsPlaying, setCurrentTime, setDuration, onReady, onError]);
 
@@ -93,17 +123,24 @@ const Waveform = memo(({
   }, []);
 
   return (
-    <div className="waveform-container">
+    <div className="waveform-container relative">
       <div
         ref={containerRef}
         className="waveform-canvas border border-forensics-cyan rounded-lg overflow-hidden bg-forensics-bg-light"
         onClick={togglePlayPause}
-        style={{ cursor: isReady ? 'pointer' : 'default' }}
+        style={{ cursor: isReady ? 'pointer' : 'default', minHeight: `${height}px` }}
       />
-      {!isReady && (
+      {!isReady && !error && (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-forensics-cyan font-mono text-sm animate-pulse">
             Chargement waveform...
+          </span>
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-red-500 font-mono text-sm">
+            ❌ {error}
           </span>
         </div>
       )}

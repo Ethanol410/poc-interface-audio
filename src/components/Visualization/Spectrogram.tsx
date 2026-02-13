@@ -21,6 +21,7 @@ const Spectrogram = memo(({
   const spectrogramRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Memoize color map calculation (expensive)
   const colorMap = useMemo(() => {
@@ -53,6 +54,13 @@ const Spectrogram = memo(({
 
   useEffect(() => {
     if (!containerRef.current || !spectrogramRef.current) return;
+    if (!audioUrl) {
+      setError('Aucun fichier audio');
+      return;
+    }
+
+    let isDestroyed = false;
+    console.log('Spectrogram: Initialisation avec URL:', audioUrl);
 
     // Initialize Wavesurfer with spectrogram plugin
     const wavesurfer = WaveSurfer.create({
@@ -76,21 +84,39 @@ const Spectrogram = memo(({
     wavesurferRef.current = wavesurfer;
 
     wavesurfer.on('ready', () => {
+      if (isDestroyed) return;
+      console.log('Spectrogram: Prêt !');
       setIsReady(true);
     });
 
-    wavesurfer.on('error', (error: Error) => {
-      console.error('Spectrogram error:', error);
+    wavesurfer.on('error', (err: Error) => {
+      if (isDestroyed) return;
+      // Ignore AbortError en mode dev (React StrictMode)
+      if (err.name === 'AbortError') {
+        console.log('Spectrogram: Chargement annulé (normal en mode dev)');
+        return;
+      }
+      console.error('Spectrogram error:', err);
+      setError(err.message || 'Erreur de chargement');
     });
 
-    // Load audio if URL provided
-    if (audioUrl) {
-      wavesurfer.load(audioUrl);
-    }
+    // Load audio
+    console.log('Spectrogram: Chargement de l\'audio...');
+    wavesurfer.load(audioUrl);
 
     // Cleanup
     return () => {
-      wavesurfer.destroy();
+      isDestroyed = true;
+      console.log('Spectrogram: Nettoyage');
+      // Destroy silencieusement sans propager les erreurs d'abort
+      try {
+        wavesurfer.destroy();
+      } catch (err) {
+        // Ignore AbortError pendant le cleanup (normal en React StrictMode)
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error('Error during spectrogram cleanup:', err);
+        }
+      }
     };
   }, [audioUrl, height, fftSize, colorMap]);
 
@@ -103,11 +129,19 @@ const Spectrogram = memo(({
       <div
         ref={spectrogramRef}
         className="spectrogram-canvas border border-forensics-cyan rounded-lg overflow-hidden bg-forensics-bg-light"
+        style={{ minHeight: `${height}px` }}
       />
-      {!isReady && (
+      {!isReady && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-forensics-bg-light border border-forensics-cyan rounded-lg">
           <span className="text-forensics-cyan font-mono text-sm animate-pulse">
             Génération spectrogram...
+          </span>
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-forensics-bg-light border border-forensics-cyan rounded-lg">
+          <span className="text-red-500 font-mono text-sm">
+            ❌ {error}
           </span>
         </div>
       )}
