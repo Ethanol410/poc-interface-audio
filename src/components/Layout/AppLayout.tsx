@@ -1,11 +1,15 @@
 import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import OfflineIndicator from './OfflineIndicator';
 
 const AppLayout = () => {
   return (
     <div className="min-h-screen bg-forensics-bg relative overflow-hidden">
       {/* Scanlines overlay */}
       <div className="scanlines" />
+      
+      {/* Offline indicator */}
+      <OfflineIndicator />
       
       {/* Main content */}
       <motion.main
