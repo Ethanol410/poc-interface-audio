@@ -2,7 +2,7 @@
  * FrequencyBars Component - Real-time frequency visualization (equalizer style)
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import { audioEngine } from '@/services/audioEngine';
 
 interface FrequencyBarsProps {
@@ -12,7 +12,7 @@ interface FrequencyBarsProps {
   isPlaying: boolean;
 }
 
-const FrequencyBars = ({
+const FrequencyBars = memo(({
   width = 800,
   height = 200,
   barCount = 64,
@@ -160,6 +160,8 @@ const FrequencyBars = ({
       </div>
     </div>
   );
-};
+});
+
+FrequencyBars.displayName = 'FrequencyBars';
 
 export default FrequencyBars;

@@ -2,7 +2,7 @@
  * AudioMeter Component - Real-time audio level meter (RMS + Peak)
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 import { audioEngine } from '@/services/audioEngine';
 
@@ -11,7 +11,7 @@ interface AudioMeterProps {
   height?: number;
 }
 
-const AudioMeter = ({ isPlaying, height = 200 }: AudioMeterProps) => {
+const AudioMeter = memo(({ isPlaying, height = 200 }: AudioMeterProps) => {
   const [rmsLevel, setRmsLevel] = useState(0);
   const [peakLevel, setPeakLevel] = useState(0);
   const animationFrameId = useRef<number | null>(null);
@@ -46,15 +46,15 @@ const AudioMeter = ({ isPlaying, height = 200 }: AudioMeterProps) => {
     };
   }, [isPlaying]);
 
-  const rmsPercent = Math.min(rmsLevel * 100, 100);
-  const peakPercent = Math.min(peakLevel * 100, 100);
+  const rmsPercent = useMemo(() => Math.min(rmsLevel * 100, 100), [rmsLevel]);
+  const peakPercent = useMemo(() => Math.min(peakLevel * 100, 100), [peakLevel]);
 
-  const getMeterColor = (level: number) => {
+  const getMeterColor = useCallback((level: number) => {
     if (level > 90) return '#ff3366'; // Red - clipping
     if (level > 70) return '#ff9933'; // Orange - hot
     if (level > 40) return '#00ff88'; // Green - optimal
     return '#00d4ff'; // Cyan - low
-  };
+  }, []);
 
   return (
     <div className="audio-meter flex gap-4">
@@ -164,6 +164,8 @@ const AudioMeter = ({ isPlaying, height = 200 }: AudioMeterProps) => {
       )}
     </div>
   );
-};
+});
+
+AudioMeter.displayName = 'AudioMeter';
 
 export default AudioMeter;

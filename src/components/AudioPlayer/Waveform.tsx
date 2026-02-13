@@ -2,7 +2,7 @@
  * Waveform Component - Audio waveform visualization with Wavesurfer.js
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { useAudioStore } from '@/stores/audioStore';
 
@@ -13,7 +13,7 @@ interface WaveformProps {
   onError?: (error: Error) => void;
 }
 
-const Waveform = ({
+const Waveform = memo(({
   audioUrl,
   height = 128,
   onReady,
@@ -85,12 +85,12 @@ const Waveform = ({
     };
   }, [audioUrl, height, setIsPlaying, setCurrentTime, setDuration, onReady, onError]);
 
-  // Play/pause control
-  const togglePlayPause = () => {
+  // Play/pause control - memoized
+  const togglePlayPause = useCallback(() => {
     if (wavesurferRef.current) {
       wavesurferRef.current.playPause();
     }
-  };
+  }, []);
 
   return (
     <div className="waveform-container">
@@ -109,6 +109,8 @@ const Waveform = ({
       )}
     </div>
   );
-};
+});
+
+Waveform.displayName = 'Waveform';
 
 export default Waveform;

@@ -2,6 +2,7 @@
  * ParameterDisplay Component - Display current audio parameters
  */
 
+import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useAudioStore } from '@/stores/audioStore';
 
@@ -12,7 +13,7 @@ interface ParameterItemProps {
   isActive?: boolean;
 }
 
-const ParameterItem = ({ label, value, unit, isActive }: ParameterItemProps) => {
+const ParameterItem = memo(({ label, value, unit, isActive }: ParameterItemProps) => {
   return (
     <motion.div
       className={`
@@ -47,12 +48,15 @@ const ParameterItem = ({ label, value, unit, isActive }: ParameterItemProps) => 
       </div>
     </motion.div>
   );
-};
+});
 
-const ParameterDisplay = () => {
+ParameterItem.displayName = 'ParameterItem';
+
+const ParameterDisplay = memo(() => {
   const { lowPassFilter, highPassFilter, pitchShift, volume } = useAudioStore();
 
-  const parameters = [
+  // Memoize parameters to avoid recalculation
+  const parameters = useMemo(() => [
     {
       label: 'Low-Pass',
       value: Math.round(lowPassFilter.frequency),
@@ -77,7 +81,7 @@ const ParameterDisplay = () => {
       unit: '%',
       isActive: true,
     },
-  ];
+  ], [lowPassFilter, highPassFilter, pitchShift, volume]);
 
   return (
     <div className="parameter-display grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -92,6 +96,8 @@ const ParameterDisplay = () => {
       ))}
     </div>
   );
-};
+});
+
+ParameterDisplay.displayName = 'ParameterDisplay';
 
 export default ParameterDisplay;

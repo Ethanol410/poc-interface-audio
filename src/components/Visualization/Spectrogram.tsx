@@ -2,7 +2,7 @@
  * Spectrogram Component - Frequency spectrum visualization over time
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo, memo } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import SpectrogramPlugin from 'wavesurfer.js/dist/plugins/spectrogram';
 
@@ -12,7 +12,7 @@ interface SpectrogramProps {
   fftSize?: number;
 }
 
-const Spectrogram = ({
+const Spectrogram = memo(({
   audioUrl,
   height = 256,
   fftSize = 2048,
@@ -22,24 +22,22 @@ const Spectrogram = ({
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    if (!containerRef.current || !spectrogramRef.current) return;
-
-    // Create color map for spectrogram
-    const colorMap: [number, number, number, number][] = [];
+  // Memoize color map calculation (expensive)
+  const colorMap = useMemo(() => {
+    const map: [number, number, number, number][] = [];
     for (let i = 0; i < 256; i++) {
       const value = i / 255;
       if (value < 0.25) {
         // Dark blue to blue
-        colorMap.push([10, 14, 39, value * 4]);
+        map.push([10, 14, 39, value * 4]);
       } else if (value < 0.5) {
         // Blue to cyan
         const t = (value - 0.25) * 4;
-        colorMap.push([0, 100 + t * 112, 200 + t * 55, 1]);
+        map.push([0, 100 + t * 112, 200 + t * 55, 1]);
       } else if (value < 0.75) {
         // Cyan to white
         const t = (value - 0.5) * 4;
-        colorMap.push([
+        map.push([
           t * 255,
           212 + t * 43,
           255,
@@ -47,9 +45,14 @@ const Spectrogram = ({
         ]);
       } else {
         // White
-        colorMap.push([255, 255, 255, 1]);
+        map.push([255, 255, 255, 1]);
       }
     }
+    return map;
+  }, []); // Only calculate once
+
+  useEffect(() => {
+    if (!containerRef.current || !spectrogramRef.current) return;
 
     // Initialize Wavesurfer with spectrogram plugin
     const wavesurfer = WaveSurfer.create({
@@ -89,7 +92,7 @@ const Spectrogram = ({
     return () => {
       wavesurfer.destroy();
     };
-  }, [audioUrl, height, fftSize]);
+  }, [audioUrl, height, fftSize, colorMap]);
 
   return (
     <div className="spectrogram-container relative">
@@ -115,6 +118,8 @@ const Spectrogram = ({
       </div>
     </div>
   );
-};
+});
+
+Spectrogram.displayName = 'Spectrogram';
 
 export default Spectrogram;

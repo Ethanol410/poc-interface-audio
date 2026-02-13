@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAudioStore } from '@/stores/audioStore';
@@ -12,7 +12,7 @@ import {
 } from '@/components/Visualization';
 import { getMainEvidence } from '@/assets/audioManifest';
 
-const Dashboard = () => {
+const Dashboard = memo(() => {
   const navigate = useNavigate();
   const { isPlaying, currentTime, duration } = useAudioStore();
   const { loadAudio } = useAudioControls();
@@ -25,16 +25,20 @@ const Dashboard = () => {
     }
   }, [loadAudio]);
 
-  // Format time (seconds to MM:SS)
-  const formatTime = (seconds: number) => {
+  // Format time (seconds to MM:SS) - memoized
+  const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const handleContinueToSuspects = () => {
+  // Memoized formatted times
+  const formattedCurrentTime = useMemo(() => formatTime(currentTime), [currentTime, formatTime]);
+  const formattedDuration = useMemo(() => formatTime(duration), [duration, formatTime]);
+
+  const handleContinueToSuspects = useCallback(() => {
     navigate('/suspects');
-  };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen p-6">
@@ -57,7 +61,7 @@ const Dashboard = () => {
             </div>
             <div className="text-right">
               <div className="text-forensics-cyan font-mono text-2xl font-bold">
-                {formatTime(currentTime)} / {formatTime(duration)}
+                {formattedCurrentTime} / {formattedDuration}
               </div>
               <div className="text-gray-500 font-mono text-xs mt-1">
                 TEMPS ÉCOULÉ
@@ -200,6 +204,8 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
+});
+
+Dashboard.displayName = 'Dashboard';
 
 export default Dashboard;
