@@ -15,7 +15,12 @@ const ResultScreen = lazy(() => import('./components/Debrief/ResultScreen'));
 function App() {
   return (
     <ErrorBoundary>
-      <Router>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <AnimatePresence mode="wait">
           <Suspense fallback={<LoadingScreen />}>
             <Routes>

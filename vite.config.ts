@@ -54,7 +54,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Ignore Node.js modules in browser
+      'worker_threads': path.resolve(__dirname, './src/utils/worker-threads-shim.ts'),
     },
+  },
+  optimizeDeps: {
+    exclude: ['worker_threads'],
   },
   server: {
     port: 3000,
