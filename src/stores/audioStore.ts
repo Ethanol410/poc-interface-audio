@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AudioState, FilterConfig, PitchShiftConfig } from '@/types/audio';
+import type { AudioState, FilterConfig, PitchShiftConfig, CompressorConfig } from '@/types/audio';
 
 interface AudioUrls {
   evidenceDistorted: string;
@@ -12,6 +12,7 @@ interface AudioUrls {
   suspect1: string;
   suspect2: string;
   suspect3: string;
+  suspect4?: string;
 }
 
 interface AudioStore extends AudioState {
@@ -30,12 +31,24 @@ interface AudioStore extends AudioState {
   // Filter state
   lowPassFilter: FilterConfig;
   highPassFilter: FilterConfig;
+  bandPassFilter: FilterConfig;
+  notchFilter: FilterConfig;
   setLowPassFilter: (config: Partial<FilterConfig>) => void;
   setHighPassFilter: (config: Partial<FilterConfig>) => void;
+  setBandPassFilter: (config: Partial<FilterConfig>) => void;
+  setNotchFilter: (config: Partial<FilterConfig>) => void;
 
   // Pitch shift state
   pitchShift: PitchShiftConfig;
   setPitchShift: (config: Partial<PitchShiftConfig>) => void;
+
+  // Compressor state
+  compressor: CompressorConfig;
+  setCompressor: (config: Partial<CompressorConfig>) => void;
+
+  // Playback speed
+  playbackSpeed: number;
+  setPlaybackSpeed: (speed: number) => void;
 
   // Analysis progress
   analysisProgress: number;
@@ -44,6 +57,15 @@ interface AudioStore extends AudioState {
   // Comparison mode
   isComparisonMode: boolean;
   toggleComparisonMode: () => void;
+
+  // Reverse mode
+  isReversed: boolean;
+  toggleReverse: () => void;
+
+  // Discovered clues (pedagogical HUD)
+  discoveredClues: string[];
+  addClue: (clue: string) => void;
+  resetClues: () => void;
 
   // Reset state
   reset: () => void;
@@ -74,8 +96,28 @@ const initialState = {
     cents: 0,
     enabled: false,
   },
+  bandPassFilter: {
+    type: 'bandpass' as const,
+    frequency: 1500,
+    q: 1,
+    enabled: false,
+  },
+  notchFilter: {
+    type: 'notch' as const,
+    frequency: 60,
+    q: 10,
+    enabled: false,
+  },
+  compressor: {
+    enabled: false,
+    threshold: -24,
+    ratio: 4,
+  },
+  playbackSpeed: 1,
   analysisProgress: 0,
   isComparisonMode: false,
+  isReversed: false,
+  discoveredClues: [] as string[],
 };
 
 export const useAudioStore = create<AudioStore>()(
@@ -110,12 +152,46 @@ export const useAudioStore = create<AudioStore>()(
           pitchShift: { ...state.pitchShift, ...config },
         })),
 
+      // Band-pass filter actions
+      setBandPassFilter: (config) =>
+        set((state) => ({
+          bandPassFilter: { ...state.bandPassFilter, ...config },
+        })),
+
+      // Notch filter actions
+      setNotchFilter: (config) =>
+        set((state) => ({
+          notchFilter: { ...state.notchFilter, ...config },
+        })),
+
+      // Compressor actions
+      setCompressor: (config) =>
+        set((state) => ({
+          compressor: { ...state.compressor, ...config },
+        })),
+
+      // Playback speed actions
+      setPlaybackSpeed: (playbackSpeed) => set({ playbackSpeed }),
+
       // Analysis actions
       setAnalysisProgress: (analysisProgress) => set({ analysisProgress }),
 
       // Comparison actions
       toggleComparisonMode: () =>
         set((state) => ({ isComparisonMode: !state.isComparisonMode })),
+
+      // Reverse actions
+      toggleReverse: () =>
+        set((state) => ({ isReversed: !state.isReversed })),
+
+      // Clue actions
+      addClue: (clue) =>
+        set((state) => ({
+          discoveredClues: state.discoveredClues.includes(clue)
+            ? state.discoveredClues
+            : [...state.discoveredClues, clue],
+        })),
+      resetClues: () => set({ discoveredClues: [] }),
 
       // Reset
       reset: () => set(initialState),
@@ -126,7 +202,11 @@ export const useAudioStore = create<AudioStore>()(
         volume: state.volume,
         lowPassFilter: state.lowPassFilter,
         highPassFilter: state.highPassFilter,
+        bandPassFilter: state.bandPassFilter,
+        notchFilter: state.notchFilter,
+        compressor: state.compressor,
         pitchShift: state.pitchShift,
+        playbackSpeed: state.playbackSpeed,
       }),
     }
   )

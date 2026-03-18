@@ -4,6 +4,8 @@
 
 import { motion } from 'framer-motion';
 import { useFilterControls } from '@/hooks/useFilterControls';
+import { useAudioStore } from '@/stores/audioStore';
+import { audioEngine } from '@/services/audioEngine';
 
 const FilterPanel = () => {
   const {
@@ -13,6 +15,64 @@ const FilterPanel = () => {
     updateHighPassFilter,
     applyPreset,
   } = useFilterControls();
+
+  const {
+    isReversed, toggleReverse,
+    bandPassFilter, setBandPassFilter,
+    notchFilter, setNotchFilter,
+    compressor, setCompressor,
+    playbackSpeed, setPlaybackSpeed,
+  } = useAudioStore();
+
+  const handleToggleReverse = () => {
+    toggleReverse();
+    audioEngine.setReverse(!isReversed);
+  };
+
+  const handleBandPassToggle = () => {
+    const next = { ...bandPassFilter, enabled: !bandPassFilter.enabled };
+    setBandPassFilter({ enabled: next.enabled });
+    audioEngine.applyBandPassFilter(next);
+  };
+
+  const handleBandPassFreqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const frequency = parseFloat(e.target.value);
+    const next = { ...bandPassFilter, frequency, enabled: true };
+    setBandPassFilter({ frequency, enabled: true });
+    audioEngine.applyBandPassFilter(next);
+  };
+
+  const handleNotchToggle = () => {
+    const next = { ...notchFilter, enabled: !notchFilter.enabled };
+    setNotchFilter({ enabled: next.enabled });
+    audioEngine.applyNotchFilter(next);
+  };
+
+  const handleNotchFreqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const frequency = parseFloat(e.target.value);
+    const next = { ...notchFilter, frequency, enabled: true };
+    setNotchFilter({ frequency, enabled: true });
+    audioEngine.applyNotchFilter(next);
+  };
+
+  const handleCompressorToggle = () => {
+    const next = { ...compressor, enabled: !compressor.enabled };
+    setCompressor({ enabled: next.enabled });
+    audioEngine.applyCompressor(next);
+  };
+
+  const handleCompressorThreshold = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const threshold = parseFloat(e.target.value);
+    const next = { ...compressor, threshold, enabled: true };
+    setCompressor({ threshold, enabled: true });
+    audioEngine.applyCompressor(next);
+  };
+
+  const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const speed = parseFloat(e.target.value);
+    setPlaybackSpeed(speed);
+    audioEngine.setPlaybackSpeed(speed);
+  };
 
   const handleLowPassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const frequency = parseFloat(e.target.value);
@@ -34,10 +94,32 @@ const FilterPanel = () => {
 
   return (
     <div className="filter-panel space-y-6">
+      {/* Reverse Button */}
+      <div>
+        <h4 className="text-sm font-bold text-forensics-cyan font-mono mb-3">
+          LECTURE INVERSÉE
+        </h4>
+        <motion.button
+          onClick={handleToggleReverse}
+          className={`w-full px-3 py-2 rounded font-mono text-xs font-bold transition-all border ${
+            isReversed
+              ? 'bg-forensics-orange/20 border-forensics-orange text-forensics-orange'
+              : 'bg-forensics-bg-light border-forensics-cyan-dark text-forensics-cyan hover:border-forensics-cyan'
+          }`}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          {isReversed ? '◀◀ REVERSE ON — message caché actif' : '▶▶ REVERSE OFF'}
+        </motion.button>
+        <p className="text-xs text-gray-500 font-mono mt-2">
+          Inverse la lecture pour révéler les messages cachés
+        </p>
+      </div>
+
       {/* Preset Buttons */}
       <div>
         <h4 className="text-sm font-bold text-forensics-cyan font-mono mb-3">
-          🎛️ PRESETS
+          PRESETS
         </h4>
         <div className="grid grid-cols-3 gap-2">
           <motion.button
@@ -155,10 +237,162 @@ const FilterPanel = () => {
         </p>
       </div>
 
+      {/* Band-Pass Filter */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-bold text-forensics-cyan font-mono">
+            BAND-PASS (VOIX)
+          </h4>
+          <button
+            onClick={handleBandPassToggle}
+            className={`px-3 py-1 rounded font-mono text-xs font-bold transition-all ${
+              bandPassFilter.enabled ? 'bg-forensics-green text-forensics-bg' : 'bg-gray-700 text-gray-400'
+            }`}
+          >
+            {bandPassFilter.enabled ? '● ON' : '○ OFF'}
+          </button>
+        </div>
+        <div className="space-y-2">
+          <input
+            type="range"
+            min="200"
+            max="4000"
+            step="50"
+            value={bandPassFilter.frequency}
+            onChange={handleBandPassFreqChange}
+            className="w-full accent-forensics-cyan"
+            disabled={!bandPassFilter.enabled}
+          />
+          <div className="flex justify-between text-xs font-mono text-gray-500">
+            <span>200 Hz</span>
+            <span className="text-forensics-cyan font-bold">{Math.round(bandPassFilter.frequency)} Hz</span>
+            <span>4 kHz</span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 font-mono">
+          Isole la plage vocale — révèle le locuteur
+        </p>
+      </div>
+
+      {/* Notch Filter */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-bold text-forensics-cyan font-mono">
+            COUPE-BANDE (BUZZ)
+          </h4>
+          <button
+            onClick={handleNotchToggle}
+            className={`px-3 py-1 rounded font-mono text-xs font-bold transition-all ${
+              notchFilter.enabled ? 'bg-forensics-green text-forensics-bg' : 'bg-gray-700 text-gray-400'
+            }`}
+          >
+            {notchFilter.enabled ? '● ON' : '○ OFF'}
+          </button>
+        </div>
+        <div className="space-y-2">
+          <input
+            type="range"
+            min="20"
+            max="300"
+            step="5"
+            value={notchFilter.frequency}
+            onChange={handleNotchFreqChange}
+            className="w-full accent-forensics-cyan"
+            disabled={!notchFilter.enabled}
+          />
+          <div className="flex justify-between text-xs font-mono text-gray-500">
+            <span>20 Hz</span>
+            <span className="text-forensics-cyan font-bold">{Math.round(notchFilter.frequency)} Hz</span>
+            <span>300 Hz</span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 font-mono">
+          Supprime les interférences électriques (50/60 Hz)
+        </p>
+      </div>
+
+      {/* Compressor */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-bold text-forensics-cyan font-mono">
+            COMPRESSEUR
+          </h4>
+          <button
+            onClick={handleCompressorToggle}
+            className={`px-3 py-1 rounded font-mono text-xs font-bold transition-all ${
+              compressor.enabled ? 'bg-forensics-green text-forensics-bg' : 'bg-gray-700 text-gray-400'
+            }`}
+          >
+            {compressor.enabled ? '● ON' : '○ OFF'}
+          </button>
+        </div>
+        <div className="space-y-2">
+          <input
+            type="range"
+            min="-60"
+            max="0"
+            step="1"
+            value={compressor.threshold}
+            onChange={handleCompressorThreshold}
+            className="w-full accent-forensics-cyan"
+            disabled={!compressor.enabled}
+          />
+          <div className="flex justify-between text-xs font-mono text-gray-500">
+            <span>-60 dB</span>
+            <span className="text-forensics-cyan font-bold">{compressor.threshold} dB</span>
+            <span>0 dB</span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 font-mono">
+          Amplifie les sons faibles — révèle les chuchotements
+        </p>
+      </div>
+
+      {/* Speed Control */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-bold text-forensics-cyan font-mono">
+          VITESSE DE LECTURE
+        </h4>
+        <div className="space-y-2">
+          <input
+            type="range"
+            min="0.25"
+            max="2"
+            step="0.05"
+            value={playbackSpeed}
+            onChange={handleSpeedChange}
+            className="w-full accent-forensics-cyan"
+          />
+          <div className="flex justify-between text-xs font-mono text-gray-500">
+            <span>0.25×</span>
+            <span className="text-forensics-cyan font-bold">{playbackSpeed.toFixed(2)}×</span>
+            <span>2×</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-1">
+          {[0.5, 1, 1.5].map((s) => (
+            <button
+              key={s}
+              onClick={() => { setPlaybackSpeed(s); audioEngine.setPlaybackSpeed(s); }}
+              className={`py-1 rounded font-mono text-xs transition-all border ${
+                playbackSpeed === s
+                  ? 'bg-forensics-cyan/20 border-forensics-cyan text-forensics-cyan'
+                  : 'bg-forensics-bg-light border-forensics-cyan-dark text-gray-400 hover:border-forensics-cyan'
+              }`}
+            >
+              {s}×
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-gray-500 font-mono">
+          Ralentir pour détecter l'accent ou le contexte
+        </p>
+      </div>
+
       {/* Info box */}
       <div className="bg-forensics-cyan/10 border border-forensics-cyan rounded p-3">
         <p className="text-xs text-forensics-cyan font-mono">
-          💡 Astuce: Utilisez les filtres pour éliminer le bruit et clarifier la voix
+          💡 Astuce: Combinez les filtres pour révéler tous les indices cachés
         </p>
       </div>
     </div>

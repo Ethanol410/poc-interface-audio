@@ -24,29 +24,25 @@ const Spectrogram = memo(({
   const [error, setError] = useState<string | null>(null);
 
   // Memoize color map calculation (expensive)
+  // Values must be floats 0-1 (r, g, b, a) per WaveSurfer SpectrogramPlugin spec
   const colorMap = useMemo(() => {
     const map: [number, number, number, number][] = [];
     for (let i = 0; i < 256; i++) {
       const value = i / 255;
       if (value < 0.25) {
-        // Dark blue to blue
-        map.push([10, 14, 39, value * 4]);
+        // Transparent dark blue (silent)
+        map.push([10 / 255, 14 / 255, 39 / 255, value * 4]);
       } else if (value < 0.5) {
         // Blue to cyan
         const t = (value - 0.25) * 4;
-        map.push([0, 100 + t * 112, 200 + t * 55, 1]);
+        map.push([0, (100 + t * 112) / 255, (200 + t * 55) / 255, 1]);
       } else if (value < 0.75) {
         // Cyan to white
         const t = (value - 0.5) * 4;
-        map.push([
-          t * 255,
-          212 + t * 43,
-          255,
-          1,
-        ]);
+        map.push([t, (212 + t * 43) / 255, 1, 1]);
       } else {
-        // White
-        map.push([255, 255, 255, 1]);
+        // White (loud)
+        map.push([1, 1, 1, 1]);
       }
     }
     return map;
@@ -68,7 +64,6 @@ const Spectrogram = memo(({
       waveColor: 'transparent',
       progressColor: 'transparent',
       height: 0, // Hide waveform, only show spectrogram
-      backend: 'WebAudio',
       interact: false,
       plugins: [
         SpectrogramPlugin.create({
@@ -102,7 +97,11 @@ const Spectrogram = memo(({
 
     // Load audio
     console.log('Spectrogram: Chargement de l\'audio...');
-    wavesurfer.load(audioUrl);
+    wavesurfer.load(audioUrl).catch((err: Error) => {
+      if (err?.name !== 'AbortError') {
+        console.error('Spectrogram load error:', err);
+      }
+    });
 
     // Cleanup
     return () => {
@@ -112,8 +111,9 @@ const Spectrogram = memo(({
       try {
         wavesurfer.destroy();
       } catch (err) {
-        // Ignore AbortError pendant le cleanup (normal en React StrictMode)
-        if (err instanceof Error && err.name !== 'AbortError') {
+        // Ignore expected WebAudio errors during cleanup (AbortError, InvalidAccessError)
+        const name = err instanceof Error ? err.name : (err as DOMException)?.name ?? '';
+        if (name !== 'AbortError' && name !== 'InvalidAccessError') {
           console.error('Error during spectrogram cleanup:', err);
         }
       }
@@ -124,7 +124,7 @@ const Spectrogram = memo(({
     <div className="spectrogram-container relative">
       <div
         ref={containerRef}
-        className="hidden" // Hide waveform container
+        style={{ position: 'absolute', width: '100%', height: 0, overflow: 'hidden', visibility: 'hidden' }}
       />
       <div
         ref={spectrogramRef}

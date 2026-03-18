@@ -148,12 +148,13 @@ const ResultScreen = () => {
                     transition={{ delay: 0.5 }}
                   >
                     <h3 className="text-lg font-bold text-forensics-cyan font-mono mb-3">
-                      🎉 MISSION ACCOMPLIE
+                      MISSION ACCOMPLIE
                     </h3>
                     <p className="text-gray-300 font-mono text-sm">
-                      Grâce à votre expertise en analyse forensique audio, le Corbeau a été démasqué. 
-                      L'enregistrement modifié a été restauré et la signature vocale correspond parfaitement 
-                      à {suspect.name}. Le suspect a été placé en garde à vue.
+                      Le clocher de l'église Saint-Pierre et le message inversé "Prenez le train de 14h15"
+                      ont permis de localiser <span className="text-forensics-cyan">{suspect.name}</span>,
+                      voisine de palier, au moment des faits. Elle a été interceptée en gare de Quissioux
+                      avant de monter à bord du train. Le petit Léo est sain et sauf.
                     </p>
                   </motion.div>
                 </>
@@ -216,8 +217,9 @@ const ResultScreen = () => {
                       📨 MESSAGE DU CORBEAU
                     </h3>
                     <p className="text-gray-300 font-mono text-sm italic">
-                      "Vous pensiez m'avoir ? Je suis toujours dans l'ombre... 
-                      Peut-être devriez-vous mieux analyser les preuves la prochaine fois."
+                      "Mauvaise piste, agent. Le Corbeau a pris le train de 14h15.
+                      Les indices sonores étaient là — le clocher, la gare, la voix inversée.
+                      Recommencez l'analyse et regardez de plus près le spectrogramme."
                     </p>
                   </motion.div>
                 </>

@@ -10,10 +10,17 @@ export interface AudioState {
 
 // Filter configuration
 export interface FilterConfig {
-  type: 'lowpass' | 'highpass' | 'bandpass';
+  type: 'lowpass' | 'highpass' | 'bandpass' | 'notch';
   frequency: number;
   q: number;
   enabled: boolean;
+}
+
+// Compressor configuration
+export interface CompressorConfig {
+  enabled: boolean;
+  threshold: number; // dB, -100 to 0
+  ratio: number;     // 1 to 20
 }
 
 // Pitch shift configuration

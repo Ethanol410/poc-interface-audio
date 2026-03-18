@@ -30,17 +30,28 @@ export const useAudioControls = () => {
 
     init();
 
-    // Setup event listeners
-    audioEngine.on('play', () => setIsPlaying(true));
-    audioEngine.on('pause', () => setIsPlaying(false));
-    audioEngine.on('loading', setIsLoading);
-    audioEngine.on('loaded', (buffer: any) => setDuration(buffer.duration));
-    audioEngine.on('error', (error: any) =>
-      setError(error?.message || 'Audio error')
-    );
+    // Keep stable references so we can remove them on unmount
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onLoading = (v: boolean) => setIsLoading(v);
+    const onLoaded = (buffer: any) => setDuration(buffer.duration);
+    const onError = (error: any) => setError(error?.message || 'Audio error');
+
+    audioEngine.on('play', onPlay);
+    audioEngine.on('pause', onPause);
+    audioEngine.on('loading', onLoading);
+    audioEngine.on('loaded', onLoaded);
+    audioEngine.on('error', onError);
 
     return () => {
-      audioEngine.cleanup();
+      // Remove listeners — the singleton keeps running across navigations
+      audioEngine.off('play', onPlay);
+      audioEngine.off('pause', onPause);
+      audioEngine.off('loading', onLoading);
+      audioEngine.off('loaded', onLoaded);
+      audioEngine.off('error', onError);
+      // Stop playback when leaving the workspace
+      try { audioEngine.pause(); } catch { /* ignore */ }
     };
   }, [setIsPlaying, setIsLoading, setDuration, setError]);
 

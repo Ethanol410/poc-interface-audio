@@ -10,18 +10,76 @@ import {
   AudioMeter,
   ParameterDisplay,
 } from '@/components/Visualization';
+import FilterPanel from '@/components/Controls/FilterPanel';
+import PitchControl from '@/components/Controls/PitchControl';
+
+// Clues definition: which store condition triggers which clue
+const CLUE_TRIGGERS = [
+  {
+    id: 'clocher',
+    label: 'Son de clocher identifié',
+    hint: 'Filtre passe-bas activé — bruits aigus supprimés',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.lowPassFilter.enabled,
+  },
+  {
+    id: 'voix',
+    label: 'Voix clarifiée',
+    hint: 'Filtre passe-haut activé — bruits sourds supprimés',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.highPassFilter.enabled,
+  },
+  {
+    id: 'pitch',
+    label: 'Tonalité vocale restaurée',
+    hint: 'Correction de hauteur appliquée',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.pitchShift.semitones !== 0,
+  },
+  {
+    id: 'message-cache',
+    label: 'Message caché : "Prenez le train de 14h15"',
+    hint: 'Lecture inversée activée',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.isReversed,
+  },
+  {
+    id: 'plage-vocale',
+    label: 'Plage vocale isolée — accent reconnu',
+    hint: 'Filtre passe-bande appliqué sur la voix',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.bandPassFilter.enabled,
+  },
+  {
+    id: 'interference',
+    label: 'Interférence électrique supprimée',
+    hint: 'Filtre coupe-bande activé (50/60 Hz)',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.notchFilter.enabled,
+  },
+  {
+    id: 'chuchotement',
+    label: 'Chuchotement amplifié — lieu identifié',
+    hint: 'Compresseur activé — sons faibles révélés',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.compressor.enabled,
+  },
+  {
+    id: 'ralenti',
+    label: 'Accent étranger détecté au ralenti',
+    hint: 'Vitesse de lecture réduite',
+    check: (s: ReturnType<typeof useAudioStore.getState>) => s.playbackSpeed < 0.9,
+  },
+] as const;
 
 const Dashboard = memo(() => {
   const navigate = useNavigate();
-  const { isPlaying, currentTime, duration, audioUrls } = useAudioStore();
-  const { loadAudio } = useAudioControls();
+  const store = useAudioStore();
+  const { isPlaying, currentTime, duration, audioUrls, discoveredClues, addClue } = store;
+  // Initialize audio engine (sets up filter chain, volume sync)
+  useAudioControls();
 
-  // Load main evidence audio on mount
+  // Detect and unlock clues based on audio tool interactions
   useEffect(() => {
-    if (audioUrls?.evidenceDistorted) {
-      loadAudio(audioUrls.evidenceDistorted, 'Message du Corbeau');
-    }
-  }, [loadAudio, audioUrls]);
+    CLUE_TRIGGERS.forEach(({ id, check }) => {
+      if (check(store) && !discoveredClues.includes(id)) {
+        addClue(id);
+      }
+    });
+  }, [store, discoveredClues, addClue]);
 
   // Format time (seconds to MM:SS) - memoized
   const formatTime = useCallback((seconds: number) => {
@@ -106,9 +164,14 @@ const Dashboard = memo(() => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h3 className="text-lg font-bold text-forensics-cyan font-mono mb-3">
-                🌊 FORME D'ONDE
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold text-forensics-cyan font-mono">
+                  🌊 FORME D'ONDE
+                </h3>
+                <span className="text-gray-500 font-mono text-xs">
+                  Cliquez sur la forme d'onde pour lire / mettre en pause
+                </span>
+              </div>
               <Waveform audioUrl={audioUrls?.evidenceDistorted} />
             </motion.div>
 
@@ -151,11 +214,34 @@ const Dashboard = memo(() => {
               <AudioMeter isPlaying={isPlaying} height={200} />
             </motion.div>
 
+            {/* Filter Controls */}
+            <motion.div
+              className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <h3 className="text-lg font-bold text-forensics-cyan font-mono mb-4">
+                🔧 FILTRES AUDIO
+              </h3>
+              <FilterPanel />
+            </motion.div>
+
+            {/* Pitch Control */}
+            <motion.div
+              className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <PitchControl />
+            </motion.div>
+
             {/* Parameter Display */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.6 }}
             >
               <h3 className="text-lg font-bold text-forensics-cyan font-mono mb-3">
                 ⚙️ PARAMÈTRES
@@ -180,20 +266,47 @@ const Dashboard = memo(() => {
               </p>
             </motion.div>
 
+            {/* Clue Tracker HUD */}
+            <motion.div
+              className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.65 }}
+            >
+              <h4 className="text-sm font-bold text-forensics-cyan font-mono mb-3">
+                INDICES DÉCOUVERTS ({discoveredClues.length}/{CLUE_TRIGGERS.length})
+              </h4>
+              <ul className="space-y-2">
+                {CLUE_TRIGGERS.map(({ id, label, hint }) => {
+                  const found = discoveredClues.includes(id);
+                  return (
+                    <li key={id} className={`text-xs font-mono flex gap-2 ${found ? 'text-forensics-green' : 'text-gray-600'}`}>
+                      <span>{found ? '✓' : '○'}</span>
+                      <span>
+                        {found ? label : '???'}
+                        {found && <span className="block text-gray-500 text-[10px]">{hint}</span>}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </motion.div>
+
             {/* Instructions */}
             <motion.div
               className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.7 }}
             >
               <h4 className="text-sm font-bold text-forensics-cyan font-mono mb-3">
-                📖 INSTRUCTIONS
+                INSTRUCTIONS
               </h4>
               <ul className="space-y-2 text-xs font-mono text-gray-400">
                 <li>• Analysez le spectrogramme</li>
                 <li>• Ajustez les filtres audio</li>
                 <li>• Modifiez le pitch si nécessaire</li>
+                <li>• Activez le REVERSE pour les messages cachés</li>
                 <li>• Comparez avec les suspects</li>
               </ul>
             </motion.div>

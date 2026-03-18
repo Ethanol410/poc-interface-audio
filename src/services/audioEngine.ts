@@ -1,33 +1,35 @@
 /**
- * Audio Engine Service - Singleton managing Web Audio API and Tone.js
- * Handles audio playback, filtering, pitch shifting, and analysis
+ * Audio Engine Service - Singleton managing Web Audio API processing chain
+ * Routes WaveSurfer's media element through filter/pitch nodes
  */
 
 import * as Tone from 'tone';
 import type {
   AudioState,
   FilterConfig,
+  CompressorConfig,
   AudioAnalysisData,
-  AudioBufferInfo,
 } from '@/types/audio';
 
 class AudioEngine {
   private static instance: AudioEngine;
-  private player: Tone.Player | null = null;
-  private originalPlayer: Tone.Player | null = null; // For A/B comparison
-  private lowPassFilter: Tone.Filter | null = null;
-  private highPassFilter: Tone.Filter | null = null;
-  private pitchShift: Tone.PitchShift | null = null;
-  private analyzer: Tone.Analyser | null = null;
-  private currentBuffer: AudioBufferInfo | null = null;
+
+  // Native Web Audio nodes (use Tone's AudioContext)
+  private context: AudioContext | null = null;
+  private mediaSource: MediaElementAudioSourceNode | null = null;
+  private mediaElement: HTMLMediaElement | null = null;
+  private lpFilterNode: BiquadFilterNode | null = null;
+  private hpFilterNode: BiquadFilterNode | null = null;
+  private bandpassNode: BiquadFilterNode | null = null;
+  private notchNode: BiquadFilterNode | null = null;
+  private compressorNode: DynamicsCompressorNode | null = null;
+  private gainNode: GainNode | null = null;
+  private analyserNode: AnalyserNode | null = null;
+
   private isInitialized = false;
   private listeners: Map<string, Set<Function>> = new Map();
-  private isProcessedMode = true; // true = processed, false = original
-  private crossFade: Tone.CrossFade | null = null;
 
-  private constructor() {
-    // Private constructor for singleton
-  }
+  private constructor() {}
 
   public static getInstance(): AudioEngine {
     if (!AudioEngine.instance) {
@@ -37,52 +39,64 @@ class AudioEngine {
   }
 
   /**
-   * Initialize the audio engine
+   * Initialize the audio engine - sets up native Web Audio processing chain
    */
   public async initialize(): Promise<void> {
-    if (this.isInitialized) {
-      return;
-    }
+    if (this.isInitialized) return;
 
     try {
-      // Start Tone.js context
+      // Unlock AudioContext (requires user gesture)
       await Tone.start();
+      this.context = Tone.getContext().rawContext as AudioContext;
 
-      // Create audio nodes
-      this.player = new Tone.Player();
-      this.originalPlayer = new Tone.Player();
-      this.crossFade = new Tone.CrossFade(1); // Start with processed (1)
-      
-      this.lowPassFilter = new Tone.Filter({
-        type: 'lowpass',
-        frequency: 8000,
-        Q: 1,
-      });
-      this.highPassFilter = new Tone.Filter({
-        type: 'highpass',
-        frequency: 200,
-        Q: 1,
-      });
-      this.pitchShift = new Tone.PitchShift({
-        pitch: 0,
-        windowSize: 0.1,
-        delayTime: 0,
-        feedback: 0,
-      });
-      this.analyzer = new Tone.Analyser('waveform', 2048);
+      // Low-pass filter (default: bypass at 20kHz)
+      this.lpFilterNode = this.context.createBiquadFilter();
+      this.lpFilterNode.type = 'lowpass';
+      this.lpFilterNode.frequency.value = 20000;
+      this.lpFilterNode.Q.value = 1;
 
-      // Connect audio graph:
-      // originalPlayer → crossFade.a
-      // player → filters → pitchShift → crossFade.b
-      // crossFade → analyzer → destination
-      this.originalPlayer.connect(this.crossFade.a);
-      this.player.chain(
-        this.lowPassFilter,
-        this.highPassFilter,
-        this.pitchShift,
-        this.crossFade.b
-      );
-      this.crossFade.chain(this.analyzer, Tone.getDestination());
+      // High-pass filter (default: bypass at 20Hz)
+      this.hpFilterNode = this.context.createBiquadFilter();
+      this.hpFilterNode.type = 'highpass';
+      this.hpFilterNode.frequency.value = 20;
+      this.hpFilterNode.Q.value = 1;
+
+      // Band-pass filter (default: allpass bypass)
+      this.bandpassNode = this.context.createBiquadFilter();
+      this.bandpassNode.type = 'allpass';
+      this.bandpassNode.frequency.value = 1500;
+      this.bandpassNode.Q.value = 1;
+
+      // Notch filter (default: allpass bypass)
+      this.notchNode = this.context.createBiquadFilter();
+      this.notchNode.type = 'allpass';
+      this.notchNode.frequency.value = 60;
+      this.notchNode.Q.value = 10;
+
+      // Compressor (default: transparent 1:1 ratio)
+      this.compressorNode = this.context.createDynamicsCompressor();
+      this.compressorNode.threshold.value = 0;
+      this.compressorNode.ratio.value = 1;
+      this.compressorNode.attack.value = 0.003;
+      this.compressorNode.release.value = 0.25;
+
+      // Master gain
+      this.gainNode = this.context.createGain();
+      this.gainNode.gain.value = 0.8;
+
+      // Analyser for visualizations
+      this.analyserNode = this.context.createAnalyser();
+      this.analyserNode.fftSize = 2048;
+      this.analyserNode.smoothingTimeConstant = 0.8;
+
+      // Chain: source → lpFilter → hpFilter → bandpass → notch → compressor → gain → analyser → destination
+      this.lpFilterNode.connect(this.hpFilterNode);
+      this.hpFilterNode.connect(this.bandpassNode);
+      this.bandpassNode.connect(this.notchNode);
+      this.notchNode.connect(this.compressorNode);
+      this.compressorNode.connect(this.gainNode);
+      this.gainNode.connect(this.analyserNode);
+      this.analyserNode.connect(this.context.destination);
 
       this.isInitialized = true;
       this.emit('initialized');
@@ -93,162 +107,205 @@ class AudioEngine {
   }
 
   /**
-   * Load audio file from URL
+   * Connect a WaveSurfer media element to the processing chain.
+   * Call this once WaveSurfer fires 'ready'.
    */
-  public async loadAudio(url: string, name: string): Promise<void> {
-    if (!this.isInitialized || !this.player || !this.originalPlayer) {
-      throw new Error('Audio engine not initialized');
+  public connectMediaElement(element: HTMLMediaElement): void {
+    if (!this.isInitialized || !this.context || !this.lpFilterNode) {
+      console.warn('AudioEngine not initialized yet, skipping connectMediaElement');
+      return;
+    }
+
+    // Disconnect previous source if any
+    if (this.mediaSource) {
+      try {
+        this.mediaSource.disconnect();
+      } catch {
+        /* ignore */
+      }
+      this.mediaSource = null;
     }
 
     try {
-      this.emit('loading', true);
-
-      // Load into both players for A/B comparison
-      await Promise.all([
-        this.player.load(url),
-        this.originalPlayer.load(url),
-      ]);
-
-      this.currentBuffer = {
-        buffer: this.player.buffer.get() as AudioBuffer,
-        url,
-        name,
-        duration: this.player.buffer.duration,
-      };
-
-      this.emit('loaded', this.currentBuffer);
-      this.emit('loading', false);
-    } catch (error) {
-      this.emit('loading', false);
-      this.emit('error', error);
-      throw error;
+      this.mediaElement = element;
+      this.mediaSource = this.context.createMediaElementSource(element);
+      this.mediaSource.connect(this.lpFilterNode);
+      console.log('AudioEngine: media element connected to filter chain');
+      this.emit('connected');
+    } catch (err) {
+      // createMediaElementSource() throws if called twice for the same element
+      console.warn('AudioEngine: connectMediaElement error (element may already be connected):', err);
     }
   }
 
   /**
-   * Play audio
+   * No-op: WaveSurfer handles actual loading and playback.
+   * Kept for backward compatibility with useAudioControls.
    */
-  public play(): void {
-    if (!this.player || !this.originalPlayer || !this.currentBuffer) {
-      throw new Error('No audio loaded');
-    }
+  public async loadAudio(_url: string, _name: string): Promise<void> {
+    // WaveSurfer handles loading via its audioUrl prop
+    this.emit('loading', false);
+  }
 
-    // Sync both players
-    const now = Tone.now();
-    this.player.start(now);
-    this.originalPlayer.start(now);
+  /** No-op: WaveSurfer handles play */
+  public play(): void {
     this.emit('play');
   }
 
-  /**
-   * Pause audio
-   */
+  /** No-op: WaveSurfer handles pause */
   public pause(): void {
-    if (!this.player || !this.originalPlayer) return;
-    this.player.stop();
-    this.originalPlayer.stop();
     this.emit('pause');
   }
 
-  /**
-   * Seek to position (seconds)
-   */
-  public seek(time: number): void {
-    if (!this.player || !this.originalPlayer) return;
-    const wasPlaying = this.player.state === 'started';
-    
-    this.player.stop();
-    this.originalPlayer.stop();
-    
-    if (wasPlaying) {
-      const now = Tone.now();
-      this.player.start(now, time);
-      this.originalPlayer.start(now, time);
-    }
-    this.emit('seek', time);
-  }
+  /** No-op: WaveSurfer handles seek */
+  public seek(_time: number): void {}
 
   /**
-   * Set volume (0-1)
+   * Set master volume (0–1)
    */
   public setVolume(volume: number): void {
-    if (!this.player) return;
-    this.player.volume.value = Tone.gainToDb(volume);
+    if (!this.gainNode) return;
+    this.gainNode.gain.value = Math.max(0, Math.min(1, volume));
     this.emit('volume', volume);
   }
 
   /**
-   * Apply low-pass filter
+   * Apply low-pass filter.
+   * When enabled=false, set to 20 kHz (transparent/bypass).
    */
   public applyLowPassFilter(config: FilterConfig): void {
-    if (!this.lowPassFilter) return;
-    this.lowPassFilter.frequency.value = config.frequency;
-    this.lowPassFilter.Q.value = config.q;
-    // Enable/disable by connecting/disconnecting (simplified - keeping connected)
+    if (!this.lpFilterNode) return;
+    if (!config.enabled) {
+      this.lpFilterNode.frequency.value = 20000;
+    } else {
+      this.lpFilterNode.frequency.value = config.frequency;
+      this.lpFilterNode.Q.value = config.q;
+    }
     this.emit('filterChange', { type: 'lowpass', config });
   }
 
   /**
-   * Apply high-pass filter
+   * Apply high-pass filter.
+   * When enabled=false, set to 20 Hz (transparent/bypass).
    */
   public applyHighPassFilter(config: FilterConfig): void {
-    if (!this.highPassFilter) return;
-    this.highPassFilter.frequency.value = config.frequency;
-    this.highPassFilter.Q.value = config.q;
+    if (!this.hpFilterNode) return;
+    if (!config.enabled) {
+      this.hpFilterNode.frequency.value = 20;
+    } else {
+      this.hpFilterNode.frequency.value = config.frequency;
+      this.hpFilterNode.Q.value = config.q;
+    }
     this.emit('filterChange', { type: 'highpass', config });
   }
 
   /**
-   * Apply pitch shift
+   * Apply band-pass filter.
+   * When disabled, set to allpass (transparent).
    */
-  public applyPitchShift(semitones: number, _rampTime = 0.1): void {
-    if (!this.pitchShift) return;
-    this.pitchShift.pitch = semitones;
+  public applyBandPassFilter(config: FilterConfig): void {
+    if (!this.bandpassNode) return;
+    if (!config.enabled) {
+      this.bandpassNode.type = 'allpass';
+    } else {
+      this.bandpassNode.type = 'bandpass';
+      this.bandpassNode.frequency.value = config.frequency;
+      this.bandpassNode.Q.value = config.q;
+    }
+    this.emit('filterChange', { type: 'bandpass', config });
+  }
+
+  /**
+   * Apply notch filter to remove a specific frequency (e.g., 50/60Hz hum).
+   * When disabled, set to allpass (transparent).
+   */
+  public applyNotchFilter(config: FilterConfig): void {
+    if (!this.notchNode) return;
+    if (!config.enabled) {
+      this.notchNode.type = 'allpass';
+    } else {
+      this.notchNode.type = 'notch';
+      this.notchNode.frequency.value = config.frequency;
+      this.notchNode.Q.value = config.q;
+    }
+    this.emit('filterChange', { type: 'notch', config });
+  }
+
+  /**
+   * Apply dynamic compression.
+   * When disabled, ratio=1 threshold=0 (transparent).
+   */
+  public applyCompressor(config: CompressorConfig): void {
+    if (!this.compressorNode) return;
+    if (!config.enabled) {
+      this.compressorNode.threshold.value = 0;
+      this.compressorNode.ratio.value = 1;
+    } else {
+      this.compressorNode.threshold.value = config.threshold;
+      this.compressorNode.ratio.value = config.ratio;
+      this.compressorNode.attack.value = 0.003;
+      this.compressorNode.release.value = 0.25;
+    }
+    this.emit('compressor', config);
+  }
+
+  /**
+   * Set playback speed (0.25x to 2x).
+   */
+  public setPlaybackSpeed(rate: number): void {
+    if (this.mediaElement) {
+      this.mediaElement.playbackRate = Math.max(0.25, Math.min(2, rate));
+    }
+    this.emit('playbackSpeed', rate);
+  }
+
+  /**
+   * Apply pitch shift via playback rate.
+   * Note: changes speed + pitch together (HTML media element limitation).
+   * A rate of 2^(semitones/12) converts semitones to playback rate.
+   */
+  public applyPitchShift(semitones: number): void {
+    if (this.mediaElement) {
+      const rate = Math.pow(2, semitones / 12);
+      // Clamp to reasonable range to avoid browser errors
+      this.mediaElement.playbackRate = Math.max(0.25, Math.min(4, rate));
+    }
     this.emit('pitchShift', semitones);
   }
 
   /**
-   * Toggle A/B comparison (original vs processed)
+   * Reverse playback.
+   * Note: HTML media elements don't support native reverse.
+   * The UI state is tracked in the store for clue discovery.
    */
-  public toggleComparison(useProcessed: boolean): void {
-    if (!this.crossFade) return;
-    
-    this.isProcessedMode = useProcessed;
-    const fadeTime = 0.1; // 100ms crossfade
-    
-    if (useProcessed) {
-      // Fade to processed (b channel)
-      this.crossFade.fade.rampTo(1, fadeTime);
-    } else {
-      // Fade to original (a channel)
-      this.crossFade.fade.rampTo(0, fadeTime);
-    }
-    
-    this.emit('comparison', useProcessed);
+  public setReverse(_reversed: boolean): void {
+    this.emit('reverse', _reversed);
   }
 
   /**
-   * Get comparison mode state
+   * A/B comparison toggle (no-op in simplified engine)
    */
+  public toggleComparison(_useProcessed: boolean): void {
+    this.emit('comparison', _useProcessed);
+  }
+
   public isInProcessedMode(): boolean {
-    return this.isProcessedMode;
+    return true;
   }
 
   /**
-   * Get current audio analysis data
+   * Get current audio analysis data for visualizations
    */
   public getAnalysisData(): AudioAnalysisData | null {
-    if (!this.analyzer) return null;
+    if (!this.analyserNode) return null;
 
-    const waveformData = this.analyzer.getValue() as Float32Array;
-    const frequencyData = new Uint8Array(waveformData.length);
+    const bufferLength = this.analyserNode.frequencyBinCount;
+    const waveformData = new Float32Array(bufferLength);
+    const frequencyData = new Uint8Array(bufferLength);
 
-    // Simple conversion for frequency representation
-    for (let i = 0; i < waveformData.length; i++) {
-      frequencyData[i] = Math.abs(waveformData[i]) * 255;
-    }
+    this.analyserNode.getFloatTimeDomainData(waveformData);
+    this.analyserNode.getByteFrequencyData(frequencyData);
 
-    // Calculate RMS and peak
     let rms = 0;
     let peak = 0;
     for (let i = 0; i < waveformData.length; i++) {
@@ -258,48 +315,42 @@ class AudioEngine {
     }
     rms = Math.sqrt(rms / waveformData.length);
 
-    return {
-      frequencyData,
-      waveformData,
-      rms,
-      peakLevel: peak,
-    };
+    return { frequencyData, waveformData, rms, peakLevel: peak };
   }
 
   /**
-   * Get current audio state
+   * Get basic playback state (WaveSurfer manages actual time/playing state)
    */
   public getState(): Partial<AudioState> {
-    if (!this.player || !this.currentBuffer) {
-      return {
-        isPlaying: false,
-        currentTime: 0,
-        duration: 0,
-      };
-    }
-
-    return {
-      isPlaying: this.player.state === 'started',
-      currentTime: Tone.getTransport().seconds,
-      duration: this.currentBuffer.duration,
-    };
+    return { isPlaying: false, currentTime: 0, duration: 0 };
   }
 
   /**
-   * Cleanup and dispose resources
+   * Cleanup
    */
   public cleanup(): void {
-    this.player?.dispose();
-    this.lowPassFilter?.dispose();
-    this.highPassFilter?.dispose();
-    this.pitchShift?.dispose();
-    this.analyzer?.dispose();
+    if (this.mediaSource) {
+      try {
+        this.mediaSource.disconnect();
+      } catch {
+        /* ignore */
+      }
+      this.mediaSource = null;
+    }
+    this.mediaElement = null;
+    this.lpFilterNode = null;
+    this.hpFilterNode = null;
+    this.bandpassNode = null;
+    this.notchNode = null;
+    this.compressorNode = null;
+    this.gainNode = null;
+    this.analyserNode = null;
     this.isInitialized = false;
     this.listeners.clear();
   }
 
-  // Event emitter methods
-  private emit(event: string, data?: any): void {
+  // Event emitter
+  private emit(event: string, data?: unknown): void {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
       callbacks.forEach((callback) => callback(data));

@@ -1,40 +1,49 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import type { Suspect } from '@/types/suspects';
+import { useAudioStore } from '@/stores/audioStore';
 
-// Mock suspect data (in real app, would come from API/database)
+// Narrative match scores — fictif, cohérent avec le scénario
+const MATCH_SCORES: Record<string, number> = {
+  'suspect-1': 12,
+  'suspect-2': 94,
+  'suspect-3': 8,
+  'suspect-4': 21,
+};
+
+// Mock suspect data — Dossier 84-V "Le Corbeau de Quissioux"
 const mockSuspects: Suspect[] = [
   {
     id: 'suspect-1',
-    name: 'Alex Dubois',
-    role: 'Technicien Audio',
+    name: 'Bernard Mallet',
+    role: 'Gardien d\'immeuble',
     photoUrl: 'https://i.pravatar.cc/300?img=12',
-    notes: '',
+    notes: 'Alibi : "J\'étais à la cave toute la matinée"',
     isIdentified: false,
   },
   {
     id: 'suspect-2',
-    name: 'Marie Chen',
-    role: 'Productrice',
+    name: 'Isabelle Renard',
+    role: 'Voisine de palier',
     photoUrl: 'https://i.pravatar.cc/300?img=47',
-    notes: '',
+    notes: 'Alibi : "J\'étais chez ma sœur à Quissioux"',
     isIdentified: false,
   },
   {
     id: 'suspect-3',
-    name: 'Thomas Leroux',
-    role: 'Ingénieur Son',
+    name: 'Karim Daoudi',
+    role: 'Livreur',
     photoUrl: 'https://i.pravatar.cc/300?img=33',
-    notes: '',
+    notes: 'Alibi : "En tournée de livraison toute la journée"',
     isIdentified: false,
   },
   {
     id: 'suspect-4',
-    name: 'Sophie Martin',
-    role: 'Journaliste',
+    name: 'Sylvie Marchand',
+    role: 'Institutrice retraitée',
     photoUrl: 'https://i.pravatar.cc/300?img=26',
-    notes: '',
+    notes: 'Alibi : "Cours de jardinage au centre communal"',
     isIdentified: false,
   },
 ];
@@ -98,11 +107,47 @@ const NotesModal = ({ suspect, onClose, onSave }: NotesModalProps) => {
 
 const SuspectGrid = () => {
   const navigate = useNavigate();
+  const { audioUrls } = useAudioStore();
   const [suspects, setSuspects] = useState(mockSuspects);
   const [selectedSuspect, setSelectedSuspect] = useState<Suspect | null>(null);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [identifiedSuspect, setIdentifiedSuspect] = useState<Suspect | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const voiceUrls: Record<string, string | undefined> = {
+    'suspect-1': audioUrls?.suspect1,
+    'suspect-2': audioUrls?.suspect2,
+    'suspect-3': audioUrls?.suspect3,
+    'suspect-4': audioUrls?.suspect4,
+  };
+
+  const handlePlayVoice = (suspect: Suspect) => {
+    const url = voiceUrls[suspect.id];
+    if (!url) return;
+
+    if (playingId === suspect.id) {
+      audioRef.current?.pause();
+      setPlayingId(null);
+      return;
+    }
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.play();
+    setPlayingId(suspect.id);
+    audio.onended = () => setPlayingId(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, []);
 
   const handleNotesClick = (suspect: Suspect) => {
     setSelectedSuspect(suspect);
@@ -206,6 +251,28 @@ const SuspectGrid = () => {
                   {suspect.role}
                 </p>
 
+                {/* Match Score */}
+                <div className="mb-3">
+                  <div className="flex justify-between text-xs font-mono mb-1">
+                    <span className="text-gray-500">CONCORDANCE VOCALE</span>
+                    <span className={MATCH_SCORES[suspect.id] >= 80 ? 'text-forensics-red font-bold' : 'text-gray-500'}>
+                      {MATCH_SCORES[suspect.id]}%
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-forensics-bg rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-1000 ${
+                        MATCH_SCORES[suspect.id] >= 80
+                          ? 'bg-forensics-red'
+                          : MATCH_SCORES[suspect.id] >= 40
+                          ? 'bg-forensics-orange'
+                          : 'bg-forensics-cyan-dark'
+                      }`}
+                      style={{ width: `${MATCH_SCORES[suspect.id]}%` }}
+                    />
+                  </div>
+                </div>
+
                 {/* Notes indicator */}
                 {suspect.notes && (
                   <div className="mb-3 p-2 bg-forensics-cyan/10 border border-forensics-cyan-dark rounded">
@@ -218,10 +285,21 @@ const SuspectGrid = () => {
                 {/* Actions */}
                 <div className="space-y-2">
                   <button
+                    onClick={() => handlePlayVoice(suspect)}
+                    disabled={!voiceUrls[suspect.id]}
+                    className={`w-full px-3 py-2 font-mono text-sm rounded transition-all border ${
+                      playingId === suspect.id
+                        ? 'bg-forensics-cyan text-forensics-bg border-forensics-cyan font-bold'
+                        : 'bg-forensics-bg border-forensics-cyan-dark text-forensics-cyan hover:border-forensics-cyan'
+                    } disabled:opacity-40 disabled:cursor-not-allowed`}
+                  >
+                    {playingId === suspect.id ? '⏹ STOP VOIX' : '▶ ECOUTER VOIX'}
+                  </button>
+                  <button
                     onClick={() => handleNotesClick(suspect)}
                     className="w-full px-3 py-2 bg-forensics-bg border border-forensics-cyan-dark text-forensics-cyan font-mono text-sm rounded hover:border-forensics-cyan transition-all"
                   >
-                    📝 NOTES
+                    NOTES
                   </button>
                   <button
                     onClick={() => handleIdentify(suspect)}
@@ -278,7 +356,7 @@ const SuspectGrid = () => {
                 ⚠️ CONFIRMATION
               </h3>
               <p className="text-white font-mono mb-6">
-                Êtes-vous certain d'identifier <strong className="text-forensics-cyan">{identifiedSuspect.name}</strong> comme étant le Corbeau ?
+                Êtes-vous certain d'identifier <strong className="text-forensics-cyan">{identifiedSuspect.name}</strong> comme étant Le Corbeau de Quissioux ?
               </p>
               <p className="text-gray-400 font-mono text-sm mb-6">
                 Cette action est irréversible et déterminera le résultat de l'enquête.

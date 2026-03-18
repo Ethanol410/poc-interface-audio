@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { useAudioStore } from '@/stores/audioStore';
+import { audioEngine } from '@/services/audioEngine';
 
 interface WaveformProps {
   audioUrl?: string;
@@ -48,7 +49,6 @@ const Waveform = memo(({
       barRadius: 2,
       height,
       normalize: true,
-      backend: 'WebAudio',
       interact: true,
     });
 
@@ -60,6 +60,11 @@ const Waveform = memo(({
       console.log('Waveform: Prêt !');
       setIsReady(true);
       setDuration(wavesurfer.getDuration());
+      // Route audio through engine's filter/processing chain
+      const mediaEl = wavesurfer.getMediaElement();
+      if (mediaEl) {
+        audioEngine.connectMediaElement(mediaEl);
+      }
       onReady?.();
     });
 
@@ -97,7 +102,11 @@ const Waveform = memo(({
 
     // Load audio
     console.log('Waveform: Chargement de l\'audio...');
-    wavesurfer.load(audioUrl);
+    wavesurfer.load(audioUrl).catch((err: Error) => {
+      if (err?.name !== 'AbortError') {
+        console.error('Wavesurfer load error:', err);
+      }
+    });
 
     // Cleanup
     return () => {
@@ -107,8 +116,9 @@ const Waveform = memo(({
       try {
         wavesurfer.destroy();
       } catch (err) {
-        // Ignore AbortError pendant le cleanup (normal en React StrictMode)
-        if (err instanceof Error && err.name !== 'AbortError') {
+        // Ignore expected WebAudio errors during cleanup (AbortError, InvalidAccessError)
+        const name = err instanceof Error ? err.name : (err as DOMException)?.name ?? '';
+        if (name !== 'AbortError' && name !== 'InvalidAccessError') {
           console.error('Error during wavesurfer cleanup:', err);
         }
       }
