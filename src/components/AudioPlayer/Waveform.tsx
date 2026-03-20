@@ -65,6 +65,7 @@ const Waveform = memo(({
       if (mediaEl) {
         audioEngine.connectMediaElement(mediaEl);
       }
+      audioEngine.setPlayPauseCallback(() => wavesurfer.playPause());
       onReady?.();
     });
 
@@ -112,6 +113,7 @@ const Waveform = memo(({
     return () => {
       isDestroyed = true;
       console.log('Waveform: Nettoyage');
+      audioEngine.setPlayPauseCallback(null);
       // Destroy silencieusement sans propager les erreurs d'abort
       try {
         wavesurfer.destroy();

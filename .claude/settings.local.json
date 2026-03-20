@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \"const p = require\\(''''./node_modules/wavesurfer.js/dist/plugins/spectrogram.js''''\\); console.log\\(Object.keys\\(p\\)\\)\")"
+      "Bash(node -e \"const p = require\\(''''./node_modules/wavesurfer.js/dist/plugins/spectrogram.js''''\\); console.log\\(Object.keys\\(p\\)\\)\")",
+      "Bash(node -e \"const dts = require\\(''fs''\\).readFileSync\\(''./node_modules/@elgato-stream-deck/core/dist/types.d.ts'', ''utf8''\\); console.log\\(dts.slice\\(0, 8000\\)\\)\")",
+      "Bash(node -e \"const dts = require\\(''fs''\\).readFileSync\\(''./node_modules/@elgato-stream-deck/core/dist/controlDefinition.d.ts'', ''utf8''\\); console.log\\(dts\\)\")",
+      "Bash(npm run:*)",
+      "Bash(node:*)"
     ]
   }
 }

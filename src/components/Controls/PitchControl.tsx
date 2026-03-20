@@ -1,15 +1,15 @@
 /**
- * PitchControl Component - Pitch shifting controls and demodulation
+ * PitchControl Component - Pitch shifting controls
  */
 
 import { motion } from 'framer-motion';
 import { useAudioStore } from '@/stores/audioStore';
 import { audioEngine } from '@/services/audioEngine';
-import { useState } from 'react';
+
+const QUICK_ADJUST = [-5, -3, -1, 0, +1, +3, +5];
 
 const PitchControl = () => {
   const { pitchShift, setPitchShift } = useAudioStore();
-  const [isAutoDetecting, setIsAutoDetecting] = useState(false);
 
   const handlePitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const semitones = parseFloat(e.target.value);
@@ -22,26 +22,23 @@ const PitchControl = () => {
     audioEngine.applyPitchShift(0);
   };
 
-  const handleAutoDetect = async () => {
-    setIsAutoDetecting(true);
-    // Simulate auto-detection (would use ML in real implementation)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // Suggest a pitch correction (example: -5 semitones)
-    const suggested = -5;
-    setPitchShift({ semitones: suggested, enabled: true });
-    audioEngine.applyPitchShift(suggested);
-    
-    setIsAutoDetecting(false);
+  const applyAbsolute = (semitones: number) => {
+    if (semitones === 0) {
+      resetPitch();
+      return;
+    }
+    setPitchShift({ semitones, enabled: true });
+    audioEngine.applyPitchShift(semitones);
   };
 
-  // Convert semitones to Hz (approximate, assuming base A4 = 440Hz)
-  const semitonesToHz = (semitones: number) => {
-    const ratio = Math.pow(2, semitones / 12);
-    return Math.round(440 * ratio);
+  const applyRelative = (delta: number) => {
+    const next = Math.max(-12, Math.min(12, pitchShift.semitones + delta));
+    setPitchShift({ semitones: next, enabled: next !== 0 });
+    audioEngine.applyPitchShift(next);
   };
 
-  const pitchHz = semitonesToHz(pitchShift.semitones);
+  // Convert semitones to Hz (approximate, assuming A4 = 440 Hz)
+  const pitchHz = Math.round(440 * Math.pow(2, pitchShift.semitones / 12));
   const isShifted = pitchShift.semitones !== 0;
 
   return (
@@ -49,7 +46,7 @@ const PitchControl = () => {
       {/* Header with status */}
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-bold text-forensics-cyan font-mono">
-          🎵 PITCH SHIFT / DEMODULATION
+          🎵 PITCH SHIFT / DÉMODULATION
         </h4>
         {isShifted && (
           <motion.span
@@ -62,30 +59,7 @@ const PitchControl = () => {
         )}
       </div>
 
-      {/* Auto-detect button */}
-      <motion.button
-        onClick={handleAutoDetect}
-        disabled={isAutoDetecting}
-        className="w-full px-4 py-3 bg-forensics-cyan/10 border-2 border-forensics-cyan text-forensics-cyan font-mono font-bold rounded hover:bg-forensics-cyan hover:text-forensics-bg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        {isAutoDetecting ? (
-          <span className="flex items-center justify-center gap-2">
-            <motion.span
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            >
-              ⚙
-            </motion.span>
-            ANALYSE EN COURS...
-          </span>
-        ) : (
-          '🤖 AUTO-DETECT PITCH'
-        )}
-      </motion.button>
-
-      {/* Manual pitch control */}
+      {/* Current value display */}
       <div className="space-y-3">
         <div className="text-center">
           <motion.div
@@ -102,7 +76,7 @@ const PitchControl = () => {
             <span className="text-lg text-gray-500 ml-2">ST</span>
           </motion.div>
           <div className="text-sm text-gray-500 font-mono mt-1">
-            {pitchHz} Hz {pitchShift.cents > 0 ? `+${pitchShift.cents}` : pitchShift.cents} cents
+            {pitchHz} Hz
           </div>
         </div>
 
@@ -123,56 +97,50 @@ const PitchControl = () => {
         </div>
       </div>
 
-      {/* Quick adjust buttons */}
-      <div className="grid grid-cols-5 gap-2">
-        {[-5, -3, -1].map((value) => (
-          <motion.button
-            key={value}
-            onClick={() => {
-              const newPitch = pitchShift.semitones + value;
-              if (newPitch >= -12 && newPitch <= 12) {
-                setPitchShift({ semitones: newPitch, enabled: newPitch !== 0 });
-                audioEngine.applyPitchShift(newPitch);
-              }
-            }}
-            className="px-2 py-1 bg-forensics-bg-light border border-forensics-cyan-dark text-forensics-cyan font-mono text-xs rounded hover:border-forensics-cyan transition-all"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {value}
-          </motion.button>
-        ))}
-        <motion.button
-          onClick={resetPitch}
-          className="px-2 py-1 bg-forensics-bg-light border border-forensics-cyan-dark text-forensics-cyan font-mono text-xs rounded hover:border-forensics-cyan transition-all"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          0
-        </motion.button>
-        {[+1].map((value) => (
-          <motion.button
-            key={value}
-            onClick={() => {
-              const newPitch = pitchShift.semitones + value;
-              if (newPitch >= -12 && newPitch <= 12) {
-                setPitchShift({ semitones: newPitch, enabled: newPitch !== 0 });
-                audioEngine.applyPitchShift(newPitch);
-              }
-            }}
-            className="px-2 py-1 bg-forensics-bg-light border border-forensics-cyan-dark text-forensics-cyan font-mono text-xs rounded hover:border-forensics-cyan transition-all"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            +{value}
-          </motion.button>
-        ))}
+      {/* Quick set buttons */}
+      <div>
+        <p className="text-xs font-mono text-gray-500 mb-2">VALEUR ABSOLUE</p>
+        <div className="grid grid-cols-7 gap-1">
+          {QUICK_ADJUST.map((value) => (
+            <motion.button
+              key={value}
+              onClick={() => applyAbsolute(value)}
+              className={`px-1 py-1.5 font-mono text-xs rounded transition-all border ${
+                pitchShift.semitones === value
+                  ? 'bg-forensics-cyan/20 border-forensics-cyan text-forensics-cyan font-bold'
+                  : 'bg-forensics-bg-light border-forensics-cyan-dark text-forensics-cyan hover:border-forensics-cyan'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {value > 0 ? `+${value}` : value}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      {/* Relative adjust buttons */}
+      <div>
+        <p className="text-xs font-mono text-gray-500 mb-2">AJUSTEMENT RELATIF</p>
+        <div className="grid grid-cols-4 gap-1">
+          {[-3, -1, +1, +3].map((delta) => (
+            <motion.button
+              key={delta}
+              onClick={() => applyRelative(delta)}
+              className="px-1 py-1.5 bg-forensics-bg-light border border-forensics-cyan-dark text-gray-400 font-mono text-xs rounded hover:border-forensics-cyan hover:text-forensics-cyan transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {delta > 0 ? `+${delta}` : delta}
+            </motion.button>
+          ))}
+        </div>
       </div>
 
       {/* Info */}
       <div className="bg-orange-500/10 border border-orange-500 rounded p-3">
         <p className="text-xs text-orange-400 font-mono">
-          ⚠️ Le Corbeau a probablement modifié sa voix. Ajustez le pitch pour la restaurer.
+          ⚠️ La voix a probablement été modifiée. Ajustez le pitch pour la restaurer. Indice : essayez entre -8 et -2 ST.
         </p>
       </div>
     </div>

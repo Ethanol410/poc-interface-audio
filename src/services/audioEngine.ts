@@ -27,7 +27,19 @@ class AudioEngine {
   private analyserNode: AnalyserNode | null = null;
 
   private isInitialized = false;
-  private listeners: Map<string, Set<Function>> = new Map();
+  private listeners: Map<string, Set<(data?: unknown) => void>> = new Map();
+  private playPauseCallback: (() => void) | null = null;
+
+  // Combined pitch+speed state
+  private currentPitchSemitones = 0;
+  private currentPlaybackSpeed = 1;
+
+  // Per-element sources (suspects share the same filter chain)
+  private suspectSources: Map<HTMLMediaElement, MediaElementAudioSourceNode> = new Map();
+
+  // A/B bypass nodes (inserted when comparison mode is OFF = bypass filters)
+  private bypassNode: GainNode | null = null;
+  private isInBypassMode = false;
 
   private constructor() {}
 
@@ -98,6 +110,10 @@ class AudioEngine {
       this.gainNode.connect(this.analyserNode);
       this.analyserNode.connect(this.context.destination);
 
+      // Bypass node for A/B comparison (direct path: source → gain → analyser)
+      this.bypassNode = this.context.createGain();
+      this.bypassNode.gain.value = 0; // off by default
+
       this.isInitialized = true;
       this.emit('initialized');
     } catch (error) {
@@ -130,11 +146,30 @@ class AudioEngine {
       this.mediaElement = element;
       this.mediaSource = this.context.createMediaElementSource(element);
       this.mediaSource.connect(this.lpFilterNode);
+      if (this.bypassNode) this.mediaSource.connect(this.bypassNode);
+      if (this.bypassNode && this.analyserNode) this.bypassNode.connect(this.analyserNode);
       console.log('AudioEngine: media element connected to filter chain');
       this.emit('connected');
     } catch (err) {
       // createMediaElementSource() throws if called twice for the same element
       console.warn('AudioEngine: connectMediaElement error (element may already be connected):', err);
+    }
+  }
+
+  /**
+   * Connect a suspect audio element to the same filter chain.
+   * Safe to call multiple times for the same element (creates source only once).
+   */
+  public connectSuspectElement(element: HTMLMediaElement): void {
+    if (!this.isInitialized || !this.context || !this.lpFilterNode) return;
+    if (this.suspectSources.has(element)) return;
+    try {
+      const source = this.context.createMediaElementSource(element);
+      source.connect(this.lpFilterNode);
+      if (this.bypassNode) source.connect(this.bypassNode);
+      this.suspectSources.set(element, source);
+    } catch (err) {
+      console.warn('AudioEngine: connectSuspectElement error:', err);
     }
   }
 
@@ -155,6 +190,21 @@ class AudioEngine {
   /** No-op: WaveSurfer handles pause */
   public pause(): void {
     this.emit('pause');
+  }
+
+  /**
+   * Register a callback to toggle playback (e.g., WaveSurfer's playPause).
+   * Used by external controllers like Stream Deck.
+   */
+  public setPlayPauseCallback(fn: (() => void) | null): void {
+    this.playPauseCallback = fn;
+  }
+
+  /**
+   * Toggle playback via the registered callback.
+   */
+  public triggerPlayPause(): void {
+    this.playPauseCallback?.();
   }
 
   /** No-op: WaveSurfer handles seek */
@@ -250,26 +300,31 @@ class AudioEngine {
   }
 
   /**
-   * Set playback speed (0.25x to 2x).
+   * Combine current speed and pitch into a single playbackRate.
+   * playbackRate = speedFactor × 2^(semitones/12)
+   */
+  private updatePlaybackRate(): void {
+    if (!this.mediaElement) return;
+    const combined = this.currentPlaybackSpeed * Math.pow(2, this.currentPitchSemitones / 12);
+    this.mediaElement.playbackRate = Math.max(0.0625, Math.min(8, combined));
+  }
+
+  /**
+   * Set playback speed (0.25x to 2x). Combined with current pitch.
    */
   public setPlaybackSpeed(rate: number): void {
-    if (this.mediaElement) {
-      this.mediaElement.playbackRate = Math.max(0.25, Math.min(2, rate));
-    }
+    this.currentPlaybackSpeed = Math.max(0.25, Math.min(2, rate));
+    this.updatePlaybackRate();
     this.emit('playbackSpeed', rate);
   }
 
   /**
-   * Apply pitch shift via playback rate.
+   * Apply pitch shift in semitones. Combined with current speed.
    * Note: changes speed + pitch together (HTML media element limitation).
-   * A rate of 2^(semitones/12) converts semitones to playback rate.
    */
   public applyPitchShift(semitones: number): void {
-    if (this.mediaElement) {
-      const rate = Math.pow(2, semitones / 12);
-      // Clamp to reasonable range to avoid browser errors
-      this.mediaElement.playbackRate = Math.max(0.25, Math.min(4, rate));
-    }
+    this.currentPitchSemitones = semitones;
+    this.updatePlaybackRate();
     this.emit('pitchShift', semitones);
   }
 
@@ -283,14 +338,26 @@ class AudioEngine {
   }
 
   /**
-   * A/B comparison toggle (no-op in simplified engine)
+   * A/B comparison: when bypass=true, signal routes directly to analyser (no filters).
+   * Implemented by fading the bypass gain in/out.
    */
-  public toggleComparison(_useProcessed: boolean): void {
-    this.emit('comparison', _useProcessed);
+  public toggleComparison(useProcessed: boolean): void {
+    if (!this.bypassNode || !this.gainNode) return;
+    this.isInBypassMode = !useProcessed;
+    if (this.isInBypassMode) {
+      // Bypass mode: mute filter chain output, open bypass path
+      this.gainNode.gain.value = 0;
+      this.bypassNode.gain.value = 0.8;
+    } else {
+      // Processed mode: restore filter chain output, mute bypass
+      this.gainNode.gain.value = 0.8;
+      this.bypassNode.gain.value = 0;
+    }
+    this.emit('comparison', useProcessed);
   }
 
   public isInProcessedMode(): boolean {
-    return true;
+    return !this.isInBypassMode;
   }
 
   /**
@@ -330,13 +397,13 @@ class AudioEngine {
    */
   public cleanup(): void {
     if (this.mediaSource) {
-      try {
-        this.mediaSource.disconnect();
-      } catch {
-        /* ignore */
-      }
+      try { this.mediaSource.disconnect(); } catch { /* ignore */ }
       this.mediaSource = null;
     }
+    this.suspectSources.forEach((source) => {
+      try { source.disconnect(); } catch { /* ignore */ }
+    });
+    this.suspectSources.clear();
     this.mediaElement = null;
     this.lpFilterNode = null;
     this.hpFilterNode = null;
@@ -344,8 +411,12 @@ class AudioEngine {
     this.notchNode = null;
     this.compressorNode = null;
     this.gainNode = null;
+    this.bypassNode = null;
     this.analyserNode = null;
     this.isInitialized = false;
+    this.currentPitchSemitones = 0;
+    this.currentPlaybackSpeed = 1;
+    this.isInBypassMode = false;
     this.listeners.clear();
   }
 
@@ -357,14 +428,14 @@ class AudioEngine {
     }
   }
 
-  public on(event: string, callback: Function): void {
+  public on(event: string, callback: (data?: unknown) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
   }
 
-  public off(event: string, callback: Function): void {
+  public off(event: string, callback: (data?: unknown) => void): void {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
       callbacks.delete(callback);

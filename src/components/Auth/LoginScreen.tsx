@@ -1,22 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAudioStore } from '@/stores/audioStore';
+import { getScenario } from '@/data/scenarios';
 
 const LoginScreen = () => {
   const [matricule, setMatricule] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { scenario: scenarioId } = useAudioStore();
+  const scenario = getScenario(scenarioId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simple validation
     if (matricule.length >= 4) {
-      // Store session
       sessionStorage.setItem('agent-matricule', matricule);
-      
-      // Navigate to workspace after delay
       setTimeout(() => {
         navigate('/workspace');
       }, 1500);
@@ -39,7 +39,7 @@ const LoginScreen = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            DOSSIER 84-V
+            {scenario.subtitle.split('—')[0].trim()}
           </motion.h1>
           <motion.p
             className="text-red-500 text-sm font-mono uppercase tracking-wider"
@@ -90,16 +90,13 @@ const LoginScreen = () => {
             </motion.button>
           </form>
 
-          {/* Info text */}
           <motion.p
             className="mt-6 text-gray-400 text-xs font-mono text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.7 }}
             transition={{ delay: 0.6 }}
           >
-            Division Criminalistique Audio
-            <br />
-            Section Analyse Forensique
+            {scenario.subtitle.split('—')[1]?.trim() ?? 'Division Criminalistique Audio'}
           </motion.p>
         </motion.div>
 
@@ -111,9 +108,9 @@ const LoginScreen = () => {
           transition={{ delay: 0.8 }}
         >
           <p className="text-gray-500 text-sm font-mono">
-            Mission: Identifier le Corbeau
+            Mission : {scenario.missionBrief.mission}
             <br />
-            Enregistrement: Message vocal modifié
+            Preuve : {scenario.missionBrief.evidence}
           </p>
         </motion.div>
       </motion.div>

@@ -89,3 +89,51 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #0099cc;
 }
+
+/* ── Print / PDF export ── */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Hide everything except the rapport */
+  body > * {
+    display: none !important;
+  }
+
+  #rapport-pdf,
+  #rapport-pdf * {
+    display: revert !important;
+    visibility: visible !important;
+  }
+
+  #rapport-pdf {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Force colors to print nicely */
+  #rapport-pdf h1,
+  #rapport-pdf h2,
+  #rapport-pdf h3 {
+    color: #000000 !important;
+  }
+
+  #rapport-pdf .text-forensics-green { color: #007744 !important; }
+  #rapport-pdf .text-forensics-cyan  { color: #006688 !important; }
+  #rapport-pdf .text-red-500         { color: #cc0000 !important; }
+  #rapport-pdf .text-gray-300,
+  #rapport-pdf .text-gray-400        { color: #444444 !important; }
+
+  #rapport-pdf [class*="border"]     { border-color: #888888 !important; }
+  #rapport-pdf [class*="bg-"]        { background: transparent !important; }
+
+  .print\:hidden { display: none !important; }
+}

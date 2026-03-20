@@ -57,6 +57,23 @@ export const audioManifest: AudioFile[] = [
     description: 'Échantillon vocal du suspect C pour comparaison',
     tags: ['suspect', 'comparison'],
   },
+  {
+    id: 'suspect-voice-04',
+    name: 'Voix Suspect D',
+    url: '/audio/suspect-04.mp3',
+    duration: 15,
+    description: 'Échantillon vocal du suspect D pour comparaison',
+    tags: ['suspect', 'comparison'],
+  },
+  {
+    id: 'evidence-reverse',
+    name: 'Message Inversé',
+    url: '/audio/evidence-reverse.wav',
+    duration: 25,
+    description: 'Enregistrement inversé — révèle le message caché "Prenez le train de 14h15"',
+    isOriginal: false,
+    tags: ['evidence', 'reverse'],
+  },
 ];
 
 /**

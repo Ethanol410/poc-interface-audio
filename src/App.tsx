@@ -34,9 +34,11 @@ function AudioSetupWrapper() {
   const handleAudiosReady = (urls: {
     evidenceDistorted: string;
     evidenceClean: string;
+    evidenceReverse?: string;
     suspect1: string;
     suspect2: string;
     suspect3: string;
+    suspect4?: string;
   }) => {
     setAudioUrls(urls);
     navigate('/');

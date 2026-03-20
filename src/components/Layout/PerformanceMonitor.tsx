@@ -56,7 +56,7 @@ const PerformanceMonitor = memo(() => {
     // Memory tracking (if available)
     const updateMemory = () => {
       if ('memory' in performance) {
-        const perfMemory = (performance as any).memory;
+        const perfMemory = (performance as Performance & { memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
         setMetrics((prev) => ({
           ...prev,
           memory: {

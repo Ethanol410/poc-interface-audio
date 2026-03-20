@@ -5,10 +5,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AudioState, FilterConfig, PitchShiftConfig, CompressorConfig } from '@/types/audio';
+import type { ScenarioId } from '@/data/scenarios';
 
 interface AudioUrls {
   evidenceDistorted: string;
   evidenceClean: string;
+  evidenceReverse?: string;
   suspect1: string;
   suspect2: string;
   suspect3: string;
@@ -50,10 +52,6 @@ interface AudioStore extends AudioState {
   playbackSpeed: number;
   setPlaybackSpeed: (speed: number) => void;
 
-  // Analysis progress
-  analysisProgress: number;
-  setAnalysisProgress: (progress: number) => void;
-
   // Comparison mode
   isComparisonMode: boolean;
   toggleComparisonMode: () => void;
@@ -62,10 +60,26 @@ interface AudioStore extends AudioState {
   isReversed: boolean;
   toggleReverse: () => void;
 
+  // Suspect notes (persisted)
+  suspectNotes: Record<string, string>;
+  setSuspectNote: (suspectId: string, note: string) => void;
+
   // Discovered clues (pedagogical HUD)
   discoveredClues: string[];
   addClue: (clue: string) => void;
   resetClues: () => void;
+
+  // Scenario
+  scenario: ScenarioId;
+  setScenario: (scenario: ScenarioId) => void;
+
+  // Mission timer
+  missionTimerEnabled: boolean;
+  missionDuration: number; // seconds
+  missionStartTime: number | null; // timestamp ms
+  setMissionTimerEnabled: (enabled: boolean) => void;
+  setMissionDuration: (duration: number) => void;
+  setMissionStartTime: (time: number | null) => void;
 
   // Reset state
   reset: () => void;
@@ -114,10 +128,14 @@ const initialState = {
     ratio: 4,
   },
   playbackSpeed: 1,
-  analysisProgress: 0,
+  suspectNotes: {} as Record<string, string>,
   isComparisonMode: false,
   isReversed: false,
   discoveredClues: [] as string[],
+  scenario: 'corbeau' as ScenarioId,
+  missionTimerEnabled: false,
+  missionDuration: 480,
+  missionStartTime: null as number | null,
 };
 
 export const useAudioStore = create<AudioStore>()(
@@ -173,8 +191,11 @@ export const useAudioStore = create<AudioStore>()(
       // Playback speed actions
       setPlaybackSpeed: (playbackSpeed) => set({ playbackSpeed }),
 
-      // Analysis actions
-      setAnalysisProgress: (analysisProgress) => set({ analysisProgress }),
+      // Suspect notes actions
+      setSuspectNote: (suspectId, note) =>
+        set((state) => ({
+          suspectNotes: { ...state.suspectNotes, [suspectId]: note },
+        })),
 
       // Comparison actions
       toggleComparisonMode: () =>
@@ -193,6 +214,14 @@ export const useAudioStore = create<AudioStore>()(
         })),
       resetClues: () => set({ discoveredClues: [] }),
 
+      // Scenario actions
+      setScenario: (scenario) => set({ scenario }),
+
+      // Mission timer actions
+      setMissionTimerEnabled: (missionTimerEnabled) => set({ missionTimerEnabled }),
+      setMissionDuration: (missionDuration) => set({ missionDuration }),
+      setMissionStartTime: (missionStartTime) => set({ missionStartTime }),
+
       // Reset
       reset: () => set(initialState),
     }),
@@ -207,6 +236,7 @@ export const useAudioStore = create<AudioStore>()(
         compressor: state.compressor,
         pitchShift: state.pitchShift,
         playbackSpeed: state.playbackSpeed,
+        suspectNotes: state.suspectNotes,
       }),
     }
   )

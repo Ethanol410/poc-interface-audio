@@ -28,16 +28,16 @@ export const usePerformance = ({
   useEffect(() => {
     startTimeRef.current = performance.now();
     renderCountRef.current += 1;
+    const renderTimes = renderTimesRef.current;
 
     return () => {
       const endTime = performance.now();
       const renderTime = endTime - startTimeRef.current;
-      
-      renderTimesRef.current.push(renderTime);
+      renderTimes.push(renderTime);
       
       // Keep only last 50 render times
-      if (renderTimesRef.current.length > 50) {
-        renderTimesRef.current.shift();
+      if (renderTimes.length > 50) {
+        renderTimes.shift();
       }
 
       // Log if enabled

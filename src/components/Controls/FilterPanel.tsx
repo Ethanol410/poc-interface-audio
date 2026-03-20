@@ -22,6 +22,7 @@ const FilterPanel = () => {
     notchFilter, setNotchFilter,
     compressor, setCompressor,
     playbackSpeed, setPlaybackSpeed,
+    volume, setVolume,
   } = useAudioStore();
 
   const handleToggleReverse = () => {
@@ -74,6 +75,36 @@ const FilterPanel = () => {
     audioEngine.setPlaybackSpeed(speed);
   };
 
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const vol = parseFloat(e.target.value);
+    setVolume(vol);
+    audioEngine.setVolume(vol);
+  };
+
+  const handleLowPassQChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = parseFloat(e.target.value);
+    updateLowPassFilter({ q });
+  };
+
+  const handleHighPassQChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = parseFloat(e.target.value);
+    updateHighPassFilter({ q });
+  };
+
+  const handleBandPassQChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = parseFloat(e.target.value);
+    const next = { ...bandPassFilter, q };
+    setBandPassFilter({ q });
+    audioEngine.applyBandPassFilter(next);
+  };
+
+  const handleNotchQChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = parseFloat(e.target.value);
+    const next = { ...notchFilter, q };
+    setNotchFilter({ q });
+    audioEngine.applyNotchFilter(next);
+  };
+
   const handleLowPassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const frequency = parseFloat(e.target.value);
     updateLowPassFilter({ frequency, enabled: true });
@@ -94,6 +125,25 @@ const FilterPanel = () => {
 
   return (
     <div className="filter-panel space-y-6">
+      {/* Volume */}
+      <div className="space-y-2">
+        <h4 className="text-sm font-bold text-forensics-cyan font-mono">VOLUME MASTER</h4>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={volume}
+          onChange={handleVolumeChange}
+          className="w-full accent-forensics-cyan"
+        />
+        <div className="flex justify-between text-xs font-mono text-gray-500">
+          <span>0%</span>
+          <span className="text-forensics-cyan font-bold">{Math.round(volume * 100)}%</span>
+          <span>100%</span>
+        </div>
+      </div>
+
       {/* Reverse Button */}
       <div>
         <h4 className="text-sm font-bold text-forensics-cyan font-mono mb-3">
@@ -187,6 +237,20 @@ const FilterPanel = () => {
             </span>
             <span>20 kHz</span>
           </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs font-mono text-gray-600 w-4">Q</span>
+            <input
+              type="range"
+              min="0.1"
+              max="20"
+              step="0.1"
+              value={lowPassFilter.q}
+              onChange={handleLowPassQChange}
+              className="flex-1 accent-forensics-cyan"
+              disabled={!lowPassFilter.enabled}
+            />
+            <span className="text-xs font-mono text-gray-500 w-8 text-right">{lowPassFilter.q.toFixed(1)}</span>
+          </div>
         </div>
         <p className="text-xs text-gray-500 font-mono">
           Filtre les fréquences au-dessus de la valeur définie
@@ -231,6 +295,20 @@ const FilterPanel = () => {
             </span>
             <span>2 kHz</span>
           </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs font-mono text-gray-600 w-4">Q</span>
+            <input
+              type="range"
+              min="0.1"
+              max="20"
+              step="0.1"
+              value={highPassFilter.q}
+              onChange={handleHighPassQChange}
+              className="flex-1 accent-forensics-cyan"
+              disabled={!highPassFilter.enabled}
+            />
+            <span className="text-xs font-mono text-gray-500 w-8 text-right">{highPassFilter.q.toFixed(1)}</span>
+          </div>
         </div>
         <p className="text-xs text-gray-500 font-mono">
           Filtre les fréquences en-dessous de la valeur définie
@@ -268,6 +346,20 @@ const FilterPanel = () => {
             <span className="text-forensics-cyan font-bold">{Math.round(bandPassFilter.frequency)} Hz</span>
             <span>4 kHz</span>
           </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs font-mono text-gray-600 w-4">Q</span>
+            <input
+              type="range"
+              min="0.1"
+              max="30"
+              step="0.1"
+              value={bandPassFilter.q}
+              onChange={handleBandPassQChange}
+              className="flex-1 accent-forensics-cyan"
+              disabled={!bandPassFilter.enabled}
+            />
+            <span className="text-xs font-mono text-gray-500 w-8 text-right">{bandPassFilter.q.toFixed(1)}</span>
+          </div>
         </div>
         <p className="text-xs text-gray-500 font-mono">
           Isole la plage vocale — révèle le locuteur
@@ -304,6 +396,20 @@ const FilterPanel = () => {
             <span>20 Hz</span>
             <span className="text-forensics-cyan font-bold">{Math.round(notchFilter.frequency)} Hz</span>
             <span>300 Hz</span>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs font-mono text-gray-600 w-4">Q</span>
+            <input
+              type="range"
+              min="1"
+              max="50"
+              step="1"
+              value={notchFilter.q}
+              onChange={handleNotchQChange}
+              className="flex-1 accent-forensics-cyan"
+              disabled={!notchFilter.enabled}
+            />
+            <span className="text-xs font-mono text-gray-500 w-8 text-right">{notchFilter.q.toFixed(0)}</span>
           </div>
         </div>
         <p className="text-xs text-gray-500 font-mono">

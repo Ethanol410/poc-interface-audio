@@ -1,0 +1,95 @@
+/**
+ * StreamDeckPanel — collapsible UI panel for Stream Deck+ connection control.
+ * Shows in the Dashboard sidebar.
+ */
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useStreamDeck } from '@/hooks/useStreamDeck';
+
+const StreamDeckPanel = () => {
+  const { isConnected, isSupported, error, connect, disconnect } = useStreamDeck();
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg overflow-hidden">
+      {/* Header / toggle */}
+      <button
+        onClick={() => setIsOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-forensics-cyan font-mono tracking-wider">
+            STREAM DECK+
+          </span>
+          {isConnected && (
+            <span className="w-2 h-2 rounded-full bg-forensics-green animate-pulse" />
+          )}
+        </div>
+        <span className="text-gray-500 text-xs font-mono">
+          {isOpen ? '▲' : '▼'}
+        </span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-1 space-y-3">
+              {!isSupported ? (
+                <p className="text-xs font-mono text-gray-500">
+                  WebHID non disponible.
+                  <br />
+                  Utilisez Chrome ou Edge.
+                </p>
+              ) : isConnected ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-forensics-green" />
+                    <span className="text-xs font-mono text-forensics-green">
+                      Stream Deck connecté
+                    </span>
+                  </div>
+                  <div className="text-[10px] font-mono text-gray-500 space-y-0.5">
+                    <div>● Boutons 0-6 : toggles filtres / lecture</div>
+                    <div>● Bouton 7 : cycle presets</div>
+                    <div>● Molettes : Vol / LPF / HPF / Pitch</div>
+                    <div>● Push molettes : mute / toggle / reset</div>
+                  </div>
+                  <button
+                    onClick={disconnect}
+                    className="w-full py-1.5 text-xs font-mono font-bold border border-red-500/50 text-red-400 rounded hover:bg-red-500/10 transition-colors"
+                  >
+                    Déconnecter
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-[11px] font-mono text-gray-400">
+                    Fermez le logiciel Elgato avant de connecter.
+                  </p>
+                  {error && (
+                    <p className="text-[11px] font-mono text-red-400">{error}</p>
+                  )}
+                  <button
+                    onClick={connect}
+                    className="w-full py-2 text-xs font-mono font-bold bg-forensics-cyan/10 border border-forensics-cyan text-forensics-cyan rounded hover:bg-forensics-cyan/20 transition-colors"
+                  >
+                    Connecter Stream Deck
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default StreamDeckPanel;

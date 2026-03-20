@@ -33,9 +33,9 @@ export const useAudioControls = () => {
     // Keep stable references so we can remove them on unmount
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
-    const onLoading = (v: boolean) => setIsLoading(v);
-    const onLoaded = (buffer: any) => setDuration(buffer.duration);
-    const onError = (error: any) => setError(error?.message || 'Audio error');
+    const onLoading = (data?: unknown) => setIsLoading(data as boolean);
+    const onLoaded = (data?: unknown) => setDuration((data as { duration: number }).duration);
+    const onError = (data?: unknown) => setError((data as Error | null)?.message || 'Audio error');
 
     audioEngine.on('play', onPlay);
     audioEngine.on('pause', onPause);
