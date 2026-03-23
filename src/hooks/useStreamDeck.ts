@@ -10,6 +10,7 @@ export const useStreamDeck = () => {
     typeof navigator !== 'undefined' && 'hid' in navigator;
 
   const [isConnected, setIsConnected] = useState(streamDeckService.isConnected);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,10 +35,13 @@ export const useStreamDeck = () => {
 
   const connect = useCallback(async () => {
     setError(null);
+    setIsConnecting(true);
     try {
       await streamDeckService.requestAndConnect();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Connexion échouée');
+    } finally {
+      setIsConnecting(false);
     }
   }, []);
 
@@ -45,5 +49,5 @@ export const useStreamDeck = () => {
     streamDeckService.disconnect();
   }, []);
 
-  return { isConnected, isSupported, error, connect, disconnect };
+  return { isConnected, isConnecting, isSupported, error, connect, disconnect };
 };

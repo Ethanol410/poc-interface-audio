@@ -81,6 +81,16 @@ interface AudioStore extends AudioState {
   setMissionDuration: (duration: number) => void;
   setMissionStartTime: (time: number | null) => void;
 
+  // Suspect popup (Stream Deck → écran)
+  suspectPopupIndex: number | null;
+  setSuspectPopupIndex: (index: number | null) => void;
+  suspectPlayingIndex: number; // -1 = aucun
+  setSuspectPlayingIndex: (index: number) => void;
+
+  // Voice pitch for suspects (playbackRate)
+  suspectVoicePitch: number;
+  setSuspectVoicePitch: (pitch: number) => void;
+
   // Reset state
   reset: () => void;
 }
@@ -129,6 +139,9 @@ const initialState = {
   },
   playbackSpeed: 1,
   suspectNotes: {} as Record<string, string>,
+  suspectPopupIndex: null as number | null,
+  suspectPlayingIndex: -1,
+  suspectVoicePitch: 1.0,
   isComparisonMode: false,
   isReversed: false,
   discoveredClues: [] as string[],
@@ -197,6 +210,11 @@ export const useAudioStore = create<AudioStore>()(
           suspectNotes: { ...state.suspectNotes, [suspectId]: note },
         })),
 
+      // Suspect popup / playing state
+      setSuspectPopupIndex: (suspectPopupIndex) => set({ suspectPopupIndex }),
+      setSuspectPlayingIndex: (suspectPlayingIndex) => set({ suspectPlayingIndex }),
+      setSuspectVoicePitch: (suspectVoicePitch) => set({ suspectVoicePitch }),
+
       // Comparison actions
       toggleComparisonMode: () =>
         set((state) => ({ isComparisonMode: !state.isComparisonMode })),
@@ -237,6 +255,7 @@ export const useAudioStore = create<AudioStore>()(
         pitchShift: state.pitchShift,
         playbackSpeed: state.playbackSpeed,
         suspectNotes: state.suspectNotes,
+        suspectVoicePitch: state.suspectVoicePitch,
       }),
     }
   )

@@ -8,6 +8,7 @@ import { streamDeckSuspectService } from '@/services/streamdeck/StreamDeckSuspec
 export const useStreamDeckSuspect = () => {
   const isSupported = typeof navigator !== 'undefined' && 'hid' in navigator;
   const [isConnected, setIsConnected] = useState(streamDeckSuspectService.isConnected);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,10 +33,13 @@ export const useStreamDeckSuspect = () => {
 
   const connect = useCallback(async () => {
     setError(null);
+    setIsConnecting(true);
     try {
       await streamDeckSuspectService.requestAndConnect();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Connexion échouée');
+    } finally {
+      setIsConnecting(false);
     }
   }, []);
 
@@ -43,5 +47,5 @@ export const useStreamDeckSuspect = () => {
     streamDeckSuspectService.disconnect();
   }, []);
 
-  return { isConnected, isSupported, error, connect, disconnect };
+  return { isConnected, isConnecting, isSupported, error, connect, disconnect };
 };

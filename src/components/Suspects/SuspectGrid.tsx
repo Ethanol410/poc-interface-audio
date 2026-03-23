@@ -61,7 +61,7 @@ const NotesModal = ({ suspect, initialNote, onClose, onSave }: NotesModalProps) 
 
 const SuspectGrid = () => {
   const navigate = useNavigate();
-  const { audioUrls, scenario: scenarioId, suspectNotes, setSuspectNote } = useAudioStore();
+  const { audioUrls, scenario: scenarioId, suspectNotes, setSuspectNote, suspectVoicePitch } = useAudioStore();
   const scenario = getScenario(scenarioId);
 
   const [suspects, setSuspects] = useState<Suspect[]>(
@@ -117,6 +117,7 @@ const SuspectGrid = () => {
     }
 
     const el = getOrCreateAudioElement(suspect.id, url);
+    el.playbackRate = suspectVoicePitch;
     // Route through the filter chain
     audioEngine.connectSuspectElement(el);
     el.play();

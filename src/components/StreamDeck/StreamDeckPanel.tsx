@@ -6,9 +6,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStreamDeck } from '@/hooks/useStreamDeck';
+import Spinner from '@/components/Layout/Spinner';
 
 const StreamDeckPanel = () => {
-  const { isConnected, isSupported, error, connect, disconnect } = useStreamDeck();
+  const { isConnected, isConnecting, isSupported, error, connect, disconnect } = useStreamDeck();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -78,9 +79,14 @@ const StreamDeckPanel = () => {
                   )}
                   <button
                     onClick={connect}
-                    className="w-full py-2 text-xs font-mono font-bold bg-forensics-cyan/10 border border-forensics-cyan text-forensics-cyan rounded hover:bg-forensics-cyan/20 transition-colors"
+                    disabled={isConnecting}
+                    className="w-full py-2 text-xs font-mono font-bold bg-forensics-cyan/10 border border-forensics-cyan text-forensics-cyan rounded hover:bg-forensics-cyan/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    Connecter Stream Deck
+                    {isConnecting ? (
+                      <Spinner size="sm" color="border-forensics-cyan" label="Connexion..." />
+                    ) : (
+                      'Connecter Stream Deck'
+                    )}
                   </button>
                 </>
               )}

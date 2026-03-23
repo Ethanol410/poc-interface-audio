@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { useAudioStore } from '@/stores/audioStore';
 import { audioEngine } from '@/services/audioEngine';
+import Spinner from '@/components/Layout/Spinner';
 
 interface WaveformProps {
   audioUrl?: string;
@@ -144,9 +145,7 @@ const Waveform = memo(({
       />
       {!isReady && !error && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-forensics-cyan font-mono text-sm animate-pulse">
-            Chargement waveform...
-          </span>
+          <Spinner size="md" color="border-forensics-cyan" label="Chargement waveform..." />
         </div>
       )}
       {error && (

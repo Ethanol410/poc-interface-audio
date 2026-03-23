@@ -98,7 +98,7 @@ function App() {
           </Suspense>
         </AnimatePresence>
       </Router>
-      <PerformanceMonitor />
+      {/* <PerformanceMonitor /> */}
     </ErrorBoundary>
   );
 }

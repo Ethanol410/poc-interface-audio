@@ -94,6 +94,10 @@ class StreamDeckSuspectService {
         this.disconnect();
         return;
       }
+      // Mise à jour en temps réel du pitch vocal
+      if (state.suspectVoicePitch !== prevState.suspectVoicePitch && this.player) {
+        this.player.playbackRate = state.suspectVoicePitch;
+      }
       this.syncDebounced();
     });
 
@@ -112,6 +116,7 @@ class StreamDeckSuspectService {
         this.toggleSuspect(btn.index);
       } else if (btn.index === STOP_BUTTON_INDEX) {
         this.stopSuspect();
+        useAudioStore.getState().setSuspectPopupIndex(null);
       }
     });
 
@@ -120,42 +125,51 @@ class StreamDeckSuspectService {
     });
   }
 
-  private toggleSuspect(suspectButtonIndex: number): void {
+  public toggleSuspect(suspectButtonIndex: number): void {
+    const store = useAudioStore.getState();
+    // Toujours ouvrir le popup sur ce suspect
+    store.setSuspectPopupIndex(suspectButtonIndex);
+
     if (this.playingSuspectIndex === suspectButtonIndex) {
-      this.stopSuspect();
+      this.stopSuspect(/* silent */ false, /* keepPopup */ true);
       return;
     }
 
-    const state = useAudioStore.getState();
     const key: SuspectKey = SUSPECT_AUDIO_KEYS[suspectButtonIndex];
-    const url = state.audioUrls?.[key];
+    const url = store.audioUrls?.[key];
     if (!url) return;
 
-    this.stopSuspect(/* silent */ true);
+    this.stopSuspect(/* silent */ true, /* keepPopup */ true);
 
     this.player = new Audio(url);
-    this.player.volume = state.volume;
+    this.player.volume = store.volume;
+    this.player.playbackRate = store.suspectVoicePitch;
     this.playingSuspectIndex = suspectButtonIndex;
+    store.setSuspectPlayingIndex(suspectButtonIndex);
 
     this.player.onended = () => {
       this.playingSuspectIndex = -1;
+      useAudioStore.getState().setSuspectPlayingIndex(-1);
       this.syncDebounced();
     };
 
     this.player.play().catch(() => {
       this.playingSuspectIndex = -1;
+      useAudioStore.getState().setSuspectPlayingIndex(-1);
     });
 
     this.syncDebounced();
   }
 
-  private stopSuspect(silent = false): void {
+  public stopSuspect(silent = false, keepPopup = false): void {
     if (this.player) {
       this.player.pause();
       this.player.src = '';
       this.player = null;
     }
     this.playingSuspectIndex = -1;
+    useAudioStore.getState().setSuspectPlayingIndex(-1);
+    if (!keepPopup) useAudioStore.getState().setSuspectPopupIndex(null);
     if (!silent) this.syncDebounced();
   }
 

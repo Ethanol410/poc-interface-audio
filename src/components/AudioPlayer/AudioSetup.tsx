@@ -10,6 +10,7 @@ import { generateAllTestAudios, reverseAudioBlob, createAudioURL } from '@/utils
 import { useAudioStore } from '@/stores/audioStore';
 import type { ScenarioId } from '@/data/scenarios';
 import { SCENARIOS } from '@/data/scenarios';
+import Spinner from '@/components/Layout/Spinner';
 
 interface AudioSetupProps {
   onAudiosReady: (audioUrls: {
@@ -290,7 +291,11 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                     disabled={isGenerating}
                     className="w-full py-3 px-4 bg-forensics-cyan hover:bg-white text-forensics-bg font-bold font-mono rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isGenerating ? '⏳ Génération...' : '🚀 GÉNÉRER & DÉMARRER'}
+                    {isGenerating ? (
+                      <Spinner size="sm" color="border-forensics-bg" label="Génération..." />
+                    ) : (
+                      '🚀 GÉNÉRER & DÉMARRER'
+                    )}
                   </button>
                 </motion.div>
 
@@ -353,7 +358,13 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                     disabled={!uploadedFiles.evidence || isGenerating}
                     className="w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 text-gray-200 font-bold font-mono rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    {isGenerating ? '⏳ Inversion audio...' : uploadedFiles.evidence ? '✓ UTILISER MES FICHIERS' : '⚠ Fichier requis'}
+                    {isGenerating ? (
+                      <Spinner size="sm" color="border-gray-200" label="Inversion audio..." />
+                    ) : uploadedFiles.evidence ? (
+                      '✓ UTILISER MES FICHIERS'
+                    ) : (
+                      '⚠ Fichier requis'
+                    )}
                   </button>
                 </motion.div>
               </div>
