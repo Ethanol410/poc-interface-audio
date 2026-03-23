@@ -4,7 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import AppLayout from './components/Layout/AppLayout';
 import LoadingScreen from './components/Layout/LoadingScreen';
 import ErrorBoundary from './components/Layout/ErrorBoundary';
-import PerformanceMonitor from './components/Layout/PerformanceMonitor';
+// import PerformanceMonitor from './components/Layout/PerformanceMonitor';
 import { AudioSetup } from './components/AudioPlayer/AudioSetup';
 import { useAudioStore } from './stores/audioStore';
 import { useNavigate } from 'react-router-dom';
