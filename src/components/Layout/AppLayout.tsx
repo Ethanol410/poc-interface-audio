@@ -3,14 +3,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import OfflineIndicator from './OfflineIndicator';
 import SuspectPopupModal from '@/components/Suspects/SuspectPopupModal';
 import { useAudioStore } from '@/stores/audioStore';
+import { useScenarioTheme } from '@/hooks/useScenarioTheme';
 
 const AppLayout = () => {
   const isLoading = useAudioStore((state) => state.isLoading);
+  const { isBrainCity } = useScenarioTheme();
 
   return (
-    <div className="min-h-screen bg-forensics-bg relative overflow-hidden">
-      {/* Scanlines overlay */}
-      <div className="scanlines" />
+    <div
+      className={`min-h-screen relative overflow-hidden ${
+        isBrainCity
+          ? 'bg-gradient-to-br from-braincity-bg to-braincity-bg-end'
+          : 'bg-forensics-bg'
+      }`}
+    >
+      {!isBrainCity && <div className="scanlines" />}
       
       {/* Barre de chargement audio */}
       <AnimatePresence>

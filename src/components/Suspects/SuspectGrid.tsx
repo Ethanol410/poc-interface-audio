@@ -5,6 +5,8 @@ import type { Suspect } from '@/types/suspects';
 import { useAudioStore } from '@/stores/audioStore';
 import { audioEngine } from '@/services/audioEngine';
 import { getScenario } from '@/data/scenarios';
+import { useScenarioTheme } from '@/hooks/useScenarioTheme';
+import RexBubble from '@/components/BrainCity/RexBubble';
 
 interface NotesModalProps {
   suspect: Suspect;
@@ -63,6 +65,21 @@ const SuspectGrid = () => {
   const navigate = useNavigate();
   const { audioUrls, scenario: scenarioId, suspectNotes, setSuspectNote, suspectVoicePitch } = useAudioStore();
   const scenario = getScenario(scenarioId);
+  const { isBrainCity } = useScenarioTheme();
+
+  const roleEmoji: Record<string, string> = {
+    'suspect-bc-1': '👷',
+    'suspect-bc-2': '🧑‍🍳',
+    'suspect-bc-3': '🧑‍🎓',
+    'suspect-bc-4': '👩‍⚕️',
+  };
+
+  const cardGradient: Record<string, string> = {
+    'suspect-bc-1': 'linear-gradient(135deg, #fed7aa, #fbbf24)',
+    'suspect-bc-2': 'linear-gradient(135deg, #c7d2fe, #818cf8)',
+    'suspect-bc-3': 'linear-gradient(135deg, #bbf7d0, #34d399)',
+    'suspect-bc-4': 'linear-gradient(135deg, #fce7f3, #f472b6)',
+  };
 
   const [suspects, setSuspects] = useState<Suspect[]>(
     scenario.suspects.map((s) => ({ ...s, isIdentified: false }))
@@ -73,20 +90,16 @@ const SuspectGrid = () => {
   const [identifiedSuspect, setIdentifiedSuspect] = useState<Suspect | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
 
-  // Persist HTMLAudioElement per suspect so we can connect each to the filter chain once
   const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
 
-  // Map suspect slot → audio URL
   const suspectAudioUrls: Record<string, string | undefined> = {};
   scenario.suspects.forEach((s, i) => {
     const key = `suspect${i + 1}` as keyof typeof audioUrls;
     suspectAudioUrls[s.id] = audioUrls?.[key] as string | undefined;
   });
 
-  // Reset suspects list if scenario changes
   useEffect(() => {
     setSuspects(scenario.suspects.map((s) => ({ ...s, isIdentified: false })));
-    // Clean up audio elements from previous scenario
     audioElementsRef.current.forEach((el) => { el.pause(); });
     audioElementsRef.current.clear();
     setPlayingId(null);
@@ -111,14 +124,12 @@ const SuspectGrid = () => {
       return;
     }
 
-    // Pause any currently playing suspect
     if (playingId) {
       audioElementsRef.current.get(playingId)?.pause();
     }
 
     const el = getOrCreateAudioElement(suspect.id, url);
     el.playbackRate = suspectVoicePitch;
-    // Route through the filter chain
     audioEngine.connectSuspectElement(el);
     el.play();
     setPlayingId(suspect.id);
@@ -154,81 +165,135 @@ const SuspectGrid = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-4xl font-bold text-forensics-cyan font-mono mb-1">
-            IDENTIFICATION SUSPECT
-          </h1>
-          <p className="text-gray-400 font-mono text-sm">{scenario.title}</p>
+          {isBrainCity ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-4xl">🐕</span>
+                <div>
+                  <h1 className="text-3xl font-black text-braincity-primary">Qui a fait ça ? 🤔</h1>
+                  <p className="text-gray-400 font-semibold text-sm">{scenario.title}</p>
+                </div>
+              </div>
+              <RexBubble message="🎧 Clique sur ▶ pour écouter chaque voix — compare avec l'enregistrement !" />
+            </div>
+          ) : (
+            <>
+              <h1 className="text-4xl font-bold text-forensics-cyan font-mono mb-1">
+                IDENTIFICATION SUSPECT
+              </h1>
+              <p className="text-gray-400 font-mono text-sm">{scenario.title}</p>
+            </>
+          )}
         </motion.header>
 
-        {/* Instructions */}
-        <motion.div
-          className="bg-forensics-cyan/10 border border-forensics-cyan rounded-lg p-4 mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <p className="text-forensics-cyan font-mono text-sm">
-            Écoutez attentivement chaque voix — les filtres actifs s'appliquent. Prenez des notes. Lorsque vous êtes certain, cliquez sur "IDENTIFIER".
-          </p>
-        </motion.div>
+        {/* Instructions — adult only */}
+        {!isBrainCity && (
+          <motion.div
+            className="bg-forensics-cyan/10 border border-forensics-cyan rounded-lg p-4 mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <p className="text-forensics-cyan font-mono text-sm">
+              Écoutez attentivement chaque voix — les filtres actifs s'appliquent. Prenez des notes. Lorsque vous êtes certain, cliquez sur "IDENTIFIER".
+            </p>
+          </motion.div>
+        )}
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {suspects.map((suspect, index) => {
             const storedNote = suspectNotes[suspect.id] ?? suspect.notes;
+            const matchScore = scenario.matchScores[suspect.id];
             return (
               <motion.div
                 key={suspect.id}
-                className={`bg-forensics-bg-light border-2 rounded-lg overflow-hidden ${
-                  suspect.isIdentified ? 'border-forensics-green' : 'border-forensics-cyan-dark'
-                } hover:border-forensics-cyan transition-all`}
+                className={`rounded-2xl overflow-hidden transition-all ${
+                  isBrainCity
+                    ? `bg-white shadow-md border-2 ${suspect.isIdentified ? 'border-braincity-success' : 'border-gray-100'} hover:shadow-lg`
+                    : `bg-forensics-bg-light border-2 rounded-lg ${
+                        suspect.isIdentified ? 'border-forensics-green' : 'border-forensics-cyan-dark'
+                      } hover:border-forensics-cyan`
+                }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                {/* Photo */}
-                <div className="relative aspect-square bg-gray-800">
-                  <img
-                    src={suspect.photoUrl}
-                    alt={suspect.name}
-                    className="w-full h-full object-cover opacity-80"
-                  />
-                  {suspect.isIdentified && (
-                    <div className="absolute inset-0 bg-forensics-green/20 flex items-center justify-center">
-                      <span className="text-6xl">✓</span>
-                    </div>
-                  )}
-                </div>
+                {/* Photo / emoji */}
+                {isBrainCity ? (
+                  <div
+                    className="relative h-28 flex items-center justify-center text-5xl"
+                    style={{ background: cardGradient[suspect.id] ?? 'linear-gradient(135deg, #e2e8f0, #cbd5e1)' }}
+                  >
+                    {roleEmoji[suspect.id] ?? '🧑'}
+                    {suspect.isIdentified && (
+                      <div className="absolute inset-0 bg-braincity-success/20 flex items-center justify-center rounded-t-2xl">
+                        <span className="text-5xl">✅</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="relative aspect-square bg-gray-800">
+                    <img
+                      src={suspect.photoUrl}
+                      alt={suspect.name}
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                    {suspect.isIdentified && (
+                      <div className="absolute inset-0 bg-forensics-green/20 flex items-center justify-center">
+                        <span className="text-6xl">✓</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Info */}
                 <div className="p-4">
-                  <h3 className="text-lg font-bold text-forensics-cyan font-mono">{suspect.name}</h3>
-                  <p className="text-sm text-gray-400 font-mono mb-3">{suspect.role}</p>
+                  <h3 className={`text-lg font-bold mb-0.5 ${isBrainCity ? 'text-gray-800' : 'text-forensics-cyan font-mono'}`}>
+                    {suspect.name}
+                  </h3>
+                  <p className={`text-sm mb-3 ${isBrainCity ? 'text-gray-500 font-medium' : 'text-gray-400 font-mono'}`}>
+                    {suspect.role}
+                  </p>
 
                   {/* Match score */}
                   <div className="mb-3">
-                    <div className="flex justify-between text-xs font-mono mb-1">
-                      <span className="text-gray-500">CONCORDANCE VOCALE</span>
-                      <span className={scenario.matchScores[suspect.id] >= 80 ? 'text-forensics-red font-bold' : 'text-gray-500'}>
-                        {scenario.matchScores[suspect.id]}%
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className={isBrainCity ? 'text-gray-400 font-semibold' : 'text-gray-500 font-mono'}>
+                        {isBrainCity ? 'Ressemblance vocale' : 'CONCORDANCE VOCALE'}
+                      </span>
+                      <span className={`font-bold ${matchScore >= 80 ? 'text-red-500' : isBrainCity ? 'text-gray-400' : 'text-gray-500 font-mono'}`}>
+                        {matchScore}%
                       </span>
                     </div>
-                    <div className="h-1.5 bg-forensics-bg rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-1000 ${
-                          scenario.matchScores[suspect.id] >= 80
-                            ? 'bg-forensics-red'
-                            : scenario.matchScores[suspect.id] >= 40
-                            ? 'bg-forensics-orange'
-                            : 'bg-forensics-cyan-dark'
-                        }`}
-                        style={{ width: `${scenario.matchScores[suspect.id]}%` }}
-                      />
+                    <div className={`h-2 rounded-full overflow-hidden ${isBrainCity ? 'bg-gray-100' : 'bg-forensics-bg'}`}>
+                      {isBrainCity ? (
+                        <div
+                          className="h-full rounded-full transition-all duration-1000"
+                          style={{
+                            width: `${matchScore}%`,
+                            background: matchScore >= 80
+                              ? 'linear-gradient(90deg, #f97316, #ef4444)'
+                              : 'linear-gradient(90deg, #22d3ee, #84cc16)',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className={`h-full rounded-full transition-all duration-1000 ${
+                            matchScore >= 80
+                              ? 'bg-forensics-red'
+                              : matchScore >= 40
+                              ? 'bg-forensics-orange'
+                              : 'bg-forensics-cyan-dark'
+                          }`}
+                          style={{ width: `${matchScore}%` }}
+                        />
+                      )}
                     </div>
                   </div>
 
-                  {/* Notes indicator */}
-                  {storedNote && (
+                  {/* Notes indicator — adult only */}
+                  {!isBrainCity && storedNote && (
                     <div className="mb-3 p-2 bg-forensics-cyan/10 border border-forensics-cyan-dark rounded">
                       <p className="text-xs text-gray-400 font-mono truncate">📝 {storedNote}</p>
                     </div>
@@ -239,26 +304,45 @@ const SuspectGrid = () => {
                     <button
                       onClick={() => handlePlayVoice(suspect)}
                       disabled={!suspectAudioUrls[suspect.id]}
-                      className={`w-full px-3 py-2 font-mono text-sm rounded transition-all border ${
-                        playingId === suspect.id
-                          ? 'bg-forensics-cyan text-forensics-bg border-forensics-cyan font-bold'
-                          : 'bg-forensics-bg border-forensics-cyan-dark text-forensics-cyan hover:border-forensics-cyan'
+                      className={`w-full px-3 py-2 font-bold text-sm rounded-xl transition-all border-2 ${
+                        isBrainCity
+                          ? playingId === suspect.id
+                            ? 'bg-braincity-primary text-white border-braincity-primary'
+                            : 'bg-sky-50 border-sky-200 text-braincity-primary hover:border-braincity-primary'
+                          : playingId === suspect.id
+                          ? 'bg-forensics-cyan text-forensics-bg border-forensics-cyan font-mono'
+                          : 'bg-forensics-bg border-forensics-cyan-dark text-forensics-cyan font-mono hover:border-forensics-cyan'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                     >
-                      {playingId === suspect.id ? '⏹ STOP VOIX' : '▶ ÉCOUTER (FILTRES ON)'}
+                      {playingId === suspect.id
+                        ? (isBrainCity ? '⏹ Stop' : '⏹ STOP VOIX')
+                        : (isBrainCity ? '▶ Écouter sa voix' : '▶ ÉCOUTER (FILTRES ON)')}
                     </button>
-                    <button
-                      onClick={() => { setSelectedSuspect(suspect); setShowNotesModal(true); }}
-                      className="w-full px-3 py-2 bg-forensics-bg border border-forensics-cyan-dark text-forensics-cyan font-mono text-sm rounded hover:border-forensics-cyan transition-all"
-                    >
-                      NOTES
-                    </button>
+
+                    {!isBrainCity && (
+                      <button
+                        onClick={() => { setSelectedSuspect(suspect); setShowNotesModal(true); }}
+                        className="w-full px-3 py-2 bg-forensics-bg border border-forensics-cyan-dark text-forensics-cyan font-mono text-sm rounded hover:border-forensics-cyan transition-all"
+                      >
+                        NOTES
+                      </button>
+                    )}
+
                     <button
                       onClick={() => { setIdentifiedSuspect(suspect); setShowConfirmDialog(true); }}
                       disabled={suspect.isIdentified}
-                      className="w-full px-3 py-2 bg-forensics-green text-forensics-bg font-mono font-bold text-sm rounded hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`w-full px-3 py-2 font-bold text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isBrainCity
+                          ? 'text-white'
+                          : 'bg-forensics-green text-forensics-bg font-mono hover:bg-white'
+                      }`}
+                      style={isBrainCity ? { background: 'linear-gradient(90deg, #f97316, #ef4444)' } : {}}
                     >
-                      {suspect.isIdentified ? '✓ IDENTIFIÉ' : '🎯 IDENTIFIER'}
+                      {suspect.isIdentified
+                        ? (isBrainCity ? '✅ Accusé !' : '✓ IDENTIFIÉ')
+                        : (isBrainCity
+                          ? `🎯 C'est ${suspect.name.split(' ')[0]} !`
+                          : '🎯 IDENTIFIER')}
                     </button>
                   </div>
                 </div>
@@ -276,9 +360,13 @@ const SuspectGrid = () => {
         >
           <button
             onClick={() => navigate('/workspace')}
-            className="px-6 py-3 bg-forensics-bg-light border border-forensics-cyan text-forensics-cyan font-mono rounded hover:bg-forensics-cyan hover:text-forensics-bg transition-all"
+            className={`px-6 py-3 rounded-2xl font-bold transition-all ${
+              isBrainCity
+                ? 'bg-white border-2 border-sky-200 text-braincity-primary hover:bg-sky-50'
+                : 'bg-forensics-bg-light border border-forensics-cyan text-forensics-cyan font-mono hover:bg-forensics-cyan hover:text-forensics-bg'
+            }`}
           >
-            ← RETOUR À L'ANALYSE
+            {isBrainCity ? '← Retour à l\'analyse' : '← RETOUR À L\'ANALYSE'}
           </button>
         </motion.div>
       </div>
@@ -302,32 +390,64 @@ const SuspectGrid = () => {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-forensics-bg-light border-2 border-red-500 rounded-lg p-6 max-w-md w-full"
+              className={`p-6 max-w-md w-full rounded-2xl ${
+                isBrainCity
+                  ? 'bg-white shadow-2xl'
+                  : 'bg-forensics-bg-light border-2 border-red-500'
+              }`}
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
             >
-              <h3 className="text-2xl font-bold text-red-500 font-mono mb-4">⚠️ CONFIRMATION</h3>
-              <p className="text-white font-mono mb-6">
-                Êtes-vous certain d'identifier{' '}
-                <strong className="text-forensics-cyan">{identifiedSuspect.name}</strong> ?
-              </p>
-              <p className="text-gray-400 font-mono text-sm mb-6">
-                Cette action est irréversible et déterminera le résultat de l'enquête.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={confirmIdentification}
-                  className="flex-1 bg-red-500 text-white font-mono font-bold py-3 rounded hover:bg-red-600 transition-colors"
-                >
-                  CONFIRMER
-                </button>
-                <button
-                  onClick={() => setShowConfirmDialog(false)}
-                  className="flex-1 bg-gray-700 text-white font-mono font-bold py-3 rounded hover:bg-gray-600 transition-colors"
-                >
-                  ANNULER
-                </button>
-              </div>
+              {isBrainCity ? (
+                <>
+                  <div className="text-center mb-4">
+                    <div className="text-5xl mb-2">🤔</div>
+                    <h3 className="text-xl font-black text-gray-800">
+                      Tu es sûr(e) que c'est {identifiedSuspect.name} ?
+                    </h3>
+                  </div>
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={confirmIdentification}
+                      className="flex-1 text-white font-black py-3 rounded-2xl"
+                      style={{ background: 'linear-gradient(90deg, #f97316, #ef4444)' }}
+                    >
+                      🎯 OUI, j'accuse !
+                    </button>
+                    <button
+                      onClick={() => setShowConfirmDialog(false)}
+                      className="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-2xl hover:bg-gray-200 transition-colors"
+                    >
+                      Non, je cherche encore
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-bold text-red-500 font-mono mb-4">⚠️ CONFIRMATION</h3>
+                  <p className="text-white font-mono mb-6">
+                    Êtes-vous certain d'identifier{' '}
+                    <strong className="text-forensics-cyan">{identifiedSuspect.name}</strong> ?
+                  </p>
+                  <p className="text-gray-400 font-mono text-sm mb-6">
+                    Cette action est irréversible et déterminera le résultat de l'enquête.
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={confirmIdentification}
+                      className="flex-1 bg-red-500 text-white font-mono font-bold py-3 rounded hover:bg-red-600 transition-colors"
+                    >
+                      CONFIRMER
+                    </button>
+                    <button
+                      onClick={() => setShowConfirmDialog(false)}
+                      className="flex-1 bg-gray-700 text-white font-mono font-bold py-3 rounded hover:bg-gray-600 transition-colors"
+                    >
+                      ANNULER
+                    </button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}
