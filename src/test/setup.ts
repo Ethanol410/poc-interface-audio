@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 
 // Mock Web Audio API (not available in jsdom)
 class MockAudioContext {
+  state: AudioContextState = 'running';
   createBiquadFilter() {
     return { type: '', frequency: { value: 0 }, Q: { value: 0 }, connect: () => {} };
   }
@@ -12,6 +13,9 @@ class MockAudioContext {
   createAnalyser() { return { fftSize: 0, connect: () => {} }; }
   createMediaElementSource() { return { connect: () => {} }; }
   get destination() { return {}; }
+  resume() { return Promise.resolve(); }
+  close() { return Promise.resolve(); }
+  suspend() { return Promise.resolve(); }
 }
 
 Object.defineProperty(window, 'AudioContext', { writable: true, value: MockAudioContext });

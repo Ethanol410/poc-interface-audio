@@ -1,10 +1,10 @@
 import { useAudioStore } from '@/stores/audioStore';
 import type { ScenarioId } from '@/data/scenarios';
 
-interface ScenarioTheme {
+type ScenarioTheme = {
   isBrainCity: boolean;
   scenarioId: ScenarioId;
-}
+};
 
 export function useScenarioTheme(): ScenarioTheme {
   const scenarioId = useAudioStore((state) => state.scenario);

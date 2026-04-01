@@ -5,6 +5,7 @@ import { useAudioStore } from '@/stores/audioStore';
 
 describe('useScenarioTheme', () => {
   beforeEach(() => {
+    localStorage.removeItem('audio-storage');
     useAudioStore.getState().reset();
   });
 
