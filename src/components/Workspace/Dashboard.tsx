@@ -18,8 +18,10 @@ import StreamDeckPanel from '@/components/StreamDeck/StreamDeckPanel';
 import StreamDeckSuspectPanel from '@/components/StreamDeck/StreamDeckSuspectPanel';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
 import RicardoBubble from '@/components/BrainCity/RicardoBubble';
+import RicardoEventModal from '@/components/BrainCity/RicardoEventModal';
 import KidsToolPanel from '@/components/BrainCity/KidsToolPanel';
 import { audioEngine } from '@/services/audioEngine';
+import { useRicardo } from '@/hooks/useRicardo';
 
 type ToolTab = 'filtres' | 'pitch' | 'avance';
 
@@ -47,12 +49,7 @@ const Dashboard = memo(() => {
   const clueCount = discoveredClues.length;
   const totalClues = clueTriggers.length;
 
-  const ricardoMessage = (() => {
-    if (clueCount === 0) return '🎵 Écoute bien cet enregistrement — il y a un bruit bizarre caché dedans !';
-    if (clueCount < 4) return `Cot-cot ! J'ai trouvé ${clueCount} indice${clueCount > 1 ? 's' : ''} ! Continue à explorer les outils ! 🔍`;
-    if (clueCount < totalClues) return `Super travail ! ${clueCount} indices trouvés ! Tu te rapproches du coupable ! 🐔`;
-    return `Incroyable ! Tu as trouvé tous les indices ! Tu es prêt à accuser quelqu'un ? 🏆`;
-  })();
+  const ricardo = useRicardo(missionTimerEnabled ? timeLeft : null);
 
   useAudioControls();
 
@@ -233,6 +230,19 @@ const Dashboard = memo(() => {
           )}
         </motion.header>
 
+        {/* Ricardo event modal */}
+        <AnimatePresence>
+          {isBrainCity && ricardo.isEvent && (
+            <RicardoEventModal
+              emotion={ricardo.emotion}
+              title={ricardo.eventTitle ?? ''}
+              message={ricardo.message}
+              clueProgress={{ found: clueCount, total: totalClues }}
+              onDismiss={ricardo.dismissEvent}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Timer expired overlay */}
         <AnimatePresence>
           {timerExpired && (
@@ -291,7 +301,11 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.1 }}
             >
               {isBrainCity ? (
-                <RicardoBubble message={ricardoMessage} />
+                <RicardoBubble
+                  message={ricardo.message}
+                  emotion={ricardo.emotion}
+                  soundOnMessage={ricardo.soundKey}
+                />
               ) : (
                 <div className="flex items-start gap-6 flex-wrap">
                   <div className="flex items-center gap-2 text-sm font-mono">
