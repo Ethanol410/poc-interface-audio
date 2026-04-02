@@ -273,6 +273,7 @@ const BRAIN_CITY: ScenarioData = {
       ricardoHint: 'Baisse le pitch de 3 ou 4 crans — la voix a été rendue trop aiguë pour cacher l\'identité de l\'agresseur !',
       proximity: (s) => {
         const p = s.pitchShift.semitones;
+        if (p === 0) return 0;
         if (p >= -6 && p <= -2) return 1;
         if (p > -2) return Math.max(0, 1 - (p + 2) / 6);
         return Math.max(0, 1 - (-6 - p) / 6);
