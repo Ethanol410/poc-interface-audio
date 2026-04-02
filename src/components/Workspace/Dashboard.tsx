@@ -17,7 +17,7 @@ import { getScenario } from '@/data/scenarios';
 import StreamDeckPanel from '@/components/StreamDeck/StreamDeckPanel';
 import StreamDeckSuspectPanel from '@/components/StreamDeck/StreamDeckSuspectPanel';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
-import RexBubble from '@/components/BrainCity/RexBubble';
+import RicardoBubble from '@/components/BrainCity/RicardoBubble';
 import KidsToolPanel from '@/components/BrainCity/KidsToolPanel';
 import { audioEngine } from '@/services/audioEngine';
 
@@ -47,10 +47,10 @@ const Dashboard = memo(() => {
   const clueCount = discoveredClues.length;
   const totalClues = clueTriggers.length;
 
-  const rexMessage = (() => {
+  const ricardoMessage = (() => {
     if (clueCount === 0) return '🎵 Écoute bien cet enregistrement — il y a un bruit bizarre caché dedans !';
-    if (clueCount < 4) return `Ouaf ! J'ai trouvé ${clueCount} indice${clueCount > 1 ? 's' : ''} ! Continue à explorer les outils ! 🔍`;
-    if (clueCount < totalClues) return `Super travail ! ${clueCount} indices trouvés ! Tu te rapproches du coupable ! 🐾`;
+    if (clueCount < 4) return `Cot-cot ! J'ai trouvé ${clueCount} indice${clueCount > 1 ? 's' : ''} ! Continue à explorer les outils ! 🔍`;
+    if (clueCount < totalClues) return `Super travail ! ${clueCount} indices trouvés ! Tu te rapproches du coupable ! 🐔`;
     return `Incroyable ! Tu as trouvé tous les indices ! Tu es prêt à accuser quelqu'un ? 🏆`;
   })();
 
@@ -137,7 +137,7 @@ const Dashboard = memo(() => {
           {isBrainCity ? (
             <>
               <div className="flex items-center gap-3">
-                <span className="text-3xl">🐕</span>
+                <img src="/images/inspecteur/Ricardo_Pouleto_sticker.png" alt="Ricardo" className="w-8 h-8 object-contain" />
                 <div>
                   <h1 className="text-xl font-black text-braincity-primary leading-none">BRAIN CITY 🏙️</h1>
                   <p className="text-gray-400 text-xs font-semibold mt-0.5">Mission : Trouve l'agresseur !</p>
@@ -291,7 +291,7 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.1 }}
             >
               {isBrainCity ? (
-                <RexBubble message={rexMessage} />
+                <RicardoBubble message={ricardoMessage} />
               ) : (
                 <div className="flex items-start gap-6 flex-wrap">
                   <div className="flex items-center gap-2 text-sm font-mono">

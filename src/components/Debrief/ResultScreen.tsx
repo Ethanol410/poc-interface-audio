@@ -5,7 +5,7 @@ import type { Suspect } from '@/types/suspects';
 import { useAudioStore } from '@/stores/audioStore';
 import { getScenario } from '@/data/scenarios';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
-import RexBubble from '@/components/BrainCity/RexBubble';
+import RicardoBubble from '@/components/BrainCity/RicardoBubble';
 
 interface LocationState {
   suspect?: Suspect;
@@ -79,15 +79,15 @@ const ResultScreen = () => {
             >
               {isBrainCity ? (
                 <>
-                  <motion.div
-                    className="text-7xl mb-4"
+                  <motion.img
+                    src="/images/inspecteur/Ricardo_Pouleto_sticker.png"
+                    alt="Ricardo Pouleto"
+                    className="w-24 h-24 object-contain mx-auto mb-4"
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 1, repeat: Infinity }}
-                  >
-                    🐕
-                  </motion.div>
+                  />
                   <h2 className="text-2xl font-black text-braincity-primary mt-4">
-                    Rex analyse ta réponse…
+                    Ricardo analyse ta réponse…
                   </h2>
                   <p className="text-gray-400 font-semibold mt-2">Comparaison des voix en cours !</p>
                 </>
@@ -140,20 +140,20 @@ const ResultScreen = () => {
                     </div>
                   )}
 
-                  {/* Rex verdict */}
+                  {/* Ricardo verdict */}
                   <motion.div
                     className="text-center"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 200 }}
                   >
-                    <motion.div
-                      className="text-7xl mb-2"
+                    <motion.img
+                      src="/images/inspecteur/Ricardo_Pouleto_sticker.png"
+                      alt="Ricardo Pouleto"
+                      className="w-24 h-24 object-contain mx-auto mb-2"
                       animate={isCorrect ? { rotate: [0, 10, -10, 0] } : { rotate: [0, -5, 5, 0] }}
                       transition={{ duration: 0.5, repeat: isCorrect ? 0 : 3 }}
-                    >
-                      🐕
-                    </motion.div>
+                    />
                     <h1
                       className="text-4xl font-black mb-2"
                       style={{ color: isCorrect ? '#16a34a' : '#ea580c' }}
@@ -165,14 +165,15 @@ const ResultScreen = () => {
                     </p>
                   </motion.div>
 
-                  {/* Rex message */}
+                  {/* Ricardo message */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <RexBubble
+                    <RicardoBubble
                       message={isCorrect ? scenario.successStory : scenario.failureMessage}
+                      soundOnMessage={isCorrect ? 'chant' : 'apeure'}
                     />
                   </motion.div>
 

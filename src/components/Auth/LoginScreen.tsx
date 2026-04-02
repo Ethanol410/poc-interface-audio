@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAudioStore } from '@/stores/audioStore';
 import { getScenario } from '@/data/scenarios';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
-import RexBubble from '@/components/BrainCity/RexBubble';
+import RicardoBubble from '@/components/BrainCity/RicardoBubble';
 
 const LoginScreen = () => {
   const [name, setName] = useState('');
@@ -40,20 +40,12 @@ const LoginScreen = () => {
           transition={{ duration: 0.6 }}
           className="w-full max-w-sm relative z-10"
         >
-          {/* Rex */}
-          <div className="text-center mb-4">
-            <motion.div
-              className="text-7xl"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            >
-              🐕
-            </motion.div>
-          </div>
-
-          {/* Rex bubble */}
+          {/* Ricardo bubble */}
           <div className="mb-4">
-            <RexBubble message="Salut ! Je suis Rex 🐾 On va résoudre cette enquête ensemble !" />
+            <RicardoBubble
+              message="Salut ! Je suis Ricardo Pouleto 🐔 On va résoudre cette enquête ensemble !"
+              soundOnMessage="chant"
+            />
           </div>
 
           {/* Title */}

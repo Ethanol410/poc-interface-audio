@@ -6,7 +6,7 @@ import { useAudioStore } from '@/stores/audioStore';
 import { audioEngine } from '@/services/audioEngine';
 import { getScenario } from '@/data/scenarios';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
-import RexBubble from '@/components/BrainCity/RexBubble';
+import RicardoBubble from '@/components/BrainCity/RicardoBubble';
 
 interface NotesModalProps {
   suspect: Suspect;
@@ -155,13 +155,13 @@ const SuspectGrid = () => {
           {isBrainCity ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-4xl">🐕</span>
+                <img src="/images/inspecteur/Ricardo_Pouleto_sticker.png" alt="Ricardo" className="w-10 h-10 object-contain" />
                 <div>
                   <h1 className="text-3xl font-black text-braincity-primary">Qui a fait ça ? 🤔</h1>
                   <p className="text-gray-400 font-semibold text-sm">{scenario.title}</p>
                 </div>
               </div>
-              <RexBubble message="🎧 Clique sur ▶ pour écouter chaque voix — compare avec l'enregistrement !" />
+              <RicardoBubble message="🎧 Clique sur ▶ pour écouter chaque voix — compare avec l'enregistrement !" />
             </div>
           ) : (
             <>

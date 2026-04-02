@@ -170,10 +170,10 @@ const BRAIN_CITY: ScenarioData = {
     },
     {
       id: 'suspect-bc-3',
-      name: 'Cappuccino Assassino',
-      role: 'Ninja du café de Brain City',
-      photoUrl: '/images/suspects/capuccino.png',
-      notes: 'Alibi : "J\'étais en train de préparer des expressos"',
+      name: 'Chimpanzani Banana',
+      role: 'Singe banane de Brain City',
+      photoUrl: '/images/suspects/chimpanzani.png',
+      notes: 'Alibi : "J\'étais en train de manger des bananes"',
     },
     {
       id: 'suspect-bc-4',
