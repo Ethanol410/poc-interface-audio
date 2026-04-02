@@ -67,19 +67,6 @@ const SuspectGrid = () => {
   const scenario = getScenario(scenarioId);
   const { isBrainCity } = useScenarioTheme();
 
-  const roleEmoji: Record<string, string> = {
-    'suspect-bc-1': '👷',
-    'suspect-bc-2': '🧑‍🍳',
-    'suspect-bc-3': '🧑‍🎓',
-    'suspect-bc-4': '👩‍⚕️',
-  };
-
-  const cardGradient: Record<string, string> = {
-    'suspect-bc-1': 'linear-gradient(135deg, #fed7aa, #fbbf24)',
-    'suspect-bc-2': 'linear-gradient(135deg, #c7d2fe, #818cf8)',
-    'suspect-bc-3': 'linear-gradient(135deg, #bbf7d0, #34d399)',
-    'suspect-bc-4': 'linear-gradient(135deg, #fce7f3, #f472b6)',
-  };
 
   const [suspects, setSuspects] = useState<Suspect[]>(
     scenario.suspects.map((s) => ({ ...s, isIdentified: false }))
@@ -219,33 +206,19 @@ const SuspectGrid = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                {/* Photo / emoji */}
-                {isBrainCity ? (
-                  <div
-                    className="relative h-28 flex items-center justify-center text-5xl"
-                    style={{ background: cardGradient[suspect.id] ?? 'linear-gradient(135deg, #e2e8f0, #cbd5e1)' }}
-                  >
-                    {roleEmoji[suspect.id] ?? '🧑'}
-                    {suspect.isIdentified && (
-                      <div className="absolute inset-0 bg-braincity-success/20 flex items-center justify-center rounded-t-2xl">
-                        <span className="text-5xl">✅</span>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="relative aspect-square bg-gray-800">
-                    <img
-                      src={suspect.photoUrl}
-                      alt={suspect.name}
-                      className="w-full h-full object-cover opacity-80"
-                    />
-                    {suspect.isIdentified && (
-                      <div className="absolute inset-0 bg-forensics-green/20 flex items-center justify-center">
-                        <span className="text-6xl">✓</span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* Photo */}
+                <div className={`relative bg-gray-800 ${isBrainCity ? 'h-40' : 'aspect-square'}`}>
+                  <img
+                    src={suspect.photoUrl}
+                    alt={suspect.name}
+                    className={`w-full h-full ${isBrainCity ? 'object-contain p-2' : 'object-cover opacity-80'}`}
+                  />
+                  {suspect.isIdentified && (
+                    <div className={`absolute inset-0 flex items-center justify-center ${isBrainCity ? 'bg-braincity-success/20 rounded-t-2xl' : 'bg-forensics-green/20'}`}>
+                      <span className="text-6xl">{isBrainCity ? '✅' : '✓'}</span>
+                    </div>
+                  )}
+                </div>
 
                 {/* Info */}
                 <div className="p-4">

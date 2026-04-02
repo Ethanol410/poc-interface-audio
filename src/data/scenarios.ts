@@ -159,42 +159,42 @@ const BRAIN_CITY: ScenarioData = {
   id: 'braincity',
   title: 'Agressions à Brain City',
   subtitle: 'Dossier 21-K — Unité Jeunesse & Sécurité',
-  guiltyId: 'suspect-bc-1',
+  guiltyId: 'suspect-bc-2',
   suspects: [
     {
-      id: 'suspect-bc-1',
-      name: 'Marco Ferreira',
-      role: 'Ouvrier du chantier voisin',
-      photoUrl: '/images/suspects/suspect-52.jpg',
-      notes: 'Toujours présent dans le quartier, porte une ceinture à outils',
-    },
-    {
       id: 'suspect-bc-2',
-      name: 'Layla Bensaïd',
-      role: 'Gérante du bar Le Cosmos',
-      photoUrl: '/images/suspects/suspect-45.jpg',
-      notes: 'Alibi : "J\'ouvrais le bar à 10h"',
+      name: 'BrrBrr Patapim',
+      role: 'Créature de la forêt urbaine',
+      photoUrl: '/images/suspects/brrbrr.png',
+      notes: 'Aucun alibi solide — a été vu rôder près du parc',
     },
     {
       id: 'suspect-bc-3',
-      name: 'Dylan Roux',
-      role: 'Étudiant en BTS',
-      photoUrl: '/images/suspects/suspect-11.jpg',
-      notes: 'Alibi : "J\'étais en cours à Brain City Lycée"',
+      name: 'Cappuccino Assassino',
+      role: 'Ninja du café de Brain City',
+      photoUrl: '/images/suspects/capuccino.png',
+      notes: 'Alibi : "J\'étais en train de préparer des expressos"',
     },
     {
       id: 'suspect-bc-4',
-      name: 'Nora Vidal',
-      role: 'Infirmière de quartier',
-      photoUrl: '/images/suspects/suspect-44.jpg',
-      notes: 'Alibi : "En visite médicale tout l\'après-midi"',
+      name: 'Tralalero Tralala',
+      role: 'Requin des rues',
+      photoUrl: '/images/suspects/tralala.png',
+      notes: 'Alibi : "Je faisais du jogging avec mes Nike"',
+    },
+    {
+      id: 'suspect-bc-5',
+      name: 'Tung Tung Tung',
+      role: 'Gardien de la cuillère sacrée',
+      photoUrl: '/images/suspects/tuntuntun.png',
+      notes: 'Alibi : "Je balayais le trottoir toute la matinée"',
     },
   ],
   matchScores: {
-    'suspect-bc-1': 91,
-    'suspect-bc-2': 17,
-    'suspect-bc-3': 5,
-    'suspect-bc-4': 23,
+    'suspect-bc-2': 93,
+    'suspect-bc-3': 8,
+    'suspect-bc-4': 21,
+    'suspect-bc-5': 11,
   },
   clueTriggers: [
     {
@@ -259,10 +259,10 @@ const BRAIN_CITY: ScenarioData = {
   ],
   successTitle: 'SUSPECT ARRÊTÉ !',
   successStory:
-    'Le cliquetis métallique des clés de chantier et le sifflement asthmatique caractéristique de Marco Ferreira ont permis de l\'identifier avec certitude. Il a été interpellé sur le chantier de Brain City. Le quartier est à nouveau en sécurité !',
+    'Les grognements caractéristiques et le bruit de branches cassées dans l\'enregistrement ont permis d\'identifier BrrBrr Patapim avec certitude. La créature rôdait dans le parc depuis des semaines. Elle a été capturée près de la fontaine de Brain City. Le quartier est à nouveau en sécurité !',
   failureTitle: 'MAUVAISE PISTE !',
   failureMessage:
-    'Ce n\'est pas le bon ! L\'agresseur court toujours dans Brain City. Écoute mieux — le sifflement asthmatique et les clés de chantier sont dans l\'enregistrement. Analyse à nouveau !',
+    'Ce n\'est pas le bon ! BrrBrr Patapim court toujours dans Brain City. Écoute mieux — les grognements et les bruits de forêt sont dans l\'enregistrement. Analyse à nouveau !',
 };
 
 export const SCENARIOS: Record<ScenarioId, ScenarioData> = {
