@@ -22,6 +22,15 @@ const CORBEAU_OFFICIAL_AUDIO = {
   suspect4: '/audio/Voix 4.m4a',
 } as const;
 
+const BRAINCITY_OFFICIAL_AUDIO = {
+  evidenceDistorted: '/audio/Sahur_Voice Changer.mp3',
+  evidenceClean: '/audio/Sahur_Voice Changer.mp3',
+  suspect1: '/audio/BrrBrrPatapim.wav',
+  suspect2: '/audio/Chimpanzinibananini.wav',
+  suspect3: '/audio/Sahur.wav',
+  suspect4: '/audio/Tralalerotralala.wav',
+} as const;
+
 interface AudioSetupProps {
   onAudiosReady: (audioUrls: {
     evidenceDistorted: string;
@@ -61,12 +70,13 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
 
   const handleLoadOfficial = useCallback(async () => {
     setIsLoadingOfficial(true);
+    const officialAudio = selectedScenario === 'corbeau' ? CORBEAU_OFFICIAL_AUDIO : BRAINCITY_OFFICIAL_AUDIO;
     try {
-      const response = await fetch(CORBEAU_OFFICIAL_AUDIO.evidenceDistorted);
+      const response = await fetch(officialAudio.evidenceDistorted);
       const blob = await response.blob();
       const evidenceReverse = await reverseAudioBlob(blob);
       onAudiosReady({
-        ...CORBEAU_OFFICIAL_AUDIO,
+        ...officialAudio,
         evidenceReverse: createAudioURL(evidenceReverse),
       });
     } catch {
@@ -74,7 +84,7 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
     } finally {
       setIsLoadingOfficial(false);
     }
-  }, [onAudiosReady]);
+  }, [onAudiosReady, selectedScenario]);
 
   const handleGenerateDemo = useCallback(async () => {
     setIsGenerating(true);
@@ -296,51 +306,63 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
               exit={{ opacity: 0, x: -20 }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {/* Fichiers officiels — Corbeau uniquement */}
-                {selectedScenario === 'corbeau' && (
-                  <motion.div
-                    className="bg-forensics-bg-light border-2 border-forensics-orange rounded-lg p-6"
-                    whileHover={{ scale: 1.02 }}
+                {/* Fichiers officiels — Corbeau et Brain City */}
+                <motion.div
+                  className={`bg-forensics-bg-light border-2 rounded-lg p-6 ${
+                    selectedScenario === 'corbeau' ? 'border-forensics-orange' : 'border-forensics-cyan'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <div className="text-center mb-4">
+                    <div className="text-5xl mb-3">
+                      {selectedScenario === 'corbeau' ? '🦅' : '🏙️'}
+                    </div>
+                    <h2 className={`text-2xl font-bold font-mono mb-2 ${
+                      selectedScenario === 'corbeau' ? 'text-forensics-orange' : 'text-forensics-cyan'
+                    }`}>
+                      OFFICIEL
+                    </h2>
+                    <p className="text-gray-400 text-sm font-mono">
+                      {selectedScenario === 'corbeau'
+                        ? "Fichiers audio de l'histoire Corbeau"
+                        : "Fichiers audio de l'histoire Brain City"}
+                    </p>
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-300 font-mono mb-6">
+                    <p className="flex items-start">
+                      <span className="text-forensics-green mr-2">✓</span>
+                      {selectedScenario === 'corbeau'
+                        ? 'Enregistrement Coupable.m4a'
+                        : 'Enregistrement Sahur_Voice Changer.mp3'}
+                    </p>
+                    <p className="flex items-start">
+                      <span className="text-forensics-green mr-2">✓</span>
+                      4 voix suspects incluses
+                    </p>
+                    <p className="flex items-start">
+                      <span className="text-forensics-green mr-2">✓</span>
+                      Audio inversé généré auto
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { void handleLoadOfficial(); }}
+                    disabled={isLoadingOfficial}
+                    className={`w-full py-3 px-4 font-bold font-mono rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      selectedScenario === 'corbeau'
+                        ? 'bg-forensics-orange hover:bg-orange-300 text-forensics-bg'
+                        : 'bg-forensics-cyan hover:bg-white text-forensics-bg'
+                    }`}
                   >
-                    <div className="text-center mb-4">
-                      <div className="text-5xl mb-3">🦅</div>
-                      <h2 className="text-2xl font-bold text-forensics-orange font-mono mb-2">
-                        OFFICIEL
-                      </h2>
-                      <p className="text-gray-400 text-sm font-mono">
-                        Fichiers audio de l'histoire Corbeau
-                      </p>
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-300 font-mono mb-6">
-                      <p className="flex items-start">
-                        <span className="text-forensics-green mr-2">✓</span>
-                        Enregistrement Coupable.m4a
-                      </p>
-                      <p className="flex items-start">
-                        <span className="text-forensics-green mr-2">✓</span>
-                        4 voix suspects incluses
-                      </p>
-                      <p className="flex items-start">
-                        <span className="text-forensics-green mr-2">✓</span>
-                        Audio inversé généré auto
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => { void handleLoadOfficial(); }}
-                      disabled={isLoadingOfficial}
-                      className="w-full py-3 px-4 bg-forensics-orange hover:bg-orange-300 text-forensics-bg font-bold font-mono rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoadingOfficial ? (
-                        <Spinner size="sm" color="border-forensics-bg" label="Chargement..." />
-                      ) : (
-                        '🎯 UTILISER LES FICHIERS'
-                      )}
-                    </button>
-                  </motion.div>
-                )}
+                    {isLoadingOfficial ? (
+                      <Spinner size="sm" color="border-forensics-bg" label="Chargement..." />
+                    ) : (
+                      '🎯 UTILISER LES FICHIERS'
+                    )}
+                  </button>
+                </motion.div>
 
-                {/* Mode Démo — Brain City uniquement */}
-                {selectedScenario !== 'corbeau' && (
+                {/* Mode Démo — scénarios sans audio officiel uniquement */}
+                {selectedScenario !== 'corbeau' && selectedScenario !== 'braincity' && (
                 <motion.div
                   className="bg-forensics-bg-light border-2 border-forensics-cyan rounded-lg p-6"
                   whileHover={{ scale: 1.02 }}
@@ -382,8 +404,8 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                 </motion.div>
                 )}
 
-                {/* Mode Upload — Brain City uniquement */}
-                {selectedScenario !== 'corbeau' && (
+                {/* Mode Upload — scénarios sans audio officiel uniquement */}
+                {selectedScenario !== 'corbeau' && selectedScenario !== 'braincity' && (
                 <motion.div
                   className="bg-forensics-bg-light border-2 border-gray-600 rounded-lg p-6"
                   whileHover={{ scale: 1.02 }}
