@@ -400,7 +400,7 @@ const Dashboard = memo(() => {
               <h3 className={`text-sm font-bold mb-3 ${isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan font-mono tracking-wider'}`}>
                 {isBrainCity ? '📊 Les sons en image' : 'SPECTROGRAMME'}
               </h3>
-              <Spectrogram audioUrl={activeAudioUrl} />
+              <Spectrogram audioUrl={activeAudioUrl} isBrainCity={isBrainCity} />
             </motion.div>
 
             {/* Frequency Bars */}
@@ -417,7 +417,7 @@ const Dashboard = memo(() => {
               <h3 className={`text-sm font-bold mb-3 ${isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan font-mono tracking-wider'}`}>
                 {isBrainCity ? '🎼 Les fréquences' : 'ANALYSE FRÉQUENTIELLE'}
               </h3>
-              <FrequencyBars isPlaying={isPlaying} width={800} height={120} />
+              <FrequencyBars isPlaying={isPlaying} height={120} />
             </motion.div>
           </div>
 

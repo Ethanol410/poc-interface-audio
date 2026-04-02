@@ -10,15 +10,16 @@ interface SpectrogramProps {
   audioUrl?: string;
   height?: number;
   fftSize?: number;
+  isBrainCity?: boolean;
 }
 
 const Spectrogram = memo(({
   audioUrl,
-  height = 256,
+  height = 200,
   fftSize = 2048,
+  isBrainCity = false,
 }: SpectrogramProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const spectrogramRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,28 +47,29 @@ const Spectrogram = memo(({
       }
     }
     return map;
-  }, []); // Only calculate once
+  }, []);
 
   useEffect(() => {
-    if (!containerRef.current || !spectrogramRef.current) return;
+    if (!containerRef.current) return;
     if (!audioUrl) {
       setError('Aucun fichier audio');
       return;
     }
 
+    setIsReady(false);
+    setError(null);
     let isDestroyed = false;
-    console.log('Spectrogram: Initialisation avec URL:', audioUrl);
 
-    // Initialize Wavesurfer with spectrogram plugin
+    // In WaveSurfer v7, SpectrogramPlugin renders inside the same container as WaveSurfer.
+    // We use height: 0 to hide the waveform and only show the spectrogram plugin.
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
       waveColor: 'transparent',
       progressColor: 'transparent',
-      height: 0, // Hide waveform, only show spectrogram
+      height: 0,
       interact: false,
       plugins: [
         SpectrogramPlugin.create({
-          container: spectrogramRef.current,
           labels: true,
           height,
           fftSamples: fftSize,
@@ -80,38 +82,27 @@ const Spectrogram = memo(({
 
     wavesurfer.on('ready', () => {
       if (isDestroyed) return;
-      console.log('Spectrogram: Prêt !');
       setIsReady(true);
     });
 
     wavesurfer.on('error', (err: Error) => {
       if (isDestroyed) return;
-      // Ignore AbortError en mode dev (React StrictMode)
-      if (err.name === 'AbortError') {
-        console.log('Spectrogram: Chargement annulé (normal en mode dev)');
-        return;
-      }
+      if (err.name === 'AbortError') return;
       console.error('Spectrogram error:', err);
       setError(err.message || 'Erreur de chargement');
     });
 
-    // Load audio
-    console.log('Spectrogram: Chargement de l\'audio...');
     wavesurfer.load(audioUrl).catch((err: Error) => {
       if (err?.name !== 'AbortError') {
         console.error('Spectrogram load error:', err);
       }
     });
 
-    // Cleanup
     return () => {
       isDestroyed = true;
-      console.log('Spectrogram: Nettoyage');
-      // Destroy silencieusement sans propager les erreurs d'abort
       try {
         wavesurfer.destroy();
       } catch (err) {
-        // Ignore expected WebAudio errors during cleanup (AbortError, InvalidAccessError)
         const name = err instanceof Error ? err.name : (err as DOMException)?.name ?? '';
         if (name !== 'AbortError' && name !== 'InvalidAccessError') {
           console.error('Error during spectrogram cleanup:', err);
@@ -120,36 +111,46 @@ const Spectrogram = memo(({
     };
   }, [audioUrl, height, fftSize, colorMap]);
 
+  const containerCls = isBrainCity
+    ? 'rounded-xl overflow-hidden border border-sky-200 bg-[#0a0e27]'
+    : 'rounded-lg overflow-hidden border border-forensics-cyan bg-forensics-bg-light';
+
+  const overlayBase = isBrainCity
+    ? 'absolute inset-0 flex items-center justify-center bg-[#0a0e27] border border-sky-200 rounded-xl'
+    : 'absolute inset-0 flex items-center justify-center bg-forensics-bg-light border border-forensics-cyan rounded-lg';
+
+  const loadingTextCls = isBrainCity
+    ? 'text-sky-300 font-semibold text-sm animate-pulse'
+    : 'text-forensics-cyan font-mono text-sm animate-pulse';
+
   return (
-    <div className="spectrogram-container relative">
+    <div className="spectrogram-container relative" style={{ minHeight: `${height}px` }}>
       <div
         ref={containerRef}
-        style={{ position: 'absolute', width: '100%', height: 0, overflow: 'hidden', visibility: 'hidden' }}
-      />
-      <div
-        ref={spectrogramRef}
-        className="spectrogram-canvas border border-forensics-cyan rounded-lg overflow-hidden bg-forensics-bg-light"
+        className={containerCls}
         style={{ minHeight: `${height}px` }}
       />
       {!isReady && !error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-forensics-bg-light border border-forensics-cyan rounded-lg">
-          <span className="text-forensics-cyan font-mono text-sm animate-pulse">
-            Génération spectrogram...
+        <div className={overlayBase}>
+          <span className={loadingTextCls}>
+            {isBrainCity ? '🔍 Analyse des sons en cours…' : 'Génération spectrogram...'}
           </span>
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-forensics-bg-light border border-forensics-cyan rounded-lg">
+        <div className={overlayBase}>
           <span className="text-red-500 font-mono text-sm">
             ❌ {error}
           </span>
         </div>
       )}
-      <div className="mt-2 text-center">
-        <span className="text-gray-500 text-xs font-mono">
-          FFT: {fftSize} | Analyse fréquentielle temps réel
-        </span>
-      </div>
+      {!isBrainCity && isReady && (
+        <div className="mt-2 text-center">
+          <span className="text-gray-500 text-xs font-mono">
+            FFT: {fftSize} | Analyse fréquentielle temps réel
+          </span>
+        </div>
+      )}
     </div>
   );
 });

@@ -45,7 +45,7 @@ const EMOTION_BORDER: Record<RicardoEmotion, string> = {
 
 const playSound = (key: RicardoSound) => {
   const audio = new Audio(SOUNDS[key]);
-  audio.volume = 0.6;
+  audio.volume = 0.2;
   audio.play().catch(() => {});
 };
 
@@ -72,28 +72,28 @@ const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche'
   const isPanicking = emotion === 'panicking';
 
   return (
-    <div className={`flex items-center gap-3 bg-white rounded-2xl p-3 shadow-sm border-2 ${EMOTION_BORDER[emotion]}`}>
+    <div className={`flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border-2 ${EMOTION_BORDER[emotion]}`}>
       <div className="relative flex-shrink-0">
         <motion.img
           src={imgSrc}
           alt="Ricardo Pouleto"
-          className="w-14 h-14 cursor-pointer object-contain"
+          className="w-28 h-28 cursor-pointer object-contain drop-shadow-md"
           onError={() => setImgSrc(FALLBACK_IMAGE)}
           onClick={() => playSound('bouche')}
-          whileHover={{ scale: 1.15, rotate: 5 }}
-          whileTap={{ scale: 0.9 }}
-          animate={isPanicking ? { x: [-2, 2, -2, 2, 0] } : { y: [0, -3, 0] }}
+          whileHover={{ scale: 1.1, rotate: 4 }}
+          whileTap={{ scale: 0.92 }}
+          animate={isPanicking ? { x: [-3, 3, -3, 3, 0] } : { y: [0, -5, 0] }}
           transition={
             isPanicking
-              ? { duration: 0.3, repeat: Infinity }
+              ? { duration: 0.25, repeat: Infinity }
               : { duration: 2.5, repeat: Infinity, repeatDelay: 2 }
           }
         />
         {badge && (
-          <span className="absolute -top-1 -right-1 text-sm leading-none">{badge}</span>
+          <span className="absolute -top-1 -right-1 text-xl leading-none">{badge}</span>
         )}
       </div>
-      <div className="bg-braincity-bubble rounded-xl px-3 py-2 text-sm font-semibold text-gray-800 leading-snug">
+      <div className="flex-1 bg-braincity-bubble rounded-xl px-4 py-3 text-sm font-semibold text-gray-800 leading-snug">
         {message}
       </div>
     </div>
