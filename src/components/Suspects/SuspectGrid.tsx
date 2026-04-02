@@ -76,6 +76,15 @@ const SuspectGrid = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [identifiedSuspect, setIdentifiedSuspect] = useState<Suspect | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [hoveredSuspectId, setHoveredSuspectId] = useState<string | null>(null);
+
+  const ricardoSuspectMessage = (() => {
+    if (!hoveredSuspectId) return "🎧 Survole un suspect pour avoir mon avis — compare avec l'enregistrement !";
+    return scenario.ricardoLines?.suspectComments[hoveredSuspectId]
+      ?? "🎧 Écoute sa voix et compare avec l'enregistrement !";
+  })();
+
+  const ricardoSuspectEmotion = hoveredSuspectId === scenario.guiltyId ? 'excited' : 'thinking';
 
   const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
 
@@ -161,7 +170,10 @@ const SuspectGrid = () => {
                   <p className="text-gray-400 font-semibold text-sm">{scenario.title}</p>
                 </div>
               </div>
-              <RicardoBubble message="🎧 Clique sur ▶ pour écouter chaque voix — compare avec l'enregistrement !" />
+              <RicardoBubble
+                message={ricardoSuspectMessage}
+                emotion={hoveredSuspectId ? ricardoSuspectEmotion : 'neutral'}
+              />
             </div>
           ) : (
             <>
@@ -205,6 +217,8 @@ const SuspectGrid = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                onMouseEnter={() => setHoveredSuspectId(suspect.id)}
+                onMouseLeave={() => setHoveredSuspectId(null)}
               >
                 {/* Photo */}
                 <div className={`relative bg-gray-800 ${isBrainCity ? 'h-40' : 'aspect-square'}`}>

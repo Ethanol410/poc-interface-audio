@@ -172,7 +172,10 @@ const ResultScreen = () => {
                     transition={{ delay: 0.2 }}
                   >
                     <RicardoBubble
-                      message={isCorrect ? scenario.successStory : scenario.failureMessage}
+                      message={isCorrect
+                        ? (scenario.ricardoLines?.correctSuspect ?? scenario.successStory)
+                        : (scenario.ricardoLines?.wrongSuspect ?? scenario.failureMessage)}
+                      emotion={isCorrect ? 'triumphant' : 'scared'}
                       soundOnMessage={isCorrect ? 'chant' : 'apeure'}
                     />
                   </motion.div>
