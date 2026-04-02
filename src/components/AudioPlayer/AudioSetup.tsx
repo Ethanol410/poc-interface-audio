@@ -12,6 +12,15 @@ import type { ScenarioId } from '@/data/scenarios';
 import { SCENARIOS } from '@/data/scenarios';
 import Spinner from '@/components/Layout/Spinner';
 
+const CORBEAU_OFFICIAL_AUDIO = {
+  evidenceDistorted: '/audio/Coupable.m4a',
+  evidenceClean: '/audio/Coupable.m4a',
+  suspect1: '/audio/Voix 1.m4a',
+  suspect2: '/audio/Voix 2.m4a',
+  suspect3: '/audio/Voix 3.m4a',
+  suspect4: '/audio/Voix 4.m4a',
+} as const;
+
 interface AudioSetupProps {
   onAudiosReady: (audioUrls: {
     evidenceDistorted: string;
@@ -33,6 +42,7 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
   const [timerMinutes, setTimerMinutes] = useState(8);
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoadingOfficial, setIsLoadingOfficial] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{
     evidence?: File;
     suspect1?: File;
@@ -47,6 +57,23 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
     setMissionDuration(timerMinutes * 60);
     setStep('audio');
   };
+
+  const handleLoadOfficial = useCallback(async () => {
+    setIsLoadingOfficial(true);
+    try {
+      const response = await fetch(CORBEAU_OFFICIAL_AUDIO.evidenceDistorted);
+      const blob = await response.blob();
+      const evidenceReverse = await reverseAudioBlob(blob);
+      onAudiosReady({
+        ...CORBEAU_OFFICIAL_AUDIO,
+        evidenceReverse: createAudioURL(evidenceReverse),
+      });
+    } catch {
+      alert('❌ Erreur lors du chargement des fichiers audio officiels');
+    } finally {
+      setIsLoadingOfficial(false);
+    }
+  }, [onAudiosReady]);
 
   const handleGenerateDemo = useCallback(async () => {
     setIsGenerating(true);
@@ -258,7 +285,51 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
               exit={{ opacity: 0, x: -20 }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {/* Mode Démo */}
+                {/* Fichiers officiels — Corbeau uniquement */}
+                {selectedScenario === 'corbeau' && (
+                  <motion.div
+                    className="bg-forensics-bg-light border-2 border-forensics-orange rounded-lg p-6"
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="text-center mb-4">
+                      <div className="text-5xl mb-3">🦅</div>
+                      <h2 className="text-2xl font-bold text-forensics-orange font-mono mb-2">
+                        OFFICIEL
+                      </h2>
+                      <p className="text-gray-400 text-sm font-mono">
+                        Fichiers audio de l'histoire Corbeau
+                      </p>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-300 font-mono mb-6">
+                      <p className="flex items-start">
+                        <span className="text-forensics-green mr-2">✓</span>
+                        Enregistrement Coupable.m4a
+                      </p>
+                      <p className="flex items-start">
+                        <span className="text-forensics-green mr-2">✓</span>
+                        4 voix suspects incluses
+                      </p>
+                      <p className="flex items-start">
+                        <span className="text-forensics-green mr-2">✓</span>
+                        Audio inversé généré auto
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { void handleLoadOfficial(); }}
+                      disabled={isLoadingOfficial}
+                      className="w-full py-3 px-4 bg-forensics-orange hover:bg-orange-300 text-forensics-bg font-bold font-mono rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoadingOfficial ? (
+                        <Spinner size="sm" color="border-forensics-bg" label="Chargement..." />
+                      ) : (
+                        '🎯 UTILISER LES FICHIERS'
+                      )}
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* Mode Démo — Brain City uniquement */}
+                {selectedScenario !== 'corbeau' && (
                 <motion.div
                   className="bg-forensics-bg-light border-2 border-forensics-cyan rounded-lg p-6"
                   whileHover={{ scale: 1.02 }}
@@ -298,8 +369,10 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                     )}
                   </button>
                 </motion.div>
+                )}
 
-                {/* Mode Upload */}
+                {/* Mode Upload — Brain City uniquement */}
+                {selectedScenario !== 'corbeau' && (
                 <motion.div
                   className="bg-forensics-bg-light border-2 border-gray-600 rounded-lg p-6"
                   whileHover={{ scale: 1.02 }}
@@ -367,6 +440,7 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                     )}
                   </button>
                 </motion.div>
+                )}
               </div>
 
               <button
