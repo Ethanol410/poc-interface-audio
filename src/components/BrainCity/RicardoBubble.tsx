@@ -34,13 +34,23 @@ const EMOTION_BADGE: Partial<Record<RicardoEmotion, string>> = {
   scared: '😨',
 };
 
-const EMOTION_BORDER: Record<RicardoEmotion, string> = {
-  neutral: 'border-gray-100',
-  excited: 'border-yellow-300',
-  thinking: 'border-purple-200',
-  panicking: 'border-red-300',
-  triumphant: 'border-green-300',
-  scared: 'border-red-200',
+// Neon border color per emotion
+const EMOTION_NEON: Record<RicardoEmotion, string> = {
+  neutral: '#1a1a48',
+  excited: '#f0e500',
+  thinking: '#a855f7',
+  panicking: '#ff3355',
+  triumphant: '#3dff85',
+  scared: '#ff3355',
+};
+
+const EMOTION_GLOW: Record<RicardoEmotion, string> = {
+  neutral: 'none',
+  excited: '0 0 16px rgba(240,229,0,0.35)',
+  thinking: '0 0 16px rgba(168,85,247,0.35)',
+  panicking: '0 0 16px rgba(255,51,85,0.5)',
+  triumphant: '0 0 16px rgba(61,255,133,0.35)',
+  scared: '0 0 16px rgba(255,51,85,0.4)',
 };
 
 const playSound = (key: RicardoSound) => {
@@ -53,12 +63,10 @@ const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche'
   const prevMessage = useRef<string>('');
   const [imgSrc, setImgSrc] = useState(IMAGE_MAP[emotion]);
 
-  // Update image when emotion changes
   useEffect(() => {
     setImgSrc(IMAGE_MAP[emotion]);
   }, [emotion]);
 
-  // Auto-play only for non-bouche sounds
   useEffect(() => {
     if (message !== prevMessage.current) {
       prevMessage.current = message;
@@ -70,14 +78,20 @@ const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche'
 
   const badge = EMOTION_BADGE[emotion];
   const isPanicking = emotion === 'panicking';
+  const borderColor = EMOTION_NEON[emotion];
+  const glowStyle = EMOTION_GLOW[emotion];
 
   return (
-    <div className={`flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border-2 ${EMOTION_BORDER[emotion]}`}>
+    <div
+      className="flex items-center gap-4 bg-braincity-card rounded-xl p-3"
+      style={{ border: `2px solid ${borderColor}`, boxShadow: glowStyle }}
+    >
+      {/* Ricardo image */}
       <div className="relative flex-shrink-0">
         <motion.img
           src={imgSrc}
           alt="Ricardo Pouleto"
-          className="w-28 h-28 cursor-pointer object-contain drop-shadow-md"
+          className="w-24 h-24 cursor-pointer object-contain drop-shadow-lg"
           onError={() => setImgSrc(FALLBACK_IMAGE)}
           onClick={() => playSound('bouche')}
           whileHover={{ scale: 1.1, rotate: 4 }}
@@ -93,8 +107,29 @@ const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche'
           <span className="absolute -top-1 -right-1 text-xl leading-none">{badge}</span>
         )}
       </div>
-      <div className="flex-1 bg-braincity-bubble rounded-xl px-4 py-3 text-sm font-semibold text-gray-800 leading-snug">
-        {message}
+
+      {/* Speech bubble with CSS triangle tail */}
+      <div className="relative flex-1">
+        {/* Triangle pointing left toward Ricardo */}
+        <div
+          style={{
+            position: 'absolute',
+            left: '-10px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 0,
+            height: 0,
+            borderTop: '9px solid transparent',
+            borderBottom: '9px solid transparent',
+            borderRight: '10px solid #12123a',
+          }}
+        />
+        <div
+          className="rounded-xl px-4 py-3 text-sm font-semibold leading-snug font-nunito"
+          style={{ background: '#12123a', color: '#c8c8ff' }}
+        >
+          {message}
+        </div>
       </div>
     </div>
   );

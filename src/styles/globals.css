@@ -90,6 +90,29 @@ body {
   background: #0099cc;
 }
 
+/* ── Brain City neon panel accents ── */
+.bc-accent-cyan  { border-left: 4px solid #00e5ff !important; }
+.bc-accent-purple { border-left: 4px solid #a855f7 !important; }
+.bc-accent-green  { border-left: 4px solid #3dff85 !important; }
+.bc-accent-yellow { border-left: 4px solid #f0e500 !important; }
+.bc-accent-orange { border-left: 4px solid #ff7730 !important; }
+.bc-accent-pink   { border-left: 4px solid #ff3fa4 !important; }
+.bc-accent-blue   { border-left: 4px solid #3b82f6 !important; }
+
+/* Brain City city-grid background overlay */
+.bc-workspace-bg {
+  background-image:
+    linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Neon glow utilities */
+.glow-yellow { box-shadow: 0 0 16px rgba(240,229,0,0.5), 0 0 32px rgba(240,229,0,0.2); }
+.glow-cyan   { box-shadow: 0 0 12px rgba(0,229,255,0.5), 0 0 24px rgba(0,229,255,0.2); }
+.glow-green  { box-shadow: 0 0 12px rgba(61,255,133,0.5), 0 0 24px rgba(61,255,133,0.2); }
+.glow-pink   { box-shadow: 0 0 12px rgba(255,63,164,0.5), 0 0 24px rgba(255,63,164,0.2); }
+
 /* ── Print / PDF export ── */
 @media print {
   body {

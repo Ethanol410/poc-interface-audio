@@ -25,6 +25,21 @@ import { useRicardo } from '@/hooks/useRicardo';
 
 type ToolTab = 'filtres' | 'pitch' | 'avance';
 
+// Brain City neon palette — each section has its own accent colour
+const BC = {
+  cyan:   '#00e5ff',
+  purple: '#a855f7',
+  green:  '#3dff85',
+  yellow: '#f0e500',
+  orange: '#ff7730',
+  pink:   '#ff3fa4',
+  blue:   '#3b82f6',
+  red:    '#ff3355',
+} as const;
+
+/** Dark card class shared by all BC panels. */
+const BC_CARD = 'bg-braincity-card border border-braincity-border rounded-xl overflow-hidden';
+
 const Dashboard = memo(() => {
   const navigate = useNavigate();
   const store = useAudioStore();
@@ -53,14 +68,14 @@ const Dashboard = memo(() => {
 
   useAudioControls();
 
-  // Start timer when entering workspace
+  // Start timer on first workspace entry
   useEffect(() => {
     if (missionTimerEnabled && !missionStartTime) {
       setMissionStartTime(Date.now());
     }
   }, [missionTimerEnabled, missionStartTime, setMissionStartTime]);
 
-  // Countdown interval
+  // Countdown tick
   useEffect(() => {
     if (!missionTimerEnabled || !missionStartTime) return;
     const tick = () => {
@@ -78,7 +93,7 @@ const Dashboard = memo(() => {
     return () => clearInterval(id);
   }, [missionTimerEnabled, missionStartTime, missionDuration]);
 
-  // Detect clues
+  // Auto-discover clues
   useEffect(() => {
     clueTriggers.forEach(({ id, check }) => {
       if (check(store) && !discoveredClues.includes(id)) {
@@ -94,13 +109,14 @@ const Dashboard = memo(() => {
   }, []);
 
   const formattedCurrentTime = useMemo(() => formatTime(currentTime), [currentTime, formatTime]);
-  const formattedDuration = useMemo(() => formatTime(duration), [duration, formatTime]);
+  const formattedDuration    = useMemo(() => formatTime(duration),    [duration,    formatTime]);
 
   const handleContinueToSuspects = useCallback(() => navigate('/suspects'), [navigate]);
 
   const stepsDone = [
     isPlaying || currentTime > 0,
-    store.lowPassFilter.enabled || store.highPassFilter.enabled || store.bandPassFilter.enabled || store.notchFilter.enabled || store.compressor.enabled,
+    store.lowPassFilter.enabled || store.highPassFilter.enabled ||
+      store.bandPassFilter.enabled || store.notchFilter.enabled || store.compressor.enabled,
     store.pitchShift.semitones !== 0,
     store.isReversed,
   ];
@@ -110,72 +126,107 @@ const Dashboard = memo(() => {
     : audioUrls?.evidenceDistorted;
 
   const timerColor =
-    timeLeft !== null && timeLeft < 60
-      ? 'text-red-500'
-      : timeLeft !== null && timeLeft < 120
-      ? 'text-forensics-orange'
-      : isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan';
+    timeLeft !== null && timeLeft < 60  ? 'text-red-500' :
+    timeLeft !== null && timeLeft < 120 ? 'text-forensics-orange' :
+    isBrainCity ? 'text-[#00e5ff]' : 'text-forensics-cyan';
 
+  // ─────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-[1800px] mx-auto space-y-4">
 
         {/* ── HEADER ── */}
         <motion.header
-          className={`flex items-center justify-between rounded-lg px-5 py-3 ${
+          className={`flex items-center justify-between rounded-xl px-5 py-3 ${
             isBrainCity
-              ? 'bg-white shadow-sm border border-sky-100'
+              ? `${BC_CARD}`
               : 'bg-forensics-bg-light border border-forensics-cyan-dark'
           }`}
+          style={isBrainCity ? { borderBottom: `2px solid ${BC.yellow}`, boxShadow: `0 2px 20px rgba(240,229,0,0.1)` } : {}}
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           {isBrainCity ? (
             <>
+              {/* Left: title */}
               <div className="flex items-center gap-3">
-                <img src="/images/inspecteur/Ricardo_Pouleto_sticker.png" alt="Ricardo" className="w-8 h-8 object-contain" />
+                <motion.img
+                  src="/images/inspecteur/Ricardo_Pouleto_sticker.png"
+                  alt="Ricardo"
+                  className="w-9 h-9 object-contain"
+                  animate={{ rotate: [0, -8, 8, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, repeatDelay: 4 }}
+                />
                 <div>
-                  <h1 className="text-xl font-black text-braincity-primary leading-none">BRAIN CITY 🏙️</h1>
-                  <p className="text-gray-400 text-xs font-semibold mt-0.5">Mission : Trouve l'agresseur !</p>
+                  <h1
+                    className="font-bangers text-2xl tracking-wider leading-none animate-neon-flicker"
+                    style={{ color: BC.yellow, textShadow: `0 0 20px rgba(240,229,0,0.6)` }}
+                  >
+                    BRAIN CITY
+                  </h1>
+                  <p className="text-braincity-dim text-xs font-nunito mt-0.5">
+                    Mission : Trouve l'agresseur !
+                  </p>
                 </div>
               </div>
+
+              {/* Right: controls */}
               <div className="flex items-center gap-4">
+                {/* Track position */}
                 <div className="text-center">
-                  <div className="text-braincity-primary font-bold text-base leading-none">
+                  <div className="font-mono text-base font-bold leading-none" style={{ color: BC.cyan }}>
                     {formattedCurrentTime}
                   </div>
-                  <div className="text-gray-400 text-[10px] mt-0.5 font-semibold">PISTE</div>
+                  <div className="text-braincity-dim text-[10px] mt-0.5 font-bangers tracking-wider">PISTE</div>
                 </div>
+
+                {/* Mission timer */}
                 {missionTimerEnabled && timeLeft !== null && (
                   <div className="text-center">
-                    <div className={`font-bold text-base leading-none ${timerColor}`}>
+                    <div className={`font-mono text-base font-bold leading-none ${timerColor}`}>
                       {formatTime(timeLeft)}
                     </div>
-                    <div className="text-gray-400 text-[10px] mt-0.5 font-semibold">MISSION</div>
+                    <div className="text-braincity-dim text-[10px] mt-0.5 font-bangers tracking-wider">TEMPS</div>
                   </div>
                 )}
-                {/* Star-based clue progress */}
-                <div className="flex gap-1">
-                  {clueTriggers.map(({ id }) => (
-                    <motion.span
-                      key={id}
-                      className="text-lg leading-none"
-                      animate={discoveredClues.includes(id) ? { scale: [1, 1.4, 1] } : {}}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {discoveredClues.includes(id) ? '⭐' : '☆'}
-                    </motion.span>
-                  ))}
+
+                {/* Stars progress */}
+                <div className="flex gap-1 items-center">
+                  {clueTriggers.map(({ id }) => {
+                    const found = discoveredClues.includes(id);
+                    return (
+                      <motion.span
+                        key={id}
+                        className="text-lg leading-none"
+                        style={{
+                          filter: found
+                            ? `drop-shadow(0 0 6px ${BC.yellow})`
+                            : 'grayscale(1) opacity(0.3)',
+                        }}
+                        animate={found ? { scale: [1, 1.4, 1] } : {}}
+                        transition={{ duration: 0.3 }}
+                      >
+                        ⭐
+                      </motion.span>
+                    );
+                  })}
                 </div>
+
+                {/* J'ACCUSE */}
                 <motion.button
                   onClick={handleContinueToSuspects}
-                  className="px-4 py-2 font-black rounded-2xl text-white text-sm"
-                  style={{ background: 'linear-gradient(90deg, #22d3ee, #84cc16)' }}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+                  className="px-5 py-2 font-bangers text-base tracking-widest rounded-xl text-black"
+                  style={{
+                    background: BC.yellow,
+                    boxShadow: `0 0 16px rgba(240,229,0,0.5), 0 2px 8px rgba(0,0,0,0.4)`,
+                  }}
+                  whileHover={{ scale: 1.06, boxShadow: `0 0 28px rgba(240,229,0,0.9)` }}
+                  whileTap={{ scale: 0.94 }}
                 >
-                  🎯 J'accuse !
+                  ⚡ J'ACCUSE !
                 </motion.button>
               </div>
             </>
@@ -230,7 +281,7 @@ const Dashboard = memo(() => {
           )}
         </motion.header>
 
-        {/* Ricardo event modal */}
+        {/* ── Ricardo event modal ── */}
         <AnimatePresence>
           {isBrainCity && ricardo.isEvent && (
             <RicardoEventModal
@@ -243,41 +294,83 @@ const Dashboard = memo(() => {
           )}
         </AnimatePresence>
 
-        {/* Timer expired overlay */}
+        {/* ── Timer expired overlay ── */}
         <AnimatePresence>
           {timerExpired && (
             <motion.div
-              className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+              className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
               <motion.div
-                className="bg-forensics-bg-light border-2 border-red-500 rounded-lg p-8 max-w-md text-center"
+                className={`border-2 rounded-xl p-8 max-w-md text-center ${
+                  isBrainCity ? `${BC_CARD}` : 'bg-forensics-bg-light border-red-500'
+                }`}
+                style={isBrainCity ? {
+                  borderColor: BC.red,
+                  boxShadow: `0 0 40px rgba(255,51,85,0.5)`,
+                } : {}}
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring' }}
               >
                 <div className="text-6xl mb-4">⏰</div>
-                <h2 className="text-3xl font-bold text-red-500 font-mono mb-3">
-                  TEMPS ÉCOULÉ !
-                </h2>
-                <p className="text-gray-300 font-mono text-sm mb-6">
-                  Le temps imparti est épuisé. Vous pouvez continuer ou recommencer.
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setTimerExpired(false)}
-                    className="flex-1 py-2 bg-forensics-cyan text-forensics-bg font-mono font-bold rounded hover:bg-white transition-colors"
-                  >
-                    CONTINUER
-                  </button>
-                  <button
-                    onClick={handleContinueToSuspects}
-                    className="flex-1 py-2 bg-forensics-green text-forensics-bg font-mono font-bold rounded hover:bg-white transition-colors"
-                  >
-                    IDENTIFIER
-                  </button>
-                </div>
+                {isBrainCity ? (
+                  <>
+                    <h2
+                      className="font-bangers text-4xl tracking-wider mb-3"
+                      style={{ color: BC.red, textShadow: `0 0 20px rgba(255,51,85,0.6)` }}
+                    >
+                      TEMPS ÉCOULÉ !
+                    </h2>
+                    <p className="text-braincity-text text-sm font-nunito mb-6">
+                      Le temps est épuisé. Tu peux continuer ou identifier le suspect !
+                    </p>
+                    <div className="flex gap-3">
+                      <motion.button
+                        onClick={() => setTimerExpired(false)}
+                        className="flex-1 py-2.5 font-bangers text-base tracking-wider rounded-lg"
+                        style={{ background: '#12123a', border: `1px solid ${BC.cyan}`, color: BC.cyan }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        CONTINUER
+                      </motion.button>
+                      <motion.button
+                        onClick={handleContinueToSuspects}
+                        className="flex-1 py-2.5 font-bangers text-base tracking-wider rounded-lg text-black"
+                        style={{ background: BC.yellow, boxShadow: `0 0 12px rgba(240,229,0,0.5)` }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        J'ACCUSE !
+                      </motion.button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-3xl font-bold text-red-500 font-mono mb-3">
+                      TEMPS ÉCOULÉ !
+                    </h2>
+                    <p className="text-gray-300 font-mono text-sm mb-6">
+                      Le temps imparti est épuisé. Vous pouvez continuer ou recommencer.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setTimerExpired(false)}
+                        className="flex-1 py-2 bg-forensics-cyan text-forensics-bg font-mono font-bold rounded hover:bg-white transition-colors"
+                      >
+                        CONTINUER
+                      </button>
+                      <button
+                        onClick={handleContinueToSuspects}
+                        className="flex-1 py-2 bg-forensics-green text-forensics-bg font-mono font-bold rounded hover:bg-white transition-colors"
+                      >
+                        IDENTIFIER
+                      </button>
+                    </div>
+                  </>
+                )}
               </motion.div>
             </motion.div>
           )}
@@ -286,16 +379,16 @@ const Dashboard = memo(() => {
         {/* ── MAIN GRID ── */}
         <div className="grid grid-cols-12 gap-4">
 
-          {/* ── LEFT: Visualisations ── */}
+          {/* ═══ LEFT: Visualisations ═══ */}
           <div className="col-span-12 lg:col-span-8 space-y-4">
 
-            {/* Mission brief */}
+            {/* Mission brief / Ricardo bubble */}
             <motion.div
-              className={`rounded-lg px-5 py-3 ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} p-4 bc-accent-yellow`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg px-5 py-3'
+              }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
@@ -331,41 +424,50 @@ const Dashboard = memo(() => {
 
             {/* Waveform */}
             <motion.div
-              className={`rounded-lg p-4 ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} p-4 bc-accent-cyan`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+              }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
               <div className="flex items-center justify-between mb-3">
                 {isBrainCity ? (
-                  <h3 className="text-sm font-bold text-braincity-primary">
-                    🎧 L'enregistrement mystère {isReversed && <span className="text-braincity-accent ml-2">🔄 INVERSÉ</span>}
-                  </h3>
-                ) : (
-                  <h3 className="text-sm font-bold text-forensics-cyan font-mono tracking-wider">
-                    FORME D'ONDE {isReversed && <span className="text-forensics-orange ml-2">◀◀ INVERSÉE</span>}
-                  </h3>
-                )}
-                <div className="flex items-center gap-3">
-                  {isBrainCity ? (
+                  <>
+                    <h3 className="font-bangers text-lg tracking-wider" style={{ color: BC.cyan }}>
+                      ENREGISTREMENT
+                      {isReversed && (
+                        <span className="ml-3 text-sm font-bangers" style={{ color: BC.orange }}>
+                          ◀ INVERSÉ
+                        </span>
+                      )}
+                    </h3>
                     <motion.button
                       onClick={() => { store.toggleReverse(); audioEngine.setReverse(!isReversed); }}
-                      className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition-all border-2 ${
-                        isReversed
-                          ? 'bg-orange-50 border-braincity-accent text-braincity-accent'
-                          : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                      }`}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold font-nunito transition-all"
+                      style={isReversed ? {
+                        background: `${BC.orange}1a`,
+                        border: `1px solid ${BC.orange}`,
+                        color: BC.orange,
+                      } : {
+                        background: 'transparent',
+                        border: '1px solid #1a1a48',
+                        color: '#44447a',
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       🔄 Inverser
                     </motion.button>
-                  ) : (
-                    <>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-sm font-bold text-forensics-cyan font-mono tracking-wider">
+                      FORME D'ONDE {isReversed && <span className="text-forensics-orange ml-2">◀◀ INVERSÉE</span>}
+                    </h3>
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={toggleComparison}
                         className={`px-3 py-1 font-mono text-xs font-bold rounded border transition-all ${
@@ -379,64 +481,73 @@ const Dashboard = memo(() => {
                       <span className="text-gray-600 font-mono text-xs">
                         Cliquez pour lire / pause
                       </span>
-                    </>
-                  )}
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
               <Waveform audioUrl={activeAudioUrl} />
             </motion.div>
 
             {/* Spectrogram */}
             <motion.div
-              className={`rounded-lg p-4 ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} p-4 bc-accent-purple`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+              }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h3 className={`text-sm font-bold mb-3 ${isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan font-mono tracking-wider'}`}>
-                {isBrainCity ? '📊 Les sons en image' : 'SPECTROGRAMME'}
+              <h3
+                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                style={isBrainCity ? { color: BC.purple } : {}}
+              >
+                {isBrainCity ? 'CARTE DES SONS' : 'SPECTROGRAMME'}
               </h3>
               <Spectrogram audioUrl={activeAudioUrl} isBrainCity={isBrainCity} />
             </motion.div>
 
             {/* Frequency Bars */}
             <motion.div
-              className={`rounded-lg p-4 ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} p-4 bc-accent-green`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+              }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <h3 className={`text-sm font-bold mb-3 ${isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan font-mono tracking-wider'}`}>
-                {isBrainCity ? '🎼 Les fréquences' : 'ANALYSE FRÉQUENTIELLE'}
+              <h3
+                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                style={isBrainCity ? { color: BC.green } : {}}
+              >
+                {isBrainCity ? 'FRÉQUENCES' : 'ANALYSE FRÉQUENTIELLE'}
               </h3>
               <FrequencyBars isPlaying={isPlaying} height={120} />
             </motion.div>
           </div>
 
-          {/* ── RIGHT: Controls ── */}
+          {/* ═══ RIGHT: Controls ═══ */}
           <div className="col-span-12 lg:col-span-4 space-y-4">
 
-            {/* Guide */}
+            {/* Steps guide */}
             <motion.div
-              className={`rounded-lg p-4 ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} p-4 bc-accent-blue`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+              }
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 }}
             >
-              <h3 className={`text-sm font-bold mb-3 ${isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan font-mono tracking-wider'}`}>
-                {isBrainCity ? '📋 Les étapes' : 'GUIDE D\'ANALYSE'}
+              <h3
+                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                style={isBrainCity ? { color: BC.blue } : {}}
+              >
+                {isBrainCity ? 'ÉTAPES' : "GUIDE D'ANALYSE"}
               </h3>
               <ol className="space-y-2">
                 {analysisSteps.map((text, i) => {
@@ -446,20 +557,27 @@ const Dashboard = memo(() => {
                       key={i}
                       className={`flex items-start gap-3 text-xs transition-colors ${
                         isBrainCity
-                          ? done ? 'text-braincity-success font-semibold' : 'text-gray-400'
+                          ? ''
                           : done ? 'text-forensics-green font-mono' : 'text-gray-500 font-mono'
                       }`}
+                      style={isBrainCity ? { color: done ? '#c8c8ff' : '#44447a' } : {}}
                     >
                       <span
                         className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                          isBrainCity
+                          !isBrainCity
                             ? done
-                              ? 'bg-braincity-success text-white'
-                              : 'border-2 border-gray-200 text-gray-400'
-                            : done
-                            ? 'border-forensics-green bg-forensics-green/20 text-forensics-green border'
-                            : 'border border-gray-600 text-gray-600'
+                              ? 'border-forensics-green bg-forensics-green/20 text-forensics-green border'
+                              : 'border border-gray-600 text-gray-600'
+                            : ''
                         }`}
+                        style={isBrainCity ? (done ? {
+                          background: BC.green,
+                          color: '#000',
+                          boxShadow: `0 0 8px ${BC.green}80`,
+                        } : {
+                          border: '1px solid #1a1a48',
+                          color: '#44447a',
+                        }) : {}}
                       >
                         {done ? '✓' : i + 1}
                       </span>
@@ -472,34 +590,43 @@ const Dashboard = memo(() => {
 
             {/* Audio Meter */}
             <motion.div
-              className={`rounded-lg p-4 ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} p-4 bc-accent-yellow`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+              }
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.25 }}
             >
-              <h3 className={`text-sm font-bold mb-3 ${isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan font-mono tracking-wider'}`}>
-                {isBrainCity ? '📢 Le volume' : 'NIVEAUX AUDIO'}
+              <h3
+                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                style={isBrainCity ? { color: BC.yellow } : {}}
+              >
+                {isBrainCity ? 'NIVEAUX' : 'NIVEAUX AUDIO'}
               </h3>
               <AudioMeter isPlaying={isPlaying} height={150} />
             </motion.div>
 
             {/* Tools */}
             <motion.div
-              className={`rounded-lg overflow-hidden ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} bc-accent-orange`
+                  : `bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg overflow-hidden`
+              }
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.35 }}
             >
               {isBrainCity ? (
                 <div className="p-4">
+                  <h3
+                    className="font-bangers text-lg tracking-wider mb-3"
+                    style={{ color: BC.orange }}
+                  >
+                    OUTILS DÉTECTIVE
+                  </h3>
                   <KidsToolPanel />
                 </div>
               ) : (
@@ -507,9 +634,9 @@ const Dashboard = memo(() => {
                   <div className="flex border-b border-forensics-cyan-dark">
                     {(
                       [
-                        { key: 'filtres', label: 'FILTRES' },
-                        { key: 'pitch', label: 'PITCH' },
-                        { key: 'avance', label: 'PARAMÈTRES' },
+                        { key: 'filtres',  label: 'FILTRES' },
+                        { key: 'pitch',    label: 'PITCH' },
+                        { key: 'avance',   label: 'PARAMÈTRES' },
                       ] as { key: ToolTab; label: string }[]
                     ).map(({ key, label }) => (
                       <button
@@ -527,8 +654,8 @@ const Dashboard = memo(() => {
                   </div>
                   <div className="p-4 max-h-[520px] overflow-y-auto">
                     {activeTab === 'filtres' && <FilterPanel />}
-                    {activeTab === 'pitch' && <PitchControl />}
-                    {activeTab === 'avance' && (
+                    {activeTab === 'pitch'   && <PitchControl />}
+                    {activeTab === 'avance'  && (
                       <div className="space-y-4">
                         <h4 className="text-xs font-bold text-forensics-cyan font-mono tracking-wider">
                           PARAMÈTRES ACTIFS
@@ -541,22 +668,28 @@ const Dashboard = memo(() => {
               )}
             </motion.div>
 
-            {/* Clue Tracker */}
+            {/* Clue tracker */}
             <motion.div
-              className={`rounded-lg p-4 ${
+              className={
                 isBrainCity
-                  ? 'bg-white shadow-sm border border-sky-100'
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark'
-              }`}
+                  ? `${BC_CARD} p-4 bc-accent-pink`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+              }
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.45 }}
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className={`text-sm font-bold ${isBrainCity ? 'text-braincity-primary' : 'text-forensics-cyan font-mono tracking-wider'}`}>
-                  {isBrainCity ? '⭐ Tes indices trouvés' : 'INDICES'}
+                <h3
+                  className={`${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                  style={isBrainCity ? { color: BC.pink } : {}}
+                >
+                  INDICES
                 </h3>
-                <span className={`text-xs ${isBrainCity ? 'text-gray-400 font-semibold' : 'text-gray-500 font-mono'}`}>
+                <span
+                  className="text-xs font-bold"
+                  style={isBrainCity ? { color: BC.pink } : { color: '#6b7280', fontFamily: 'monospace' }}
+                >
                   {clueCount}/{totalClues}
                 </span>
               </div>
@@ -566,25 +699,44 @@ const Dashboard = memo(() => {
                   return (
                     <motion.div
                       key={id}
-                      className={`flex items-start gap-2 p-2 rounded-xl border text-[11px] transition-all ${
-                        isBrainCity
+                      className={`flex items-start gap-2 p-2 rounded-lg text-[11px] transition-all ${
+                        !isBrainCity
                           ? found
-                            ? 'border-yellow-200 bg-yellow-50 text-yellow-700'
-                            : 'border-dashed border-gray-200 text-gray-300'
-                          : found
-                          ? 'border-forensics-green/40 bg-forensics-green/5 text-forensics-green font-mono'
-                          : 'border-gray-800 text-gray-700 font-mono'
+                            ? 'border border-forensics-green/40 bg-forensics-green/5 text-forensics-green font-mono'
+                            : 'border border-gray-800 text-gray-700 font-mono'
+                          : ''
                       }`}
+                      style={isBrainCity ? (found ? {
+                        border: `1px solid ${BC.pink}60`,
+                        background: `${BC.pink}10`,
+                        boxShadow: `0 0 8px ${BC.pink}28`,
+                      } : {
+                        border: '1px dashed #1a1a48',
+                      }) : {}}
                       animate={found && isBrainCity ? { scale: [1, 1.05, 1] } : {}}
                       transition={{ duration: 0.3 }}
                     >
                       <span className="flex-shrink-0 mt-0.5">
-                        {isBrainCity ? (found ? '⭐' : '☆') : (found ? '✓' : '○')}
+                        {isBrainCity
+                          ? (found
+                            ? <span style={{ filter: `drop-shadow(0 0 4px ${BC.yellow})` }}>⭐</span>
+                            : <span style={{ color: '#2a2a5a' }}>☆</span>
+                          )
+                          : (found ? '✓' : '○')
+                        }
                       </span>
                       <div className="min-w-0">
-                        <div className="leading-tight">{found ? label : '???'}</div>
+                        <div
+                          className="leading-tight"
+                          style={isBrainCity ? { color: found ? '#e0e0ff' : '#44447a' } : {}}
+                        >
+                          {found ? label : '???'}
+                        </div>
                         {found && (
-                          <div className={`text-[10px] mt-0.5 ${isBrainCity ? 'text-yellow-500' : 'text-gray-500'}`}>
+                          <div
+                            className="text-[10px] mt-0.5"
+                            style={isBrainCity ? { color: BC.pink } : { color: '#6b7280' }}
+                          >
                             {hint}
                           </div>
                         )}
@@ -595,7 +747,7 @@ const Dashboard = memo(() => {
               </div>
             </motion.div>
 
-            {/* Stream Deck — contrôles audio */}
+            {/* Stream Deck panels */}
             <motion.div
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -603,8 +755,6 @@ const Dashboard = memo(() => {
             >
               <StreamDeckPanel />
             </motion.div>
-
-            {/* Stream Deck — suspects */}
             <motion.div
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -619,19 +769,30 @@ const Dashboard = memo(() => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.55 }}
             >
-              <button
-                onClick={handleContinueToSuspects}
-                className={`w-full font-bold py-4 rounded-2xl uppercase tracking-wider text-sm transition-colors ${
-                  isBrainCity
-                    ? 'text-white'
-                    : 'bg-forensics-green text-forensics-bg font-mono hover:bg-white'
-                }`}
-                style={isBrainCity ? { background: 'linear-gradient(90deg, #22d3ee, #84cc16)' } : {}}
-              >
-                {isBrainCity ? '🎯 J\'accuse !' : '→ Identifier le Suspect'}
-              </button>
-              <p className={`text-xs text-center mt-1.5 ${isBrainCity ? 'text-gray-400 font-semibold' : 'text-gray-600 font-mono'}`}>
-                {isBrainCity ? 'Tu penses savoir qui c\'est ?' : 'Passez à la comparaison vocale'}
+              {isBrainCity ? (
+                <motion.button
+                  onClick={handleContinueToSuspects}
+                  className="w-full font-bangers text-xl tracking-widest py-4 rounded-xl text-black"
+                  style={{
+                    background: BC.yellow,
+                    boxShadow: `0 0 20px rgba(240,229,0,0.4), 0 4px 12px rgba(0,0,0,0.4)`,
+                  }}
+                  whileHover={{ scale: 1.02, boxShadow: `0 0 32px rgba(240,229,0,0.7)` }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  ⚡ J'ACCUSE !
+                </motion.button>
+              ) : (
+                <button
+                  onClick={handleContinueToSuspects}
+                  className="w-full bg-forensics-green text-forensics-bg font-mono font-bold py-4 rounded-2xl uppercase tracking-wider text-sm hover:bg-white transition-colors"
+                >
+                  → Identifier le Suspect
+                </button>
+              )}
+              <p className={`text-xs text-center mt-1.5 ${isBrainCity ? '' : 'text-gray-600 font-mono'}`}
+                 style={isBrainCity ? { color: '#44447a' } : {}}>
+                {isBrainCity ? "Tu penses savoir qui c'est ?" : 'Passez à la comparaison vocale'}
               </p>
             </motion.div>
           </div>

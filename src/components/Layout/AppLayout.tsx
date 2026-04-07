@@ -13,7 +13,7 @@ const AppLayout = () => {
     <div
       className={`min-h-screen relative overflow-hidden ${
         isBrainCity
-          ? 'bg-gradient-to-br from-braincity-bg to-braincity-bg-end'
+          ? 'bg-braincity-bg bc-workspace-bg'
           : 'bg-forensics-bg'
       }`}
     >

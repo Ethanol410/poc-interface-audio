@@ -9,24 +9,39 @@ interface ToolButtonProps {
   label: string;
   description: string;
   active: boolean;
-  color: string;
-  activeBg: string;
+  neonColor: string;
   onClick: () => void;
 }
 
-const ToolButton = ({ emoji, label, description, active, color, activeBg, onClick }: ToolButtonProps) => (
-  <button
+const ToolButton = ({ emoji, label, description, active, neonColor, onClick }: ToolButtonProps) => (
+  <motion.button
     onClick={onClick}
-    className={`rounded-xl p-3 text-center transition-all border-2 ${
-      active
-        ? `${activeBg} border-current shadow-md`
-        : 'bg-white border-dashed border-gray-200 hover:border-gray-300'
-    }`}
+    className="rounded-xl p-3 text-center w-full transition-colors"
+    style={active ? {
+      background: `${neonColor}18`,
+      border: `2px solid ${neonColor}`,
+      boxShadow: `0 0 14px ${neonColor}50, inset 0 0 8px ${neonColor}12`,
+    } : {
+      background: '#0a0a22',
+      border: '2px dashed #1a1a48',
+    }}
+    whileHover={{ scale: 1.04 }}
+    whileTap={{ scale: 0.94 }}
   >
-    <div className="text-2xl mb-1">{emoji}</div>
-    <div className={`text-xs font-bold ${active ? color : 'text-gray-700'}`}>{label}</div>
-    <div className="text-[10px] text-gray-400 mt-0.5 leading-tight">{description}</div>
-  </button>
+    <div className="text-2xl mb-1.5">{emoji}</div>
+    <div
+      className="font-bangers text-sm tracking-wide"
+      style={{ color: active ? neonColor : '#44447a' }}
+    >
+      {label}
+    </div>
+    <div
+      className="text-[10px] mt-0.5 leading-tight"
+      style={{ color: active ? '#c8c8ff' : '#2a2a5a' }}
+    >
+      {description}
+    </div>
+  </motion.button>
 );
 
 const KidsToolPanel = () => {
@@ -43,13 +58,8 @@ const KidsToolPanel = () => {
 
   const { lowPassFilter, highPassFilter, updateLowPassFilter, updateHighPassFilter } = useFilterControls();
 
-  const handleLowPass = () => {
-    updateLowPassFilter({ enabled: !lowPassFilter.enabled });
-  };
-
-  const handleHighPass = () => {
-    updateHighPassFilter({ enabled: !highPassFilter.enabled });
-  };
+  const handleLowPass = () => updateLowPassFilter({ enabled: !lowPassFilter.enabled });
+  const handleHighPass = () => updateHighPassFilter({ enabled: !highPassFilter.enabled });
 
   const handleNotch = () => {
     const next = { ...notchFilter, enabled: !notchFilter.enabled };
@@ -87,54 +97,50 @@ const KidsToolPanel = () => {
 
   return (
     <div className="space-y-4">
-      <div className="text-xs font-bold text-braincity-primary mb-2">🔧 Tes outils de détective</div>
-
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         <ToolButton
           emoji="🔊"
-          label="Sons graves"
+          label="GRAVES"
           description="Filtre les bruits forts"
           active={lowPassFilter.enabled}
-          color="text-braincity-primary"
-          activeBg="bg-sky-50"
+          neonColor="#00e5ff"
           onClick={handleLowPass}
         />
         <ToolButton
           emoji="🎵"
-          label="Sons aigus"
+          label="AIGUS"
           description="Nettoie les sifflements"
           active={highPassFilter.enabled}
-          color="text-braincity-success"
-          activeBg="bg-green-50"
+          neonColor="#3dff85"
           onClick={handleHighPass}
         />
         <ToolButton
           emoji="⚡"
-          label="Nettoyer"
+          label="NETTOYER"
           description="Enlève le buzz électrique"
           active={notchFilter.enabled}
-          color="text-braincity-warning"
-          activeBg="bg-yellow-50"
+          neonColor="#f0e500"
           onClick={handleNotch}
         />
         <ToolButton
           emoji="🔎"
-          label="Amplifier"
+          label="AMPLIFIER"
           description="Rends la voix plus forte"
           active={compressor.enabled}
-          color="text-braincity-violet"
-          activeBg="bg-purple-50"
+          neonColor="#a855f7"
           onClick={handleCompressor}
         />
       </div>
 
       {/* Advanced toggle */}
-      <button
+      <motion.button
         onClick={() => setShowAdvanced((v) => !v)}
-        className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors py-1"
+        className="w-full text-xs py-1.5 rounded-lg transition-colors font-nunito font-bold"
+        style={{ color: '#44447a', border: '1px dashed #1a1a48' }}
+        whileHover={{ color: '#7070b0' }}
       >
-        <span>⚙️ Options avancées</span> {showAdvanced ? '▲' : '▼'}
-      </button>
+        ⚙️ Options avancées {showAdvanced ? '▲' : '▼'}
+      </motion.button>
 
       <AnimatePresence>
         {showAdvanced && (
@@ -145,22 +151,30 @@ const KidsToolPanel = () => {
             className="space-y-3 overflow-hidden"
           >
             {/* Band-pass */}
-            <div>
-              <button
-                onClick={handleBandPass}
-                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
-                  bandPassFilter.enabled
-                    ? 'bg-pink-50 border-pink-300 text-braincity-pink'
-                    : 'bg-white border-gray-200 text-gray-500'
-                }`}
-              >
-                🎤 <span>Changer la voix</span> {bandPassFilter.enabled ? '(activé)' : ''}
-              </button>
-            </div>
+            <motion.button
+              onClick={handleBandPass}
+              className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold font-nunito transition-all"
+              style={bandPassFilter.enabled ? {
+                background: 'rgba(255,63,164,0.12)',
+                border: '1px solid #ff3fa4',
+                color: '#ff3fa4',
+                boxShadow: '0 0 10px rgba(255,63,164,0.3)',
+              } : {
+                background: '#0a0a22',
+                border: '1px dashed #1a1a48',
+                color: '#44447a',
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              🎤 Changer la voix {bandPassFilter.enabled && <span className="ml-1">(activé)</span>}
+            </motion.button>
 
             {/* Pitch */}
             <div>
-              <div className="text-xs text-gray-500 mb-1 font-semibold">🎭 Changer la tonalité</div>
+              <div className="text-xs mb-2 font-nunito font-bold" style={{ color: '#7070aa' }}>
+                🎭 Tonalité
+              </div>
               <input
                 type="range"
                 min="-12"
@@ -168,16 +182,19 @@ const KidsToolPanel = () => {
                 step="1"
                 value={pitchShift.semitones}
                 onChange={handlePitch}
-                className="w-full accent-braincity-primary"
+                className="w-full"
+                style={{ accentColor: '#00e5ff' }}
               />
-              <div className="text-center text-xs text-gray-400">
+              <div className="text-center text-xs mt-1 font-mono" style={{ color: '#5a5a9a' }}>
                 {pitchShift.semitones > 0 ? `+${pitchShift.semitones}` : pitchShift.semitones} demi-tons
               </div>
             </div>
 
             {/* Speed */}
             <div>
-              <div className="text-xs text-gray-500 mb-1 font-semibold">⏩ Vitesse</div>
+              <div className="text-xs mb-2 font-nunito font-bold" style={{ color: '#7070aa' }}>
+                ⏩ Vitesse
+              </div>
               <input
                 type="range"
                 min="0.25"
@@ -185,22 +202,33 @@ const KidsToolPanel = () => {
                 step="0.25"
                 value={playbackSpeed}
                 onChange={handleSpeed}
-                className="w-full accent-braincity-primary"
+                className="w-full"
+                style={{ accentColor: '#3dff85' }}
               />
-              <div className="text-center text-xs text-gray-400">{playbackSpeed}×</div>
+              <div className="text-center text-xs mt-1 font-mono" style={{ color: '#5a5a9a' }}>
+                {playbackSpeed}×
+              </div>
             </div>
 
             {/* Reverse */}
-            <button
+            <motion.button
               onClick={handleReverse}
-              className={`w-full px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
-                isReversed
-                  ? 'bg-orange-50 border-orange-300 text-braincity-accent'
-                  : 'bg-white border-gray-200 text-gray-500'
-              }`}
+              className="w-full px-3 py-2.5 rounded-lg text-xs font-bold font-nunito transition-all"
+              style={isReversed ? {
+                background: 'rgba(255,119,48,0.12)',
+                border: '1px solid #ff7730',
+                color: '#ff7730',
+                boxShadow: '0 0 10px rgba(255,119,48,0.3)',
+              } : {
+                background: '#0a0a22',
+                border: '1px dashed #1a1a48',
+                color: '#44447a',
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
             >
-              🔄 Inverser le son {isReversed ? '(activé)' : ''}
-            </button>
+              🔄 Inverser le son {isReversed && <span className="ml-1">(activé)</span>}
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
