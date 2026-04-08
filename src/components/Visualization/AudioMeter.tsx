@@ -9,9 +9,10 @@ import { audioEngine } from '@/services/audioEngine';
 interface AudioMeterProps {
   isPlaying: boolean;
   height?: number;
+  isBrainCity?: boolean;
 }
 
-const AudioMeter = memo(({ isPlaying, height = 200 }: AudioMeterProps) => {
+const AudioMeter = memo(({ isPlaying, height = 200, isBrainCity = false }: AudioMeterProps) => {
   const [rmsLevel, setRmsLevel] = useState(0);
   const [peakLevel, setPeakLevel] = useState(0);
   const animationFrameId = useRef<number | null>(null);
@@ -50,23 +51,28 @@ const AudioMeter = memo(({ isPlaying, height = 200 }: AudioMeterProps) => {
   const peakPercent = useMemo(() => Math.min(peakLevel * 100, 100), [peakLevel]);
 
   const getMeterColor = useCallback((level: number) => {
+    if (isBrainCity) {
+      if (level > 90) return '#EF476F'; // coral
+      if (level > 70) return '#FFD166'; // mustard
+      return '#06D6A0'; // teal
+    }
     if (level > 90) return '#ff3366'; // Red - clipping
     if (level > 70) return '#ff9933'; // Orange - hot
     if (level > 40) return '#00ff88'; // Green - optimal
     return '#00d4ff'; // Cyan - low
-  }, []);
+  }, [isBrainCity]);
 
   return (
     <div className="audio-meter flex gap-4">
       {/* RMS Meter */}
       <div className="flex-1">
         <div className="mb-2">
-          <span className="text-gray-400 text-xs font-mono uppercase">
+          <span className={isBrainCity ? "text-braincity-text text-sm font-fredoka font-bold uppercase" : "text-gray-400 text-xs font-mono uppercase"}>
             RMS Level
           </span>
         </div>
         <div
-          className="relative bg-forensics-bg-light border border-forensics-cyan rounded-lg overflow-hidden"
+          className={isBrainCity ? "relative bg-[#FFF9EC] border-4 border-braincity-border rounded-[24px] overflow-hidden" : "relative bg-forensics-bg-light border border-forensics-cyan rounded-lg overflow-hidden"}
           style={{ height }}
         >
           <motion.div
@@ -85,9 +91,9 @@ const AudioMeter = memo(({ isPlaying, height = 200 }: AudioMeterProps) => {
             {[100, 75, 50, 25, 0].map((mark) => (
               <div
                 key={mark}
-                className="h-px bg-gray-700 relative"
+                className={`h-px relative ${isBrainCity ? 'bg-braincity-border/20' : 'bg-gray-700'}`}
               >
-                <span className="absolute left-2 -top-2 text-xs text-gray-500 font-mono">
+                <span className={isBrainCity ? "absolute left-2 -top-2 text-[10px] text-braincity-dim font-fredoka font-bold" : "absolute left-2 -top-2 text-xs text-gray-500 font-mono"}>
                   {mark}
                 </span>
               </div>
@@ -95,7 +101,7 @@ const AudioMeter = memo(({ isPlaying, height = 200 }: AudioMeterProps) => {
           </div>
         </div>
         <div className="mt-2 text-center">
-          <span className="text-forensics-cyan font-mono text-sm font-bold">
+          <span className={isBrainCity ? "text-braincity-text font-fredoka text-sm font-bold" : "text-forensics-cyan font-mono text-sm font-bold"}>
             {rmsPercent.toFixed(1)}%
           </span>
         </div>
@@ -104,12 +110,12 @@ const AudioMeter = memo(({ isPlaying, height = 200 }: AudioMeterProps) => {
       {/* Peak Meter */}
       <div className="flex-1">
         <div className="mb-2">
-          <span className="text-gray-400 text-xs font-mono uppercase">
+          <span className={isBrainCity ? "text-braincity-text text-sm font-fredoka font-bold uppercase" : "text-gray-400 text-xs font-mono uppercase"}>
             Peak Level
           </span>
         </div>
         <div
-          className="relative bg-forensics-bg-light border border-forensics-cyan rounded-lg overflow-hidden"
+          className={isBrainCity ? "relative bg-[#FFF9EC] border-4 border-braincity-border rounded-[24px] overflow-hidden" : "relative bg-forensics-bg-light border border-forensics-cyan rounded-lg overflow-hidden"}
           style={{ height }}
         >
           <motion.div
@@ -140,12 +146,12 @@ const AudioMeter = memo(({ isPlaying, height = 200 }: AudioMeterProps) => {
           {/* Scale marks */}
           <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
             {[100, 75, 50, 25, 0].map((mark) => (
-              <div key={mark} className="h-px bg-gray-700" />
+              <div key={mark} className={`h-px ${isBrainCity ? 'bg-braincity-border/20' : 'bg-gray-700'}`} />
             ))}
           </div>
         </div>
         <div className="mt-2 text-center">
-          <span className="text-forensics-cyan font-mono text-sm font-bold">
+          <span className={isBrainCity ? "text-braincity-text font-fredoka text-sm font-bold" : "text-forensics-cyan font-mono text-sm font-bold"}>
             {peakPercent.toFixed(1)}%
           </span>
         </div>

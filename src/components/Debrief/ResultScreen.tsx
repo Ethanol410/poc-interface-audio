@@ -65,7 +65,7 @@ const ResultScreen = () => {
   }
 
   return (
-    <div className="min-h-screen p-6 flex items-center justify-center">
+    <div className={`min-h-screen p-6 flex items-center justify-center ${isBrainCity ? 'bg-[#FFF9EC]' : ''}`} style={isBrainCity ? { backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' } : {}}>
       <div className="max-w-4xl w-full">
 
         {/* Analyzing animation */}
@@ -86,10 +86,10 @@ const ResultScreen = () => {
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 1, repeat: Infinity }}
                   />
-                  <h2 className="text-2xl font-black text-braincity-primary mt-4">
+                  <h2 className="text-4xl font-bangers tracking-wider text-[#073B4C] mt-6">
                     Ricardo analyse ta réponse…
                   </h2>
-                  <p className="text-gray-400 font-semibold mt-2">Comparaison des voix en cours !</p>
+                  <p className="text-[#6b7280] font-fredoka font-bold text-lg mt-2">Comparaison des voix en cours !</p>
                 </>
               ) : (
                 <>
@@ -155,12 +155,12 @@ const ResultScreen = () => {
                       transition={{ duration: 0.5, repeat: isCorrect ? 0 : 3 }}
                     />
                     <h1
-                      className="text-4xl font-black mb-2"
-                      style={{ color: isCorrect ? '#16a34a' : '#ea580c' }}
+                      className="text-6xl font-bangers tracking-widest mb-3"
+                      style={{ color: isCorrect ? '#06D6A0' : '#EF476F' }}
                     >
                       {isCorrect ? 'BRAVO ! 🎉' : 'Pas tout à fait… 🤔'}
                     </h1>
-                    <p className="text-lg font-bold text-braincity-primary">
+                    <p className="text-xl font-fredoka font-bold text-[#073B4C]">
                       {isCorrect ? 'Tu as trouvé le coupable !' : `Ce n'est pas le bon suspect !`}
                     </p>
                   </motion.div>
@@ -183,37 +183,37 @@ const ResultScreen = () => {
                   {/* Score tiles */}
                   {isCorrect && (
                     <motion.div
-                      className="bg-white rounded-2xl p-5 shadow-sm border border-sky-100"
+                      className="bg-white rounded-[32px] p-6 shadow-[0_6px_0_0_#073B4C] border-4 border-[#073B4C]"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                     >
-                      <h2 className="text-sm font-black text-braincity-primary mb-4">📊 Ton score de détective</h2>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-green-50 rounded-xl p-3 text-center">
-                          <div className="text-2xl font-black text-braincity-success">
+                      <h2 className="text-3xl font-bangers tracking-wider text-[#073B4C] mb-6 text-center">📊 Ton carnet de détective</h2>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-[#FFF9EC] rounded-2xl p-4 text-center border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C]">
+                          <div className="text-4xl font-bangers text-[#06D6A0]">
                             {discoveredClues.length}/{scenario.clueTriggers.length}
                           </div>
-                          <div className="text-xs text-gray-400 font-semibold mt-0.5">Indices trouvés ⭐</div>
+                          <div className="text-sm text-[#073B4C] font-fredoka font-bold mt-1">Indices trouvés ⭐</div>
                         </div>
-                        <div className="bg-sky-50 rounded-xl p-3 text-center">
-                          <div className="text-2xl font-black text-braincity-primary">
+                        <div className="bg-[#FFF9EC] rounded-2xl p-4 text-center border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C]">
+                          <div className="text-4xl font-bangers text-[#118AB2]">
                             {suspect ? scenario.matchScores[suspect.id] : 0}%
                           </div>
-                          <div className="text-xs text-gray-400 font-semibold mt-0.5">Correspondance vocale 🎵</div>
+                          <div className="text-sm text-[#073B4C] font-fredoka font-bold mt-1">Comparaison Vocale 🎵</div>
                         </div>
                         {missionElapsed !== null && (
-                          <div className="bg-yellow-50 rounded-xl p-3 text-center">
-                            <div className="text-2xl font-black text-braincity-warning">
+                          <div className="bg-[#FFF9EC] rounded-2xl p-4 text-center border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C]">
+                            <div className="text-4xl font-bangers text-[#FFD166]">
                               {formatTime(missionElapsed)}
                             </div>
-                            <div className="text-xs text-gray-400 font-semibold mt-0.5">Temps de mission ⏱️</div>
+                            <div className="text-sm text-[#073B4C] font-fredoka font-bold mt-1">Temps Record ⏱️</div>
                           </div>
                         )}
                         {isReversed && (
-                          <div className="bg-purple-50 rounded-xl p-3 text-center">
-                            <div className="text-2xl font-black text-braincity-violet">✅</div>
-                            <div className="text-xs text-gray-400 font-semibold mt-0.5">Message décodé 🔄</div>
+                          <div className="bg-[#FFF9EC] rounded-2xl p-4 text-center border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C]">
+                            <div className="text-4xl font-bangers text-[#9D4EDD]">✅</div>
+                            <div className="text-sm text-[#073B4C] font-fredoka font-bold mt-1">Message décodé 🔄</div>
                           </div>
                         )}
                       </div>
@@ -229,25 +229,25 @@ const ResultScreen = () => {
                   >
                     <button
                       onClick={handleRestart}
-                      className="w-full py-3 text-white font-black rounded-2xl text-sm"
-                      style={{ background: 'linear-gradient(90deg, #22d3ee, #84cc16)' }}
+                      className="w-full py-4 text-[#073B4C] font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
+                      style={{ background: isCorrect ? '#06D6A0' : '#FFD166' }}
                     >
-                      {isCorrect ? '🏠 Retour à l\'accueil' : '🔄 Réessayer'}
+                      {isCorrect ? '🏠 RETOUR ACCUEIL' : '🔄 RÉESSAYER'}
                     </button>
                     {!isCorrect && (
                       <button
                         onClick={() => navigate('/suspects')}
-                        className="w-full py-3 bg-white border-2 border-sky-200 text-braincity-primary font-bold rounded-2xl hover:bg-sky-50 transition-colors text-sm"
+                        className="w-full py-4 bg-white border-4 border-[#073B4C] text-[#073B4C] font-bangers text-2xl rounded-2xl shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
                       >
-                        ← Retour aux suspects
+                        ← RETOUR AUX SUSPECTS
                       </button>
                     )}
                     {isCorrect && (
                       <button
                         onClick={handleExportPDF}
-                        className="w-full py-3 bg-white border-2 border-sky-200 text-braincity-primary font-bold rounded-2xl hover:bg-sky-50 transition-colors text-sm print:hidden"
+                        className="w-full py-4 bg-white border-4 border-[#073B4C] text-[#EF476F] font-bangers text-2xl rounded-2xl shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider print:hidden"
                       >
-                        📄 Imprimer mon diplôme de détective
+                        📄 IMPRIMER MON DIPLÔME
                       </button>
                     )}
                   </motion.div>

@@ -26,14 +26,9 @@ const LoginScreen = () => {
   if (isBrainCity) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center px-4"
-        style={{ background: 'linear-gradient(160deg, #b8e8ff 0%, #e8f8ff 40%, #d4f5e0 100%)' }}
+        className="min-h-screen flex items-center justify-center px-4 bg-[#FFF9EC]"
+        style={{ backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' }}
       >
-        {/* Decorative clouds */}
-        <div className="absolute top-4 left-6 w-16 h-5 bg-white/70 rounded-full" />
-        <div className="absolute top-2 left-14 w-10 h-4 bg-white/60 rounded-full" />
-        <div className="absolute top-5 right-10 w-12 h-4 bg-white/60 rounded-full" />
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -50,22 +45,22 @@ const LoginScreen = () => {
 
           {/* Title */}
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-black text-braincity-primary">BRAIN CITY 🏙️</h1>
-            <p className="text-sm text-gray-500 font-semibold mt-1">Mission : Trouve l'agresseur !</p>
+            <h1 className="text-5xl font-bangers tracking-wider text-[#EF476F]">BRAIN CITY 🏙️</h1>
+            <p className="text-lg text-[#073B4C] font-fredoka font-bold mt-1">Mission : Trouve l'agresseur !</p>
           </div>
 
           {/* Form */}
           <motion.div
-            className="bg-white rounded-2xl p-6 shadow-lg"
+            className="bg-white rounded-[32px] border-4 border-[#073B4C] p-6 shadow-[0_6px_0_0_#073B4C]"
             initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
                   htmlFor="agent-name"
-                  className="block text-braincity-primary text-sm font-bold mb-2"
+                  className="block text-[#073B4C] font-bangers tracking-wide text-xl mb-3"
                 >
                   👤 Ton prénom d'agent !
                 </label>
@@ -74,7 +69,7 @@ const LoginScreen = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-sky-50 border-2 border-sky-200 text-gray-800 px-4 py-3 rounded-xl focus:outline-none focus:border-braincity-primary transition-all"
+                  className="w-full bg-[#FFF9EC] border-4 border-[#073B4C] text-[#073B4C] font-fredoka font-bold text-lg px-4 py-3 rounded-2xl focus:outline-none focus:shadow-[0_4px_0_0_#073B4C] transition-all placeholder:text-[#6b7280] placeholder:font-semibold"
                   placeholder="Ex : Léa, Maxime…"
                   required
                   minLength={2}
@@ -84,13 +79,11 @@ const LoginScreen = () => {
 
               <motion.button
                 type="submit"
-                className="w-full font-black py-3 rounded-2xl text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm tracking-wide"
-                style={{ background: isLoading ? '#94a3b8' : 'linear-gradient(90deg, #22d3ee, #84cc16)' }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="w-full font-bangers text-[#073B4C] text-2xl py-4 rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all disabled:opacity-50 disabled:cursor-not-allowed tracking-wider"
+                style={{ background: isLoading ? '#FFF9EC' : '#06D6A0' }}
                 disabled={isLoading}
               >
-                {isLoading ? 'Connexion…' : '🚀 COMMENCER L\'ENQUÊTE !'}
+                {isLoading ? 'CONNEXION…' : '🚀 COMMENCER !'}
               </motion.button>
             </form>
           </motion.div>

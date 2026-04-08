@@ -30,24 +30,35 @@ const Spectrogram = memo(({
     const map: [number, number, number, number][] = [];
     for (let i = 0; i < 256; i++) {
       const value = i / 255;
-      if (value < 0.25) {
-        // Transparent dark blue (silent)
-        map.push([10 / 255, 14 / 255, 39 / 255, value * 4]);
-      } else if (value < 0.5) {
-        // Blue to cyan
-        const t = (value - 0.25) * 4;
-        map.push([0, (100 + t * 112) / 255, (200 + t * 55) / 255, 1]);
-      } else if (value < 0.75) {
-        // Cyan to white
-        const t = (value - 0.5) * 4;
-        map.push([t, (212 + t * 43) / 255, 1, 1]);
+      if (isBrainCity) {
+        // Playful Toy Palette for Brain City
+        if (value < 0.1) map.push([255/255, 249/255, 236/255, value * 10]); // transparent base
+        else if (value < 0.4) {
+          const t = (value - 0.1) / 0.3;
+          map.push([(255 - t * 249)/255, (249 - t * 35)/255, (236 - t * 76)/255, 1]); // to Teal (6, 214, 160)
+        } else if (value < 0.7) {
+          const t = (value - 0.4) / 0.3;
+          map.push([(6 + t * 249)/255, (214 - t * 5)/255, (160 - t * 58)/255, 1]); // to Mustard (255, 209, 102)
+        } else {
+          const t = (value - 0.7) / 0.3;
+          map.push([(255 - t * 16)/255, (209 - t * 138)/255, (102 + t * 9)/255, 1]); // to Coral (239, 71, 111)
+        }
       } else {
-        // White (loud)
-        map.push([1, 1, 1, 1]);
+        if (value < 0.25) {
+          map.push([10 / 255, 14 / 255, 39 / 255, value * 4]);
+        } else if (value < 0.5) {
+          const t = (value - 0.25) * 4;
+          map.push([0, (100 + t * 112) / 255, (200 + t * 55) / 255, 1]);
+        } else if (value < 0.75) {
+          const t = (value - 0.5) * 4;
+          map.push([t, (212 + t * 43) / 255, 1, 1]);
+        } else {
+          map.push([1, 1, 1, 1]);
+        }
       }
     }
     return map;
-  }, []);
+  }, [isBrainCity]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -112,15 +123,15 @@ const Spectrogram = memo(({
   }, [audioUrl, height, fftSize, colorMap]);
 
   const containerCls = isBrainCity
-    ? 'rounded-xl overflow-hidden border border-sky-200 bg-[#0a0e27]'
+    ? 'rounded-[24px] overflow-hidden border-4 border-braincity-border bg-[#FFF9EC]'
     : 'rounded-lg overflow-hidden border border-forensics-cyan bg-forensics-bg-light';
 
   const overlayBase = isBrainCity
-    ? 'absolute inset-0 flex items-center justify-center bg-[#0a0e27] border border-sky-200 rounded-xl'
+    ? 'absolute inset-0 flex items-center justify-center bg-[#FFF9EC] border-4 border-braincity-border rounded-[24px]'
     : 'absolute inset-0 flex items-center justify-center bg-forensics-bg-light border border-forensics-cyan rounded-lg';
 
   const loadingTextCls = isBrainCity
-    ? 'text-sky-300 font-semibold text-sm animate-pulse'
+    ? 'text-[#073B4C] font-fredoka font-bold text-sm animate-pulse'
     : 'text-forensics-cyan font-mono text-sm animate-pulse';
 
   return (

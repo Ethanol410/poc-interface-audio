@@ -14,35 +14,40 @@ export default {
           orange: '#ff9933',
         },
         braincity: {
-          // Background system — city night dark
-          bg: '#08081e',
-          'bg-end': '#0c0c28',
+          // Background system — organic paper
+          bg: '#FFF9EC',
+          'bg-end': '#FFF0D4',
           // Panel system
-          card: '#0e0e2c',
-          border: '#1a1a48',
+          card: '#FFFFFF',
+          border: '#073B4C', // dark petroleum blue for borders
           // Semantic (used across all BC screens)
-          primary: '#00c8ff',
-          secondary: '#84cc16',
-          accent: '#ff5533',
-          violet: '#a855f7',
-          pink: '#ff40a0',
-          bubble: '#12123a',
-          success: '#00e87a',
-          warning: '#ffbb00',
-          // Neon accents (workspace)
-          neon: '#f0e500',
-          'neon-cyan': '#00e5ff',
-          'neon-green': '#3dff85',
-          'neon-pink': '#ff3fa4',
-          'neon-purple': '#a855f7',
-          text: '#c8c8ff',
-          dim: '#44447a',
+          primary: '#118AB2', // vivid blue
+          secondary: '#06D6A0', // vivid teal
+          accent: '#EF476F', // bright coral
+          violet: '#9D4EDD',
+          pink: '#FF70A6',
+          bubble: '#FFFFFF',
+          success: '#06D6A0',
+          warning: '#FFD166',
+          // Specific Toy Accents
+          mustard: '#FFD166',
+          teal: '#06D6A0',
+          coral: '#EF476F',
+          blue: '#118AB2',
+          neon: '#FFD166',
+          'neon-cyan': '#00B4D8',
+          'neon-green': '#06D6A0',
+          'neon-pink': '#FF70A6',
+          'neon-purple': '#9D4EDD',
+          text: '#073B4C',
+          dim: '#4b5563',
         },
       },
       fontFamily: {
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
         bangers: ['Bangers', 'cursive'],
         nunito: ['Nunito', 'sans-serif'],
+        fredoka: ['Fredoka', 'sans-serif'],
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

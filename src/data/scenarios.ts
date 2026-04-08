@@ -67,31 +67,31 @@ const CORBEAU: ScenarioData = {
   suspects: [
     {
       id: 'suspect-1',
-      name: 'Bernard Mallet',
-      role: "Gardien d'immeuble",
-      photoUrl: '/images/suspects/suspect-12.jpg',
-      notes: 'Alibi : "J\'étais à la cave toute la matinée"',
+      name: 'Théo Garcia',
+      role: "Chargé de production",
+      photoUrl: '/images/suspects/theo_garcia.png',
+      notes: 'Alibi : "J\'étais sur le tournage du clip M2LT De Michou"',
     },
     {
       id: 'suspect-2',
-      name: 'Isabelle Renard',
-      role: 'Voisine de palier',
-      photoUrl: '/images/suspects/suspect-47.jpg',
-      notes: 'Alibi : "J\'étais chez ma sœur à Quissioux"',
+      name: 'Robin Lemaire',
+      role: 'Professeur d\'EPS au collège de Quissioux',
+      photoUrl: '/images/suspects/robin_lemaire.png',
+      notes: 'Alibi : "J\'étais au collège de Quissioux toute la journée"',
     },
     {
       id: 'suspect-3',
-      name: 'Karim Daoudi',
-      role: 'Livreur',
-      photoUrl: '/images/suspects/suspect-33.jpg',
-      notes: 'Alibi : "En tournée de livraison toute la journée"',
+      name: 'Juliette Meyer',
+      role: 'Conseillère bancaire',
+      photoUrl: '/images/suspects/juliette_meyer.png',
+      notes: 'Alibi : "J\'étais partis boire un cappuccino en ville"',
     },
     {
       id: 'suspect-4',
-      name: 'Sylvie Marchand',
-      role: 'Institutrice retraitée',
-      photoUrl: '/images/suspects/suspect-26.jpg',
-      notes: 'Alibi : "Cours de jardinage au centre communal"',
+      name: 'Yanis Belani',
+      role: 'Physionomiste à la boite de nuit le Mirador',
+      photoUrl: '/images/suspects/yanis_benali.png',
+      notes: 'Alibi : "J\'étais au Mirador toute la soirée, je me reposais aujourd\'hui"',
     },
   ],
   matchScores: {
@@ -201,7 +201,7 @@ const BRAIN_CITY: ScenarioData = {
     },
     {
       id: 'suspect-bc-5',
-      name: 'Tung Tung Tung',
+      name: 'Tung Tung Tung Sahur',
       role: 'Gardien de la cuillère sacrée',
       photoUrl: '/images/suspects/tuntuntun.png',
       notes: 'Alibi : "Je balayais le trottoir toute la matinée"',
@@ -217,8 +217,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'cles-chantier',
       label: 'Cliquetis de clés détecté',
-      hint: 'Outil GRAVES activé',
-      ricardoHint: 'Clique sur l\'outil GRAVES — l\'enregistrement a capté des bruits forts, on dirait des clés de chantier !',
+      hint: 'Éléphant activé',
+      ricardoHint: 'Clique sur l\'Éléphant — l\'enregistrement a capté des bruits forts, on dirait des clés de chantier !',
       proximity: (s) => {
         if (!s.lowPassFilter.enabled) return 0;
         const f = s.lowPassFilter.frequency;
@@ -230,8 +230,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'voix-agr',
       label: 'Voix de l\'agresseur isolée',
-      hint: 'Outil AIGUS activé',
-      ricardoHint: 'Essaie l\'outil AIGUS — il faut nettoyer les sifflements pour mieux entendre sa voix !',
+      hint: 'Abeille activée',
+      ricardoHint: 'Essaie l\'Abeille — il faut nettoyer les sifflements pour mieux entendre sa voix !',
       proximity: (s) => {
         if (!s.highPassFilter.enabled) return 0;
         const f = s.highPassFilter.frequency;
@@ -243,8 +243,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'sifflement',
       label: 'Sifflement asthmatique repéré',
-      hint: 'Outil Changer la voix activé',
-      ricardoHint: 'Utilise l\'outil Changer la voix — il y a un drôle de sifflement caché là-dedans !',
+      hint: 'Filtre Robot activé',
+      ricardoHint: 'Utilise le Filtre Robot — il y a un drôle de sifflement caché là-dedans !',
       proximity: (s) => {
         if (!s.bandPassFilter.enabled) return 0;
         const f = s.bandPassFilter.frequency;
@@ -256,8 +256,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'buzz-elec',
       label: 'Buzz électrique supprimé',
-      hint: 'Outil NETTOYER activé',
-      ricardoHint: 'Clique sur NETTOYER — il y a un buzz électrique qui cache des bruits !',
+      hint: 'Balai Magique activé',
+      ricardoHint: 'Passe un coup de Balai Magique — il y a un buzz électrique qui cache des bruits !',
       proximity: (s) => {
         if (!s.notchFilter.enabled) return 0;
         const f = s.notchFilter.frequency;
@@ -269,8 +269,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'pitch-agr',
       label: 'Voix grave restaurée',
-      hint: 'Tonalité entre -6 et -2 ST',
-      ricardoHint: 'Baisse la Tonalité de 3 ou 4 crans — la voix a été rendue trop aiguë pour cacher l\'identité de l\'agresseur !',
+      hint: 'Ballon Hélium entre -6 et -2',
+      ricardoHint: 'Dégonfle un peu le Ballon Hélium — la voix a été rendue trop aiguë pour cacher l\'identité de l\'agresseur !',
       proximity: (s) => {
         const p = s.pitchShift.semitones;
         if (p === 0) return 0;
@@ -283,24 +283,24 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'message-larry',
       label: 'Message de Larry décodé',
-      hint: 'Inverser le son activé',
-      ricardoHint: 'Clique sur Inverser le son — Larry a caché un message à l\'envers dans l\'enregistrement !',
+      hint: 'Tourne-disque activé',
+      ricardoHint: 'Utilise le Tourne-disque — Larry a caché un message à l\'envers dans l\'enregistrement !',
       proximity: (s) => (s.isReversed ? 1 : 0),
       check: (s) => s.isReversed,
     },
     {
       id: 'chuchotement-agr',
       label: 'Menaces amplifiées',
-      hint: 'Outil AMPLIFIER activé',
-      ricardoHint: 'Active l\'outil AMPLIFIER — il y a des chuchotements trop faibles pour être entendus normalement !',
+      hint: 'Grosse Loupe activée',
+      ricardoHint: 'Prends la Grosse Loupe — il y a des chuchotements trop faibles pour être entendus normalement !',
       proximity: (s) => (s.compressor.enabled ? 1 : 0),
       check: (s) => s.compressor.enabled,
     },
     {
       id: 'ralenti-agr',
       label: 'Accent industriel confirmé',
-      hint: 'Vitesse ≤ 0.75×',
-      ricardoHint: 'Baisse la Vitesse à 0.75× — l\'accent du quartier industriel ressort bien mieux au ralenti !',
+      hint: 'Mode Tortue activé (Vitesse ≤ 0.75×)',
+      ricardoHint: 'Passe en mode Tortue — l\'accent du quartier industriel ressort bien mieux au ralenti !',
       proximity: (s) => {
         if (s.playbackSpeed <= 0.75) return 1;
         return Math.max(0, 1 - (s.playbackSpeed - 0.75) / 0.5);
@@ -315,9 +315,9 @@ const BRAIN_CITY: ScenarioData = {
   },
   analysisSteps: [
     'Écoute l\'enregistrement et repère les sons ambiants',
-    'Utilise les outils GRAVES et AIGUS',
-    'Corrige la voix modifiée avec la Tonalité',
-    'Inverse le son pour décoder le message de Larry',
+    'Utilise l\'Éléphant et l\'Abeille pour nettoyer le son',
+    'Corrige la voix modifiée avec le Ballon Hélium',
+    'Utilise le Tourne-disque pour décoder le message de Larry',
   ],
   successTitle: 'SUSPECT ARRÊTÉ !',
   successStory:
@@ -329,12 +329,12 @@ const BRAIN_CITY: ScenarioData = {
     setup: "Salut l'équipe ! On a un gros problème à Brain City. Un enregistrement compromis par Larry… et un agresseur qui court toujours dans les rues ! Je compte sur vous pour l'analyser. Prêts à mener l'enquête ?",
     play: "Ouvre bien tes oreilles, l'enregistrement commence ! Il y a des sons bizarres là-dedans…",
     filters: {
-      lowPass: "J'entends de gros bruits forts… essaie l'outil GRAVES !",
-      highPass: "Des sifflements gênent l'écoute… utilise l'outil AIGUS pour nettoyer ça !",
-      bandPass: "La voix est modifiée… clique sur Changer la voix, on entendra mieux !",
-      notch: "Ce buzz électrique agaçant… l'outil NETTOYER devrait l'éliminer !",
-      compressor: "L'outil AMPLIFIER permet de mieux entendre… chut, j'entends des chuchotements !",
-      reverse: "L'audio à l'envers ! Avec Inverser le son, Larry a peut-être caché un message secret là-dedans…",
+      lowPass: "J'entends de gros bruits forts… demande à l'Éléphant !",
+      highPass: "Des sifflements gênent l'écoute… appelle l'Abeille pour réparer ça !",
+      bandPass: "La voix est modifiée… passe ça au Filtre Robot, on entendra mieux !",
+      notch: "Ce buzz électrique agaçant… un coup de Balai Magique devrait l'éliminer !",
+      compressor: "La Grosse Loupe nous aidera à mieux entendre… chut, j'entends des chuchotements !",
+      reverse: "L'audio à l'envers ! Avec le Tourne-disque, Larry a peut-être caché un message secret là-dedans…",
     },
     hot: "Chaud chaud ! Bouge encore un peu ce curseur, on approche quelque chose !",
     veryHot: "TRÈS CHAUD !! Encore un tout petit peu… on y est presque !!",

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAudioStore } from '@/stores/audioStore';
 import { audioEngine } from '@/services/audioEngine';
@@ -9,35 +9,51 @@ interface ToolButtonProps {
   label: string;
   description: string;
   active: boolean;
-  neonColor: string;
+  activeColor: string; // Tailwind bg color class
   onClick: () => void;
 }
 
-const ToolButton = ({ emoji, label, description, active, neonColor, onClick }: ToolButtonProps) => (
+const ToolButton = ({ emoji, label, description, active, activeColor, onClick }: ToolButtonProps) => (
   <motion.button
     onClick={onClick}
-    className="rounded-xl p-3 text-center w-full transition-colors"
-    style={active ? {
-      background: `${neonColor}18`,
-      border: `2px solid #1a1a48`,
-      boxShadow: `inset 0 0 8px ${neonColor}12`,
-    } : {
-      background: '#0a0a22',
-      border: '2px dashed #1a1a48',
-    }}
-    whileHover={{ scale: 1.04 }}
-    whileTap={{ scale: 0.94 }}
+    className={`rounded-[24px] p-3 text-center w-full transition-all border-4 border-braincity-border flex flex-col items-center justify-center relative overflow-hidden`}
+    style={
+      active
+        ? {
+            boxShadow: `0 4px 0 0 #073B4C`,
+            transform: 'translateY(2px)',
+          }
+        : {
+            boxShadow: `0 8px 0 0 #073B4C`,
+            backgroundColor: '#ffffff',
+          }
+    }
+    whileHover={!active ? { translateY: -2, boxShadow: `0 10px 0 0 #073B4C` } : {}}
+    whileTap={{ translateY: 6, boxShadow: `0 2px 0 0 #073B4C` }}
   >
-    <div className="text-2xl mb-1.5">{emoji}</div>
+    {/* Active Background Fill Layer */}
+    <AnimatePresence>
+      {active && (
+        <motion.div
+          layoutId={`fill-${label}`}
+          className={`absolute inset-0 ${activeColor} opacity-20`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.2 }}
+          exit={{ opacity: 0 }}
+        />
+      )}
+    </AnimatePresence>
+
+    <div className={`text-3xl mb-1.5 transition-transform ${active ? 'scale-110' : ''}`}>{emoji}</div>
     <div
-      className="font-bangers text-sm tracking-wide"
-      style={{ color: active ? neonColor : '#44447a' }}
+      className="font-bangers text-lg tracking-wide leading-none z-10"
+      style={{ color: '#073B4C' }}
     >
       {label}
     </div>
     <div
-      className="text-[10px] mt-0.5 leading-tight"
-      style={{ color: active ? '#c8c8ff' : '#2a2a5a' }}
+      className="text-[11px] mt-1 font-fredoka font-semibold z-10"
+      style={{ color: '#4b5563' }}
     >
       {description}
     </div>
@@ -45,8 +61,6 @@ const ToolButton = ({ emoji, label, description, active, neonColor, onClick }: T
 );
 
 const KidsToolPanel = () => {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
   const {
     isReversed, toggleReverse,
     notchFilter, setNotchFilter,
@@ -96,140 +110,107 @@ const KidsToolPanel = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2.5">
+    <div className="space-y-6">
+      {/* Action Buttons Grid */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-6">
         <ToolButton
-          emoji="🔊"
-          label="GRAVES"
+          emoji="🐘"
+          label="L'ÉLÉPHANT"
           description="Filtre les bruits forts"
           active={lowPassFilter.enabled}
-          neonColor="#00e5ff"
+          activeColor="bg-braincity-blue"
           onClick={handleLowPass}
         />
         <ToolButton
-          emoji="🎵"
-          label="AIGUS"
+          emoji="🐝"
+          label="L'ABEILLE"
           description="Nettoie les sifflements"
           active={highPassFilter.enabled}
-          neonColor="#3dff85"
+          activeColor="bg-braincity-mustard"
           onClick={handleHighPass}
         />
         <ToolButton
-          emoji="⚡"
-          label="NETTOYER"
-          description="Enlève le buzz électrique"
+          emoji="🧹"
+          label="BALAI MAGIQUE"
+          description="Enlève le bourdonnement"
           active={notchFilter.enabled}
-          neonColor="#f0e500"
+          activeColor="bg-braincity-teal"
           onClick={handleNotch}
         />
         <ToolButton
           emoji="🔎"
-          label="AMPLIFIER"
-          description="Rends la voix plus forte"
+          label="GROSSE LOUPE"
+          description="Amplifie les bruits"
           active={compressor.enabled}
-          neonColor="#a855f7"
+          activeColor="bg-braincity-coral"
           onClick={handleCompressor}
+        />
+        <ToolButton
+          emoji="🤖"
+          label="FILTRE ROBOT"
+          description="Change la voix"
+          active={bandPassFilter.enabled}
+          activeColor="bg-braincity-violet"
+          onClick={handleBandPass}
+        />
+        <ToolButton
+          emoji="🔄"
+          label="TOURNE-DISQUE"
+          description="Joue à l'envers"
+          active={isReversed}
+          activeColor="bg-braincity-pink"
+          onClick={handleReverse}
         />
       </div>
 
-      {/* Advanced toggle */}
-      <motion.button
-        onClick={() => setShowAdvanced((v) => !v)}
-        className="w-full text-xs py-1.5 rounded-lg transition-colors font-nunito font-bold"
-        style={{ color: '#44447a', border: '1px dashed #1a1a48' }}
-        whileHover={{ color: '#7070b0' }}
-      >
-        ⚙️ Options avancées {showAdvanced ? '▲' : '▼'}
-      </motion.button>
-
-      <AnimatePresence>
-        {showAdvanced && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-3 overflow-hidden"
-          >
-            {/* Band-pass */}
-            <motion.button
-              onClick={handleBandPass}
-              className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold font-nunito transition-all"
-              style={bandPassFilter.enabled ? {
-                background: 'rgba(255,63,164,0.12)',
-                border: '1px solid #1a1a48',
-                color: '#ff3fa4',
-              } : {
-                background: '#0a0a22',
-                border: '1px dashed #1a1a48',
-                color: '#44447a',
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              🎤 Changer la voix {bandPassFilter.enabled && <span className="ml-1">(activé)</span>}
-            </motion.button>
-
-            {/* Pitch */}
-            <div>
-              <div className="text-xs mb-2 font-nunito font-bold" style={{ color: '#7070aa' }}>
-                🎭 Tonalité
-              </div>
-              <input
-                type="range"
-                min="-12"
-                max="12"
-                step="1"
-                value={pitchShift.semitones}
-                onChange={handlePitch}
-                className="w-full"
-                style={{ accentColor: '#00e5ff' }}
-              />
-              <div className="text-center text-xs mt-1 font-mono" style={{ color: '#5a5a9a' }}>
-                {pitchShift.semitones > 0 ? `+${pitchShift.semitones}` : pitchShift.semitones} demi-tons
-              </div>
+      {/* Sliders Container */}
+      <div className="bg-white border-4 border-braincity-border rounded-[24px] p-4 space-y-5" style={{ boxShadow: '0 6px 0 0 #073B4C' }}>
+        
+        {/* Pitch Slider */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-bangers tracking-wide text-lg text-braincity-text flex items-center gap-2">
+              🎈 BALLON HÉLIUM
             </div>
-
-            {/* Speed */}
-            <div>
-              <div className="text-xs mb-2 font-nunito font-bold" style={{ color: '#7070aa' }}>
-                ⏩ Vitesse
-              </div>
-              <input
-                type="range"
-                min="0.25"
-                max="2"
-                step="0.25"
-                value={playbackSpeed}
-                onChange={handleSpeed}
-                className="w-full"
-                style={{ accentColor: '#3dff85' }}
-              />
-              <div className="text-center text-xs mt-1 font-mono" style={{ color: '#5a5a9a' }}>
-                {playbackSpeed}×
-              </div>
+            <div className="text-sm font-fredoka font-bold text-braincity-dim bg-gray-100 px-2 rounded-full border-2 border-gray-200">
+              {pitchShift.semitones > 0 ? `+${pitchShift.semitones}` : pitchShift.semitones} crans
             </div>
+          </div>
+          <input
+            type="range"
+            min="-12"
+            max="12"
+            step="1"
+            value={pitchShift.semitones}
+            onChange={handlePitch}
+            className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
+            style={{ accentColor: '#FFD166' }} // mustard
+          />
+        </div>
 
-            {/* Reverse */}
-            <motion.button
-              onClick={handleReverse}
-              className="w-full px-3 py-2.5 rounded-lg text-xs font-bold font-nunito transition-all"
-              style={isReversed ? {
-                background: 'rgba(255,119,48,0.12)',
-                border: '1px solid #1a1a48',
-                color: '#ff7730',
-              } : {
-                background: '#0a0a22',
-                border: '1px dashed #1a1a48',
-                color: '#44447a',
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              🔄 Inverser le son {isReversed && <span className="ml-1">(activé)</span>}
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Speed Slider */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-bangers tracking-wide text-lg text-braincity-text flex items-center gap-2">
+              🐢 MODE TORTUE
+            </div>
+            <div className="text-sm font-fredoka font-bold text-braincity-dim bg-gray-100 px-2 rounded-full border-2 border-gray-200">
+              {playbackSpeed}×
+            </div>
+          </div>
+          <input
+            type="range"
+            min="0.25"
+            max="2"
+            step="0.25"
+            value={playbackSpeed}
+            onChange={handleSpeed}
+            className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
+            style={{ accentColor: '#06D6A0' }} // teal
+          />
+        </div>
+
+      </div>
     </div>
   );
 };

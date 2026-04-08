@@ -25,20 +25,22 @@ import { useRicardo } from '@/hooks/useRicardo';
 
 type ToolTab = 'filtres' | 'pitch' | 'avance';
 
-// Brain City neon palette — each section has its own accent colour
+// Brain City Kid-Tech palette
 const BC = {
-  cyan:   '#00e5ff',
-  purple: '#a855f7',
-  green:  '#3dff85',
-  yellow: '#f0e500',
-  orange: '#ff7730',
-  pink:   '#ff3fa4',
-  blue:   '#3b82f6',
-  red:    '#ff3355',
+  mustard: '#FFD166',
+  teal: '#06D6A0',
+  coral: '#EF476F',
+  blue: '#118AB2',
+  pink: '#FF70A6',
+  violet: '#9D4EDD',
+  border: '#073B4C',
+  bg: '#FFF9EC',
+  text: '#073B4C',
+  dim: '#6b7280',
 } as const;
 
-/** Dark card class shared by all BC panels. */
-const BC_CARD = 'bg-braincity-card border border-braincity-border rounded-xl overflow-hidden';
+/** Light flat bento card class shared by all BC panels. */
+const BC_CARD = 'bg-white border-4 border-braincity-border rounded-[32px] overflow-hidden shadow-[0_6px_0_0_#073B4C]';
 
 const Dashboard = memo(() => {
   const navigate = useNavigate();
@@ -127,14 +129,14 @@ const Dashboard = memo(() => {
 
   const timerColor =
     timeLeft !== null && timeLeft < 60  ? 'text-red-500' :
-    timeLeft !== null && timeLeft < 120 ? 'text-forensics-orange' :
-    isBrainCity ? 'text-[#00e5ff]' : 'text-forensics-cyan';
+    timeLeft !== null && timeLeft < 120 ? 'text-orange-500' :
+    isBrainCity ? 'text-braincity-blue' : 'text-forensics-cyan';
 
   // ─────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────
   return (
-    <div className="min-h-screen p-4">
+    <div className={`min-h-screen p-4 ${isBrainCity ? 'bg-braincity-bg' : ''}`} style={isBrainCity ? { backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' } : {}}>
       <div className="max-w-[1800px] mx-auto space-y-4">
 
         {/* ── HEADER ── */}
@@ -162,13 +164,13 @@ const Dashboard = memo(() => {
                 />
                 <div>
                   <h1
-                    className="font-bangers text-2xl tracking-wider leading-none animate-neon-flicker"
-                    style={{ color: BC.yellow, textShadow: `0 0 20px rgba(240,229,0,0.6)` }}
+                    className="font-bangers text-3xl tracking-wider leading-none"
+                    style={{ color: BC.coral, textShadow: '2px 2px 0px #073B4C' }}
                   >
                     BRAIN CITY
                   </h1>
-                  <p className="text-braincity-dim text-xs font-nunito mt-0.5">
-                    Mission : Trouve l'agresseur !
+                  <p className="text-braincity-text text-sm font-fredoka font-semibold mt-0.5">
+                    Trouve l'agresseur !
                   </p>
                 </div>
               </div>
@@ -177,7 +179,7 @@ const Dashboard = memo(() => {
               <div className="flex items-center gap-4">
                 {/* Track position */}
                 <div className="text-center">
-                  <div className="font-mono text-base font-bold leading-none" style={{ color: BC.cyan }}>
+                  <div className="font-fredoka text-xl font-bold leading-none" style={{ color: BC.blue }}>
                     {formattedCurrentTime}
                   </div>
                   <div className="text-braincity-dim text-[10px] mt-0.5 font-bangers tracking-wider">PISTE</div>
@@ -186,7 +188,7 @@ const Dashboard = memo(() => {
                 {/* Mission timer */}
                 {missionTimerEnabled && timeLeft !== null && (
                   <div className="text-center">
-                    <div className={`font-mono text-base font-bold leading-none ${timerColor}`}>
+                    <div className={`font-fredoka text-xl font-bold leading-none ${isBrainCity ? 'text-[#EF476F]' : timerColor}`}>
                       {formatTime(timeLeft)}
                     </div>
                     <div className="text-braincity-dim text-[10px] mt-0.5 font-bangers tracking-wider">TEMPS</div>
@@ -203,7 +205,7 @@ const Dashboard = memo(() => {
                         className="text-lg leading-none"
                         style={{
                           filter: found
-                            ? `drop-shadow(0 0 6px ${BC.yellow})`
+                            ? `drop-shadow(2px 2px 0px #073B4C)`
                             : 'grayscale(1) opacity(0.3)',
                         }}
                         animate={found ? { scale: [1, 1.4, 1] } : {}}
@@ -218,15 +220,15 @@ const Dashboard = memo(() => {
                 {/* J'ACCUSE */}
                 <motion.button
                   onClick={handleContinueToSuspects}
-                  className="px-5 py-2 font-bangers text-base tracking-widest rounded-xl text-black"
+                  className="px-6 py-2.5 font-bangers text-xl tracking-widest rounded-2xl text-white border-2 border-braincity-border"
                   style={{
-                    background: BC.yellow,
-                    boxShadow: `0 0 16px rgba(240,229,0,0.5), 0 2px 8px rgba(0,0,0,0.4)`,
+                    background: BC.coral,
+                    boxShadow: `0 4px 0 0 #073B4C`,
                   }}
-                  whileHover={{ scale: 1.06, boxShadow: `0 0 28px rgba(240,229,0,0.9)` }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.04, translateY: -2, boxShadow: `0 6px 0 0 #073B4C` }}
+                  whileTap={{ scale: 0.96, translateY: 4, boxShadow: `0 0 0 0 #073B4C` }}
                 >
-                  ⚡ J'ACCUSE !
+                  J'ACCUSE !
                 </motion.button>
               </div>
             </>
@@ -303,13 +305,9 @@ const Dashboard = memo(() => {
               animate={{ opacity: 1 }}
             >
               <motion.div
-                className={`border-2 rounded-xl p-8 max-w-md text-center ${
-                  isBrainCity ? `${BC_CARD}` : 'bg-forensics-bg-light border-red-500'
+                className={`border-4 rounded-[24px] p-8 max-w-md text-center ${
+                  isBrainCity ? 'bg-braincity-bg border-braincity-coral shadow-[0_8px_0_0_#EF476F]' : 'bg-forensics-bg-light border-red-500'
                 }`}
-                style={isBrainCity ? {
-                  borderColor: BC.red,
-                  boxShadow: `0 0 40px rgba(255,51,85,0.5)`,
-                } : {}}
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring' }}
@@ -318,30 +316,30 @@ const Dashboard = memo(() => {
                 {isBrainCity ? (
                   <>
                     <h2
-                      className="font-bangers text-4xl tracking-wider mb-3"
-                      style={{ color: BC.red, textShadow: `0 0 20px rgba(255,51,85,0.6)` }}
+                      className="font-bangers text-4xl tracking-wider mb-2"
+                      style={{ color: BC.coral }}
                     >
                       TEMPS ÉCOULÉ !
                     </h2>
-                    <p className="text-braincity-text text-sm font-nunito mb-6">
+                    <p className="text-braincity-text text-sm font-fredoka font-semibold mb-6">
                       Le temps est épuisé. Tu peux continuer ou identifier le suspect !
                     </p>
                     <div className="flex gap-3">
                       <motion.button
                         onClick={() => setTimerExpired(false)}
-                        className="flex-1 py-2.5 font-bangers text-base tracking-wider rounded-lg"
-                        style={{ background: '#12123a', border: `1px solid ${BC.cyan}`, color: BC.cyan }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
+                        className="flex-1 py-3 font-bangers text-xl tracking-wider rounded-2xl bg-white text-braincity-text border-4 border-braincity-border"
+                        style={{ boxShadow: `0 4px 0 0 #073B4C` }}
+                        whileHover={{ scale: 1.03, translateY: -2, boxShadow: `0 6px 0 0 #073B4C` }}
+                        whileTap={{ scale: 0.97, translateY: 4, boxShadow: `0 0 0 0 #073B4C` }}
                       >
                         CONTINUER
                       </motion.button>
                       <motion.button
                         onClick={handleContinueToSuspects}
-                        className="flex-1 py-2.5 font-bangers text-base tracking-wider rounded-lg text-black"
-                        style={{ background: BC.yellow, boxShadow: `0 0 12px rgba(240,229,0,0.5)` }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
+                        className="flex-1 py-3 font-bangers text-xl tracking-wider rounded-2xl text-white border-4 border-braincity-border"
+                        style={{ background: BC.coral, boxShadow: `0 4px 0 0 #073B4C` }}
+                        whileHover={{ scale: 1.03, translateY: -2, boxShadow: `0 6px 0 0 #073B4C` }}
+                        whileTap={{ scale: 0.97, translateY: 4, boxShadow: `0 0 0 0 #073B4C` }}
                       >
                         J'ACCUSE !
                       </motion.button>
@@ -436,28 +434,27 @@ const Dashboard = memo(() => {
               <div className="flex items-center justify-between mb-3">
                 {isBrainCity ? (
                   <>
-                    <h3 className="font-bangers text-lg tracking-wider" style={{ color: BC.cyan }}>
+                    <h3 className="font-bangers text-xl tracking-wider" style={{ color: BC.blue }}>
                       ENREGISTREMENT
                       {isReversed && (
-                        <span className="ml-3 text-sm font-bangers" style={{ color: BC.orange }}>
+                        <span className="ml-3 text-sm font-bangers" style={{ color: BC.coral }}>
                           ◀ INVERSÉ
                         </span>
                       )}
                     </h3>
                     <motion.button
                       onClick={() => { store.toggleReverse(); audioEngine.setReverse(!isReversed); }}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold font-nunito transition-all"
+                      className="px-4 py-2 rounded-xl text-sm font-bold font-fredoka transition-all border-2 border-braincity-border bg-white"
                       style={isReversed ? {
-                        background: `${BC.orange}1a`,
-                        border: `1px solid ${BC.orange}`,
-                        color: BC.orange,
+                        boxShadow: `0 4px 0 0 #073B4C`,
+                        color: BC.coral,
+                        transform: 'translateY(2px)'
                       } : {
-                        background: 'transparent',
-                        border: '1px solid #1a1a48',
-                        color: '#44447a',
+                        boxShadow: `0 6px 0 0 #073B4C`,
+                        color: BC.text,
                       }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ translateY: isReversed ? 2 : -2, boxShadow: isReversed ? `0 4px 0 0 #073B4C` : `0 8px 0 0 #073B4C` }}
+                      whileTap={{ translateY: 6, boxShadow: `0 0 0 0 #073B4C` }}
                     >
                       🔄 Inverser
                     </motion.button>
@@ -485,7 +482,7 @@ const Dashboard = memo(() => {
                   </>
                 )}
               </div>
-              <Waveform audioUrl={activeAudioUrl} />
+              <Waveform audioUrl={activeAudioUrl} isBrainCity={isBrainCity} />
             </motion.div>
 
             {/* Spectrogram */}
@@ -500,8 +497,8 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.3 }}
             >
               <h3
-                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
-                style={isBrainCity ? { color: BC.purple } : {}}
+                className={`mb-3 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                style={isBrainCity ? { color: BC.violet } : {}}
               >
                 {isBrainCity ? 'CARTE DES SONS' : 'SPECTROGRAMME'}
               </h3>
@@ -520,12 +517,12 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.4 }}
             >
               <h3
-                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
-                style={isBrainCity ? { color: BC.green } : {}}
+                className={`mb-3 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                style={isBrainCity ? { color: BC.teal } : {}}
               >
                 {isBrainCity ? 'FRÉQUENCES' : 'ANALYSE FRÉQUENTIELLE'}
               </h3>
-              <FrequencyBars isPlaying={isPlaying} height={120} />
+              <FrequencyBars isPlaying={isPlaying} height={120} isBrainCity={isBrainCity} />
             </motion.div>
           </div>
 
@@ -544,7 +541,7 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.15 }}
             >
               <h3
-                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                className={`mb-3 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
                 style={isBrainCity ? { color: BC.blue } : {}}
               >
                 {isBrainCity ? 'ÉTAPES' : "GUIDE D'ANALYSE"}
@@ -560,7 +557,7 @@ const Dashboard = memo(() => {
                           ? ''
                           : done ? 'text-forensics-green font-mono' : 'text-gray-500 font-mono'
                       }`}
-                      style={isBrainCity ? { color: done ? '#c8c8ff' : '#44447a' } : {}}
+                      style={isBrainCity ? { color: done ? BC.text : BC.dim, fontWeight: done ? 'bold' : 'normal', fontFamily: 'Fredoka, sans-serif', fontSize: '13px' } : {}}
                     >
                       <span
                         className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
@@ -571,12 +568,14 @@ const Dashboard = memo(() => {
                             : ''
                         }`}
                         style={isBrainCity ? (done ? {
-                          background: BC.green,
+                          background: BC.teal,
                           color: '#000',
-                          boxShadow: `0 0 8px ${BC.green}80`,
+                          border: '2px solid #073B4C',
+                          boxShadow: `0 2px 0 0 #073B4C`,
                         } : {
-                          border: '1px solid #1a1a48',
-                          color: '#44447a',
+                          background: '#F3F4F6',
+                          border: '2px solid #D1D5DB',
+                          color: '#9CA3AF',
                         }) : {}}
                       >
                         {done ? '✓' : i + 1}
@@ -605,7 +604,7 @@ const Dashboard = memo(() => {
               >
                 {isBrainCity ? 'NIVEAUX' : 'NIVEAUX AUDIO'}
               </h3>
-              <AudioMeter isPlaying={isPlaying} height={150} />
+              <AudioMeter isPlaying={isPlaying} height={150} isBrainCity={isBrainCity} />
             </motion.div>
 
             {/* Tools */}
@@ -707,11 +706,13 @@ const Dashboard = memo(() => {
                           : ''
                       }`}
                       style={isBrainCity ? (found ? {
-                        border: `1px solid ${BC.pink}60`,
-                        background: `${BC.pink}10`,
-                        boxShadow: `0 0 8px ${BC.pink}28`,
+                        border: `2px solid ${BC.blue}`,
+                        background: '#FFF9EC',
+                        boxShadow: `0 2px 0 0 ${BC.blue}`,
                       } : {
-                        border: '1px dashed #1a1a48',
+                        border: '2px dashed #9CA3AF',
+                        background: '#F3F4F6',
+                        color: '#9CA3AF',
                       }) : {}}
                       animate={found && isBrainCity ? { scale: [1, 1.05, 1] } : {}}
                       transition={{ duration: 0.3 }}
@@ -719,23 +720,23 @@ const Dashboard = memo(() => {
                       <span className="flex-shrink-0 mt-0.5">
                         {isBrainCity
                           ? (found
-                            ? <span style={{ filter: `drop-shadow(0 0 4px ${BC.yellow})` }}>⭐</span>
-                            : <span style={{ color: '#2a2a5a' }}>☆</span>
+                            ? <span style={{ filter: `drop-shadow(1px 1px 0px #073B4C)` }}>⭐</span>
+                            : <span style={{ color: '#9CA3AF' }}>☆</span>
                           )
                           : (found ? '✓' : '○')
                         }
                       </span>
                       <div className="min-w-0">
                         <div
-                          className="leading-tight"
-                          style={isBrainCity ? { color: found ? '#e0e0ff' : '#44447a' } : {}}
+                          className={`leading-tight ${isBrainCity ? 'font-fredoka font-bold' : ''}`}
+                          style={isBrainCity ? { color: found ? BC.blue : BC.dim } : {}}
                         >
                           {found ? label : '???'}
                         </div>
                         {found && (
                           <div
-                            className="text-[10px] mt-0.5"
-                            style={isBrainCity ? { color: BC.pink } : { color: '#6b7280' }}
+                            className={`text-[11px] mt-0.5 ${isBrainCity ? 'font-fredoka font-semibold' : ''}`}
+                            style={isBrainCity ? { color: BC.text } : { color: '#6b7280' }}
                           >
                             {hint}
                           </div>

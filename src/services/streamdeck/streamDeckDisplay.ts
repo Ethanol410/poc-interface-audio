@@ -30,7 +30,7 @@ export async function renderButtonKey(
   const buttonControl = deck.CONTROLS.find(
     (c) => c.type === 'button' && 'index' in c && c.index === keyIndex,
   );
-  if (!buttonControl || !('feedbackType' in buttonControl) || buttonControl.feedbackType !== 'lcd') {
+  if (!buttonControl || !('pixelSize' in buttonControl) || !buttonControl.pixelSize) {
     // Fallback to solid color for non-LCD buttons
     const [r, g, b] = hexToRgb(active ? colorOn : colorOff);
     await deck.fillKeyColor(keyIndex, r, g, b);
@@ -56,10 +56,10 @@ export async function renderButtonKey(
   // Icon
   const iconFontSize = Math.round(height * 0.38);
   ctx.fillStyle = active ? '#000000' : '#888888';
-  ctx.font = `bold ${iconFontSize}px monospace`;
+  ctx.font = `bold ${iconFontSize}px "Segoe UI Emoji", "Apple Color Emoji", monospace`;
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(icon, width / 2, height * 0.55);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(icon, width / 2, height * 0.45);
 
   // Label
   const labelFontSize = Math.round(height * 0.2);
@@ -87,6 +87,7 @@ export async function renderDialStrip(
   max: number,
   unit: string,
   active: boolean,
+  colorActive?: string,
 ): Promise<void> {
   const W = LCD_SEGMENT_PER_ENCODER_WIDTH;
   const H = LCD_SEGMENT_HEIGHT;
@@ -99,7 +100,7 @@ export async function renderDialStrip(
   ctx.fillRect(0, 0, W, H);
 
   // Top label
-  ctx.fillStyle = active ? '#00d4ff' : '#334455';
+  ctx.fillStyle = active ? (colorActive || '#00d4ff') : '#334455';
   ctx.font = 'bold 15px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -117,11 +118,11 @@ export async function renderDialStrip(
   ctx.fillRect(barX, barY, barW, barH);
 
   // Bar fill
-  ctx.fillStyle = active ? '#00ff88' : '#005533';
+  ctx.fillStyle = active ? (colorActive || '#00ff88') : '#005533';
   ctx.fillRect(barX, barY, Math.round(barW * progress), barH);
 
   // Bar border
-  ctx.strokeStyle = active ? '#00d4ff' : '#223344';
+  ctx.strokeStyle = active ? (colorActive || '#00d4ff') : '#223344';
   ctx.lineWidth = 1;
   ctx.strokeRect(barX, barY, barW, barH);
 

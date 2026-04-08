@@ -23,10 +23,10 @@ const OFFICIAL_AUDIO: Record<ScenarioId, {
   corbeau: {
     evidenceDistorted: '/audio/Coupable.m4a',
     evidenceClean: '/audio/Coupable.m4a',
-    suspect1: '/audio/Voix 1.m4a',
-    suspect2: '/audio/Voix 2.m4a',
-    suspect3: '/audio/Voix 3.m4a',
-    suspect4: '/audio/Voix 4.m4a',
+    suspect1: '/audio/voix_theo.m4a',
+    suspect2: '/audio/voix_robin.m4a',
+    suspect3: '/audio/voix_juliette.m4a',
+    suspect4: '/audio/voix_yanis.m4a',
   },
   braincity: {
     evidenceDistorted: '/audio/Sahur_Voice Changer.mp3',
@@ -105,11 +105,10 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                   <motion.button
                     key={sc.id}
                     onClick={() => setSelectedScenario(sc.id)}
-                    className={`text-left p-6 rounded-lg border-2 transition-all ${
-                      selectedScenario === sc.id
-                        ? 'border-forensics-cyan bg-forensics-cyan/10'
-                        : 'border-gray-600 bg-forensics-bg-light hover:border-gray-400'
-                    }`}
+                    className={`text-left p-6 rounded-lg border-2 transition-all ${selectedScenario === sc.id
+                      ? 'border-forensics-cyan bg-forensics-cyan/10'
+                      : 'border-gray-600 bg-forensics-bg-light hover:border-gray-400'
+                      }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -117,9 +116,8 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                       {sc.id === 'corbeau' ? '🦅' : '🏙️'}
                     </div>
                     <h2
-                      className={`text-lg font-bold font-mono mb-1 ${
-                        selectedScenario === sc.id ? 'text-forensics-cyan' : 'text-gray-300'
-                      }`}
+                      className={`text-lg font-bold font-mono mb-1 ${selectedScenario === sc.id ? 'text-forensics-cyan' : 'text-gray-300'
+                        }`}
                     >
                       {sc.title}
                     </h2>
@@ -157,11 +155,10 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                 </h3>
                 <button
                   onClick={() => setTimerEnabled((v) => !v)}
-                  className={`px-3 py-1 rounded font-mono text-xs font-bold transition-all ${
-                    timerEnabled
-                      ? 'bg-forensics-green text-forensics-bg'
-                      : 'bg-gray-700 text-gray-400'
-                  }`}
+                  className={`px-3 py-1 rounded font-mono text-xs font-bold transition-all ${timerEnabled
+                    ? 'bg-forensics-green text-forensics-bg'
+                    : 'bg-gray-700 text-gray-400'
+                    }`}
                 >
                   {timerEnabled ? '● ACTIVÉ' : '○ DÉSACTIVÉ'}
                 </button>

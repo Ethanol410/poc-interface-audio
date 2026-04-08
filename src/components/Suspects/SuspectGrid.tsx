@@ -8,6 +8,21 @@ import { getScenario } from '@/data/scenarios';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
 import RicardoBubble from '@/components/BrainCity/RicardoBubble';
 
+const BC = {
+  mustard: '#FFD166',
+  teal: '#06D6A0',
+  coral: '#EF476F',
+  blue: '#118AB2',
+  pink: '#FF70A6',
+  violet: '#9D4EDD',
+  border: '#073B4C',
+  bg: '#FFF9EC',
+  text: '#073B4C',
+  dim: '#6b7280',
+} as const;
+
+const BC_CARD = 'bg-white border-4 border-[#073B4C] rounded-[32px] overflow-hidden shadow-[0_6px_0_0_#073B4C]';
+
 interface NotesModalProps {
   suspect: Suspect;
   initialNote: string;
@@ -153,7 +168,7 @@ const SuspectGrid = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className={`min-h-screen p-6 ${isBrainCity ? 'bg-[#FFF9EC]' : ''}`} style={isBrainCity ? { backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' } : {}}>
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <motion.header
@@ -166,8 +181,8 @@ const SuspectGrid = () => {
               <div className="flex items-center gap-3">
                 <img src="/images/inspecteur/Ricardo_Pouleto_sticker.png" alt="Ricardo" className="w-10 h-10 object-contain" />
                 <div>
-                  <h1 className="text-3xl font-black text-braincity-primary">Qui a fait ça ? 🤔</h1>
-                  <p className="text-gray-400 font-semibold text-sm">{scenario.title}</p>
+                  <h1 className="text-4xl font-bangers tracking-wider text-[#EF476F]">QUI A FAIT ÇA ? 🤔</h1>
+                  <p className="text-[#6b7280] font-fredoka font-semibold text-sm mt-1">{scenario.title}</p>
                 </div>
               </div>
               <RicardoBubble
@@ -207,12 +222,12 @@ const SuspectGrid = () => {
             return (
               <motion.div
                 key={suspect.id}
-                className={`rounded-2xl overflow-hidden transition-all ${
+                className={`transition-all ${
                   isBrainCity
-                    ? `bg-white shadow-md border-2 ${suspect.isIdentified ? 'border-braincity-success' : 'border-gray-100'} hover:shadow-lg`
+                    ? `bg-white rounded-[32px] border-4 ${suspect.isIdentified ? 'border-[#06D6A0]' : 'border-[#073B4C]'} overflow-hidden shadow-[0_6px_0_0_#073B4C]`
                     : `bg-forensics-bg-light border-2 rounded-lg ${
                         suspect.isIdentified ? 'border-forensics-green' : 'border-forensics-cyan-dark'
-                      } hover:border-forensics-cyan`
+                      } hover:border-forensics-cyan overflow-hidden`
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -228,7 +243,7 @@ const SuspectGrid = () => {
                     className={`w-full h-full ${isBrainCity ? 'object-contain p-2' : 'object-cover opacity-80'}`}
                   />
                   {suspect.isIdentified && (
-                    <div className={`absolute inset-0 flex items-center justify-center ${isBrainCity ? 'bg-braincity-success/20 rounded-t-2xl' : 'bg-forensics-green/20'}`}>
+                    <div className={`absolute inset-0 flex items-center justify-center ${isBrainCity ? 'bg-[#06D6A0]/20 rounded-t-2xl' : 'bg-forensics-green/20'}`}>
                       <span className="text-6xl">{isBrainCity ? '✅' : '✓'}</span>
                     </div>
                   )}
@@ -236,20 +251,20 @@ const SuspectGrid = () => {
 
                 {/* Info */}
                 <div className="p-4">
-                  <h3 className={`text-lg font-bold mb-0.5 ${isBrainCity ? 'text-gray-800' : 'text-forensics-cyan font-mono'}`}>
-                    {suspect.name}
+                  <h3 className={`text-xl font-bangers tracking-wide mb-0.5 ${isBrainCity ? 'text-[#073B4C]' : 'text-forensics-cyan font-mono'}`}>
+                    {suspect.name.toUpperCase()}
                   </h3>
-                  <p className={`text-sm mb-3 ${isBrainCity ? 'text-gray-500 font-medium' : 'text-gray-400 font-mono'}`}>
+                  <p className={`text-sm mb-3 ${isBrainCity ? 'text-[#6b7280] font-fredoka font-semibold' : 'text-gray-400 font-mono'}`}>
                     {suspect.role}
                   </p>
 
                   {/* Match score */}
                   <div className="mb-3">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className={isBrainCity ? 'text-gray-400 font-semibold' : 'text-gray-500 font-mono'}>
-                        {isBrainCity ? 'Ressemblance vocale' : 'CONCORDANCE VOCALE'}
+                      <span className={isBrainCity ? 'text-[#6b7280] font-fredoka font-bold' : 'text-gray-500 font-mono'}>
+                        {isBrainCity ? 'RESSEMBLANCE VOCALE' : 'CONCORDANCE VOCALE'}
                       </span>
-                      <span className={`font-bold ${matchScore >= 80 ? 'text-red-500' : isBrainCity ? 'text-gray-400' : 'text-gray-500 font-mono'}`}>
+                      <span className={`font-bold ${matchScore >= 80 ? 'text-red-500' : isBrainCity ? 'text-[#6b7280] font-fredoka' : 'text-gray-500 font-mono'}`}>
                         {matchScore}%
                       </span>
                     </div>
@@ -260,8 +275,8 @@ const SuspectGrid = () => {
                           style={{
                             width: `${matchScore}%`,
                             background: matchScore >= 80
-                              ? 'linear-gradient(90deg, #f97316, #ef4444)'
-                              : 'linear-gradient(90deg, #22d3ee, #84cc16)',
+                              ? BC.coral
+                              : BC.teal,
                           }}
                         />
                       ) : (
@@ -291,14 +306,14 @@ const SuspectGrid = () => {
                     <button
                       onClick={() => handlePlayVoice(suspect)}
                       disabled={!suspectAudioUrls[suspect.id]}
-                      className={`w-full px-3 py-2 font-bold text-sm rounded-xl transition-all border-2 ${
+                      className={`w-full px-3 py-2 font-bold text-sm transition-all border-2 ${
                         isBrainCity
                           ? playingId === suspect.id
-                            ? 'bg-braincity-primary text-white border-braincity-primary'
-                            : 'bg-sky-50 border-sky-200 text-braincity-primary hover:border-braincity-primary'
+                            ? 'bg-[#FFF9EC] text-[#118AB2] border-[#073B4C] rounded-xl font-fredoka shadow-[0_2px_0_0_#073B4C] translate-y-[2px]'
+                            : 'bg-white border-[#073B4C] text-[#073B4C] rounded-xl font-fredoka hover:shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] shadow-[0_2px_0_0_#073B4C]'
                           : playingId === suspect.id
-                          ? 'bg-forensics-cyan text-forensics-bg border-forensics-cyan font-mono'
-                          : 'bg-forensics-bg border-forensics-cyan-dark text-forensics-cyan font-mono hover:border-forensics-cyan'
+                          ? 'bg-forensics-cyan text-forensics-bg border-forensics-cyan font-mono rounded-xl'
+                          : 'bg-forensics-bg border-forensics-cyan-dark text-forensics-cyan font-mono hover:border-forensics-cyan rounded-xl'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                     >
                       {playingId === suspect.id
@@ -318,12 +333,13 @@ const SuspectGrid = () => {
                     <button
                       onClick={() => { setIdentifiedSuspect(suspect); setShowConfirmDialog(true); }}
                       disabled={suspect.isIdentified}
-                      className={`w-full px-3 py-2 font-bold text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`w-full px-3 py-3 font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                         isBrainCity
-                          ? 'text-white'
-                          : 'bg-forensics-green text-forensics-bg font-mono hover:bg-white'
+                          ? suspect.isIdentified
+                            ? 'bg-white text-[#06D6A0] border-4 border-[#073B4C] rounded-xl font-bangers tracking-wider text-xl shadow-[0_0_0_0_#073B4C] translate-y-[4px]'
+                            : 'bg-[#EF476F] text-white border-4 border-[#073B4C] rounded-xl font-bangers tracking-wider text-xl hover:shadow-[0_6px_0_0_#073B4C] hover:-translate-y-[2px] shadow-[0_4px_0_0_#073B4C]'
+                          : 'bg-forensics-green text-forensics-bg font-mono hover:bg-white rounded-xl'
                       }`}
-                      style={isBrainCity ? { background: 'linear-gradient(90deg, #f97316, #ef4444)' } : {}}
                     >
                       {suspect.isIdentified
                         ? (isBrainCity ? '✅ Accusé !' : '✓ IDENTIFIÉ')
@@ -347,10 +363,10 @@ const SuspectGrid = () => {
         >
           <button
             onClick={() => navigate('/workspace')}
-            className={`px-6 py-3 rounded-2xl font-bold transition-all ${
+            className={`px-6 py-3 transition-all ${
               isBrainCity
-                ? 'bg-white border-2 border-sky-200 text-braincity-primary hover:bg-sky-50'
-                : 'bg-forensics-bg-light border border-forensics-cyan text-forensics-cyan font-mono hover:bg-forensics-cyan hover:text-forensics-bg'
+                ? 'bg-white border-4 border-[#073B4C] text-[#073B4C] font-bangers text-xl tracking-wider rounded-[16px] hover:shadow-[0_6px_0_0_#073B4C] hover:-translate-y-[2px] shadow-[0_4px_0_0_#073B4C]'
+                : 'bg-forensics-bg-light border border-forensics-cyan text-forensics-cyan font-mono hover:bg-forensics-cyan hover:text-forensics-bg rounded-2xl font-bold'
             }`}
           >
             {isBrainCity ? '← Retour à l\'analyse' : '← RETOUR À L\'ANALYSE'}
@@ -377,35 +393,34 @@ const SuspectGrid = () => {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className={`p-6 max-w-md w-full rounded-2xl ${
+              className={`p-8 max-w-md w-full ${
                 isBrainCity
-                  ? 'bg-white shadow-2xl'
-                  : 'bg-forensics-bg-light border-2 border-red-500'
+                  ? BC_CARD + ' bg-braincity-bg'
+                  : 'bg-forensics-bg-light border-2 border-red-500 rounded-2xl'
               }`}
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
             >
               {isBrainCity ? (
                 <>
-                  <div className="text-center mb-4">
-                    <div className="text-5xl mb-2">🤔</div>
-                    <h3 className="text-xl font-black text-gray-800">
+                  <div className="text-center mb-6">
+                    <div className="text-6xl mb-4">🤔</div>
+                    <h3 className="text-3xl font-bangers tracking-wider text-[#073B4C]">
                       Tu es sûr(e) que c'est {identifiedSuspect.name} ?
                     </h3>
                   </div>
-                  <div className="flex gap-3 mt-6">
+                  <div className="flex gap-4 mt-6">
                     <button
                       onClick={confirmIdentification}
-                      className="flex-1 text-white font-black py-3 rounded-2xl"
-                      style={{ background: 'linear-gradient(90deg, #f97316, #ef4444)' }}
+                      className="flex-1 text-white font-bangers text-xl bg-[#EF476F] border-4 border-[#073B4C] py-4 rounded-2xl shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all"
                     >
-                      🎯 OUI, j'accuse !
+                      🎯 OUI !
                     </button>
                     <button
                       onClick={() => setShowConfirmDialog(false)}
-                      className="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-2xl hover:bg-gray-200 transition-colors"
+                      className="flex-1 bg-white text-[#073B4C] border-4 border-[#073B4C] font-bangers text-xl py-4 rounded-2xl shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all"
                     >
-                      Non, je cherche encore
+                      NON, RETOUR
                     </button>
                   </div>
                 </>

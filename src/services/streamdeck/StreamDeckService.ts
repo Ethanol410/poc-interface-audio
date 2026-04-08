@@ -147,6 +147,19 @@ class StreamDeckService {
     if (!this.deck) return;
     const state = useAudioStore.getState();
 
+    const isBrainCity = state.scenario === 'braincity';
+
+    const brainCityButtonOverrides: Record<string, { label: string, icon: string, colorOn: string }> = {
+      'toggle-lowpass':    { label: 'ELEPH', icon: '🐘', colorOn: '#118AB2' },
+      'toggle-highpass':   { label: 'ABEILLE', icon: '🐝', colorOn: '#FFD166' },
+      'toggle-bandpass':   { label: 'ROBOT', icon: '🤖', colorOn: '#5e4db2' },
+      'toggle-notch':      { label: 'BALAI', icon: '🧹', colorOn: '#06D6A0' },
+      'toggle-compressor': { label: 'LOUPE', icon: '🔎', colorOn: '#EF476F' },
+      'toggle-reverse':    { label: 'REVERS', icon: '🔄', colorOn: '#ee77b4' },
+      'toggle-play':       { label: 'PLAY', icon: '▶', colorOn: '#06D6A0' },
+      'cycle-preset':      { label: 'RESET', icon: '↺', colorOn: '#118AB2' },
+    };
+
     // Buttons
     const buttonStates: Record<string, boolean> = {
       'toggle-play':       state.isPlaying,
@@ -160,13 +173,14 @@ class StreamDeckService {
     };
 
     for (const mapping of BUTTON_MAPPINGS) {
+      const override = isBrainCity ? brainCityButtonOverrides[mapping.action] : null;
       await renderButtonKey(
         this.deck,
         mapping.index,
-        mapping.label,
-        mapping.icon,
+        override ? override.label : mapping.label,
+        override ? override.icon : mapping.icon,
         buttonStates[mapping.action] ?? false,
-        mapping.colorOn,
+        override ? override.colorOn : mapping.colorOn,
         mapping.colorOff,
       );
     }
@@ -182,17 +196,28 @@ class StreamDeckService {
       ];
 
       for (const mapping of DIAL_MAPPINGS) {
+        const brainCityLabelOverrides: Record<number, string> = {
+          0: 'VOLUME',
+          1: 'FILTRE',
+          2: 'FILTRE',
+          3: 'BALLON'
+        };
+
         const { value, active } = dialValues[mapping.index];
+        const dialLabel = isBrainCity ? (brainCityLabelOverrides[mapping.index] || mapping.label) : mapping.label;
+        const colorActive = isBrainCity && mapping.index === 3 ? '#FFD166' : undefined;
+
         await renderDialStrip(
           this.deck,
           mapping.index,
           lcdId,
-          mapping.label,
+          dialLabel,
           value,
           mapping.min,
           mapping.max,
           mapping.unit,
           active,
+          colorActive
         );
       }
     }

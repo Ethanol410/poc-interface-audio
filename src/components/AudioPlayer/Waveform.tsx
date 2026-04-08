@@ -11,6 +11,7 @@ import Spinner from '@/components/Layout/Spinner';
 interface WaveformProps {
   audioUrl?: string;
   height?: number;
+  isBrainCity?: boolean;
   onReady?: () => void;
   onError?: (error: Error) => void;
 }
@@ -18,6 +19,7 @@ interface WaveformProps {
 const Waveform = memo(({
   audioUrl,
   height = 128,
+  isBrainCity = false,
   onReady,
   onError,
 }: WaveformProps) => {
@@ -41,13 +43,13 @@ const Waveform = memo(({
     // Initialize Wavesurfer
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
-      waveColor: 'rgba(0, 212, 255, 0.3)',
-      progressColor: 'rgba(0, 212, 255, 1)',
-      cursorColor: '#00ff88',
-      cursorWidth: 2,
-      barWidth: 2,
-      barGap: 1,
-      barRadius: 2,
+      waveColor: isBrainCity ? 'rgba(6, 214, 160, 0.4)' : 'rgba(0, 212, 255, 0.3)',
+      progressColor: isBrainCity ? '#118AB2' : 'rgba(0, 212, 255, 1)',
+      cursorColor: isBrainCity ? '#EF476F' : '#00ff88',
+      cursorWidth: isBrainCity ? 4 : 2,
+      barWidth: isBrainCity ? 4 : 2,
+      barGap: isBrainCity ? 2 : 1,
+      barRadius: isBrainCity ? 4 : 2,
       height,
       normalize: true,
       interact: true,
@@ -139,7 +141,11 @@ const Waveform = memo(({
     <div className="waveform-container relative">
       <div
         ref={containerRef}
-        className="waveform-canvas border border-forensics-cyan rounded-lg overflow-hidden bg-forensics-bg-light"
+        className={`waveform-canvas overflow-hidden ${
+          isBrainCity 
+            ? 'rounded-[24px] border-4 border-braincity-border bg-[#FFF9EC]'
+            : 'border border-forensics-cyan rounded-lg bg-forensics-bg-light'
+        }`}
         onClick={togglePlayPause}
         style={{ cursor: isReady ? 'pointer' : 'default', minHeight: `${height}px` }}
       />

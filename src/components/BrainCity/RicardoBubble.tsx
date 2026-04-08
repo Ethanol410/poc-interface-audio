@@ -34,23 +34,23 @@ const EMOTION_BADGE: Partial<Record<RicardoEmotion, string>> = {
   scared: '😨',
 };
 
-// Neon border color per emotion
-const EMOTION_NEON: Record<RicardoEmotion, string> = {
-  neutral: '#1a1a48',
-  excited: '#f0e500',
-  thinking: '#a855f7',
-  panicking: '#ff3355',
-  triumphant: '#3dff85',
-  scared: '#ff3355',
+// KidTech flat border colors per emotion
+const EMOTION_BORDER: Record<RicardoEmotion, string> = {
+  neutral: '#073B4C',
+  excited: '#FFD166', // mustard
+  thinking: '#9D4EDD', // violet
+  panicking: '#EF476F', // coral
+  triumphant: '#06D6A0', // teal
+  scared: '#EF476F', // coral
 };
 
 const EMOTION_GLOW: Record<RicardoEmotion, string> = {
-  neutral: 'none',
-  excited: '0 0 16px rgba(240,229,0,0.35)',
-  thinking: '0 0 16px rgba(168,85,247,0.35)',
-  panicking: '0 0 16px rgba(255,51,85,0.5)',
-  triumphant: '0 0 16px rgba(61,255,133,0.35)',
-  scared: '0 0 16px rgba(255,51,85,0.4)',
+  neutral: '0 4px 0 0 #073B4C',
+  excited: '0 4px 0 0 #073B4C',
+  thinking: '0 4px 0 0 #073B4C',
+  panicking: '0 4px 0 0 #073B4C',
+  triumphant: '0 4px 0 0 #073B4C',
+  scared: '0 4px 0 0 #073B4C',
 };
 
 const playSound = (key: RicardoSound) => {
@@ -78,13 +78,13 @@ const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche'
 
   const badge = EMOTION_BADGE[emotion];
   const isPanicking = emotion === 'panicking';
-  const borderColor = EMOTION_NEON[emotion];
+  const borderColor = EMOTION_BORDER[emotion];
   const glowStyle = EMOTION_GLOW[emotion];
 
   return (
     <div
-      className="flex items-center gap-4 bg-braincity-card rounded-xl p-3"
-      style={{ border: `2px solid ${borderColor}`, boxShadow: glowStyle }}
+      className="flex items-center gap-4 bg-white rounded-2xl p-3"
+      style={{ border: `4px solid ${borderColor}`, boxShadow: glowStyle }}
     >
       {/* Ricardo image */}
       <div className="relative flex-shrink-0">
@@ -114,19 +114,33 @@ const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche'
         <div
           style={{
             position: 'absolute',
-            left: '-10px',
+            left: '-14px',
             top: '50%',
             transform: 'translateY(-50%)',
             width: 0,
             height: 0,
-            borderTop: '9px solid transparent',
-            borderBottom: '9px solid transparent',
-            borderRight: '10px solid #12123a',
+            borderTop: '12px solid transparent',
+            borderBottom: '12px solid transparent',
+            borderRight: `14px solid ${borderColor}`,
           }}
         />
         <div
-          className="rounded-xl px-4 py-3 text-sm font-semibold leading-snug font-nunito"
-          style={{ background: '#12123a', color: '#c8c8ff' }}
+          style={{
+            position: 'absolute',
+            left: '-8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 0,
+            height: 0,
+            borderTop: '8px solid transparent',
+            borderBottom: '8px solid transparent',
+            borderRight: `10px solid #FFF9EC`,
+            zIndex: 10,
+          }}
+        />
+        <div
+          className="rounded-xl px-4 py-3 text-sm font-semibold leading-snug font-fredoka relative z-1"
+          style={{ background: '#FFF9EC', color: '#073B4C', border: `3px solid ${borderColor}` }}
         >
           {message}
         </div>
