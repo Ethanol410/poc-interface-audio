@@ -16,11 +16,9 @@ const BC = {
 const BC_CARD = 'bg-white border-4 border-braincity-border rounded-2xl overflow-hidden shadow-[0_4px_0_0_#073B4C] relative';
 
 const TourTooltip = memo(({
-  continuous,
   index,
   step,
   backProps,
-  closeProps,
   primaryProps,
   tooltipProps,
   isLastStep,

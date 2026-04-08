@@ -604,7 +604,7 @@ const Dashboard = memo(() => {
             >
               <h3
                 className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
-                style={isBrainCity ? { color: BC.yellow } : {}}
+                style={isBrainCity ? { color: BC.mustard } : {}}
               >
                 {isBrainCity ? 'NIVEAUX' : 'NIVEAUX AUDIO'}
               </h3>
@@ -627,7 +627,7 @@ const Dashboard = memo(() => {
                 <div className="p-4">
                   <h3
                     className="font-bangers text-lg tracking-wider mb-3"
-                    style={{ color: BC.orange }}
+                    style={{ color: BC.mustard }}
                   >
                     OUTILS DÉTECTIVE
                   </h3>
@@ -784,7 +784,7 @@ const Dashboard = memo(() => {
                   onClick={handleContinueToSuspects}
                   className="w-full font-bangers text-xl tracking-widest py-4 rounded-xl text-black"
                   style={{
-                    background: BC.yellow,
+                    background: BC.mustard,
                     boxShadow: `0 0 20px rgba(240,229,0,0.4), 0 4px 12px rgba(0,0,0,0.4)`,
                   }}
                   whileHover={{ scale: 1.02, boxShadow: `0 0 32px rgba(240,229,0,0.7)` }}
