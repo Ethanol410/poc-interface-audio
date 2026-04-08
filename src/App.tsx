@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 // Lazy load route components
 const LoginScreen = lazy(() => import('./components/Auth/LoginScreen'));
+const StoryBriefScreen = lazy(() => import('./components/Auth/StoryBriefScreen'));
 const Dashboard = lazy(() => import('./components/Workspace/Dashboard'));
 const SuspectGrid = lazy(() => import('./components/Suspects/SuspectGrid'));
 const ResultScreen = lazy(() => import('./components/Debrief/ResultScreen'));
@@ -69,6 +70,14 @@ function App() {
                 } 
               />
               <Route element={<AppLayout />}>
+                <Route 
+                  path="/briefing" 
+                  element={
+                    <RequireAudio>
+                      <StoryBriefScreen />
+                    </RequireAudio>
+                  } 
+                />
                 <Route 
                   path="/workspace" 
                   element={

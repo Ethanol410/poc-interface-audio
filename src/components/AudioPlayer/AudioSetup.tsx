@@ -9,7 +9,6 @@ import { reverseAudioBlob, createAudioURL } from '@/utils/audioGenerator';
 import { useAudioStore } from '@/stores/audioStore';
 import type { ScenarioId } from '@/data/scenarios';
 import { SCENARIOS } from '@/data/scenarios';
-import RicardoBubble from '@/components/BrainCity/RicardoBubble';
 import Spinner from '@/components/Layout/Spinner';
 
 const OFFICIAL_AUDIO: Record<ScenarioId, {
@@ -136,16 +135,6 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                 )
               )}
             </div>
-
-            {/* Ricardo briefing — Brain City uniquement */}
-            {selectedScenario === 'braincity' && (
-              <div className="mt-4 mb-6">
-                <RicardoBubble
-                  message={SCENARIOS.braincity.ricardoLines?.setup ?? ''}
-                  emotion="neutral"
-                />
-              </div>
-            )}
 
             {/* Timer config */}
             <div className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-5 mb-6">

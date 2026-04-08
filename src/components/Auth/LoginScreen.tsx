@@ -19,7 +19,7 @@ const LoginScreen = () => {
     setIsLoading(true);
     if (name.length >= (isBrainCity ? 2 : 4)) {
       sessionStorage.setItem('agent-matricule', name);
-      setTimeout(() => navigate('/workspace'), 1500);
+      setTimeout(() => navigate('/briefing'), 1500);
     }
   };
 

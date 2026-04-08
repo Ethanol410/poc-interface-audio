@@ -22,6 +22,7 @@ import RicardoEventModal from '@/components/BrainCity/RicardoEventModal';
 import KidsToolPanel from '@/components/BrainCity/KidsToolPanel';
 import { audioEngine } from '@/services/audioEngine';
 import { useRicardo } from '@/hooks/useRicardo';
+import WorkspaceTour from '@/components/Workspace/WorkspaceTour';
 
 type ToolTab = 'filtres' | 'pitch' | 'avance';
 
@@ -56,6 +57,7 @@ const Dashboard = memo(() => {
   const [activeTab, setActiveTab] = useState<ToolTab>('filtres');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [timerExpired, setTimerExpired] = useState(false);
+  const [runTour, setRunTour] = useState(true);
 
   const { isComparisonMode, toggleComparison } = useABComparison();
 
@@ -422,6 +424,7 @@ const Dashboard = memo(() => {
 
             {/* Waveform */}
             <motion.div
+              id="tour-waveform"
               className={
                 isBrainCity
                   ? `${BC_CARD} p-4`
@@ -487,6 +490,7 @@ const Dashboard = memo(() => {
 
             {/* Spectrogram */}
             <motion.div
+              id="tour-spectrogram"
               className={
                 isBrainCity
                   ? `${BC_CARD} p-4`
@@ -609,6 +613,7 @@ const Dashboard = memo(() => {
 
             {/* Tools */}
             <motion.div
+              id="tour-tools"
               className={
                 isBrainCity
                   ? `${BC_CARD}`
@@ -669,6 +674,7 @@ const Dashboard = memo(() => {
 
             {/* Clue tracker */}
             <motion.div
+              id="tour-clues"
               className={
                 isBrainCity
                   ? `${BC_CARD} p-4`
@@ -749,23 +755,26 @@ const Dashboard = memo(() => {
             </motion.div>
 
             {/* Stream Deck panels */}
-            <motion.div
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <StreamDeckPanel />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.52 }}
-            >
-              <StreamDeckSuspectPanel />
-            </motion.div>
+            <div id="tour-streamdeck" className="space-y-4">
+              <motion.div
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <StreamDeckPanel />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.52 }}
+              >
+                <StreamDeckSuspectPanel />
+              </motion.div>
+            </div>
 
             {/* Continue CTA */}
             <motion.div
+              id="tour-jaccuse"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.55 }}
@@ -798,6 +807,12 @@ const Dashboard = memo(() => {
             </motion.div>
           </div>
         </div>
+
+        {/* ── Interactive Tour ── */}
+        <WorkspaceTour
+          run={runTour}
+          onFinish={() => setRunTour(false)}
+        />
       </div>
     </div>
   );
