@@ -33,8 +33,8 @@ const OFFICIAL_AUDIO: Record<ScenarioId, {
     evidenceClean: '/audio/Sahur_Voice Changer.mp3',
     suspect1: '/audio/BrrBrrPatapim.wav',
     suspect2: '/audio/Chimpanzinibananini.wav',
-    suspect3: '/audio/Sahur.wav',
-    suspect4: '/audio/Tralalerotralala.wav',
+    suspect3: '/audio/Tralalerotralala.wav',
+    suspect4: '/audio/Sahur.wav',
   },
 };
 
