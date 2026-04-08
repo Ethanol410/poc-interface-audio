@@ -19,8 +19,8 @@ const ToolButton = ({ emoji, label, description, active, neonColor, onClick }: T
     className="rounded-xl p-3 text-center w-full transition-colors"
     style={active ? {
       background: `${neonColor}18`,
-      border: `2px solid ${neonColor}`,
-      boxShadow: `0 0 14px ${neonColor}50, inset 0 0 8px ${neonColor}12`,
+      border: `2px solid #1a1a48`,
+      boxShadow: `inset 0 0 8px ${neonColor}12`,
     } : {
       background: '#0a0a22',
       border: '2px dashed #1a1a48',
@@ -156,9 +156,8 @@ const KidsToolPanel = () => {
               className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold font-nunito transition-all"
               style={bandPassFilter.enabled ? {
                 background: 'rgba(255,63,164,0.12)',
-                border: '1px solid #ff3fa4',
+                border: '1px solid #1a1a48',
                 color: '#ff3fa4',
-                boxShadow: '0 0 10px rgba(255,63,164,0.3)',
               } : {
                 background: '#0a0a22',
                 border: '1px dashed #1a1a48',
@@ -216,9 +215,8 @@ const KidsToolPanel = () => {
               className="w-full px-3 py-2.5 rounded-lg text-xs font-bold font-nunito transition-all"
               style={isReversed ? {
                 background: 'rgba(255,119,48,0.12)',
-                border: '1px solid #ff7730',
+                border: '1px solid #1a1a48',
                 color: '#ff7730',
-                boxShadow: '0 0 10px rgba(255,119,48,0.3)',
               } : {
                 background: '#0a0a22',
                 border: '1px dashed #1a1a48',

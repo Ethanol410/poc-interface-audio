@@ -144,7 +144,7 @@ const Dashboard = memo(() => {
               ? `${BC_CARD}`
               : 'bg-forensics-bg-light border border-forensics-cyan-dark'
           }`}
-          style={isBrainCity ? { borderBottom: `2px solid ${BC.yellow}`, boxShadow: `0 2px 20px rgba(240,229,0,0.1)` } : {}}
+          style={isBrainCity ? {} : {}}
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
@@ -386,7 +386,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4 bc-accent-yellow`
+                  ? `${BC_CARD} p-4`
                   : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg px-5 py-3'
               }
               initial={{ opacity: 0, x: -16 }}
@@ -426,7 +426,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4 bc-accent-cyan`
+                  ? `${BC_CARD} p-4`
                   : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
               }
               initial={{ opacity: 0, x: -16 }}
@@ -492,7 +492,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4 bc-accent-purple`
+                  ? `${BC_CARD} p-4`
                   : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
               }
               initial={{ opacity: 0, x: -16 }}
@@ -512,7 +512,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4 bc-accent-green`
+                  ? `${BC_CARD} p-4`
                   : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
               }
               initial={{ opacity: 0, x: -16 }}
@@ -536,7 +536,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4 bc-accent-blue`
+                  ? `${BC_CARD} p-4`
                   : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
               }
               initial={{ opacity: 0, x: 16 }}
@@ -592,7 +592,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4 bc-accent-yellow`
+                  ? `${BC_CARD} p-4`
                   : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
               }
               initial={{ opacity: 0, x: 16 }}
@@ -612,7 +612,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} bc-accent-orange`
+                  ? `${BC_CARD}`
                   : `bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg overflow-hidden`
               }
               initial={{ opacity: 0, x: 16 }}
@@ -672,7 +672,7 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4 bc-accent-pink`
+                  ? `${BC_CARD} p-4`
                   : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
               }
               initial={{ opacity: 0, x: 16 }}
