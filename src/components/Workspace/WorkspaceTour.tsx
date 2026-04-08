@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { Joyride, EventData, Step, STATUS } from 'react-joyride';
+import { Joyride, EventData, Controls, Step, STATUS } from 'react-joyride';
 import TourTooltip from './TourTooltip';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
 
@@ -11,7 +11,7 @@ interface WorkspaceTourProps {
 const WorkspaceTour = memo(({ run, onFinish }: WorkspaceTourProps) => {
   const { isBrainCity } = useScenarioTheme();
 
-  const handleJoyrideCallback = (data: EventData) => {
+  const handleJoyrideCallback = (data: EventData, _controls: Controls) => {
     const { status } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
     
@@ -112,7 +112,7 @@ const WorkspaceTour = memo(({ run, onFinish }: WorkspaceTourProps) => {
       run={run}
       continuous
       scrollToFirstStep
-      callback={handleJoyrideCallback}
+      onEvent={handleJoyrideCallback}
       tooltipComponent={TourTooltip}
       options={{
         showProgress: true,
