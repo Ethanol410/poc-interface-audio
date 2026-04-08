@@ -217,8 +217,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'cles-chantier',
       label: 'Cliquetis de clés détecté',
-      hint: 'Low-pass entre 300–2 000 Hz',
-      ricardoHint: 'Active le filtre passe-bas et règle-le vers 1000 Hz — j\'entends comme des clés de chantier !',
+      hint: 'Outil GRAVES activé',
+      ricardoHint: 'Clique sur l\'outil GRAVES — l\'enregistrement a capté des bruits forts, on dirait des clés de chantier !',
       proximity: (s) => {
         if (!s.lowPassFilter.enabled) return 0;
         const f = s.lowPassFilter.frequency;
@@ -230,8 +230,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'voix-agr',
       label: 'Voix de l\'agresseur isolée',
-      hint: 'High-pass entre 80–400 Hz',
-      ricardoHint: 'Active le filtre passe-haut vers 200 Hz — il faut couper les graves pour isoler la voix !',
+      hint: 'Outil AIGUS activé',
+      ricardoHint: 'Essaie l\'outil AIGUS — il faut nettoyer les sifflements pour mieux entendre sa voix !',
       proximity: (s) => {
         if (!s.highPassFilter.enabled) return 0;
         const f = s.highPassFilter.frequency;
@@ -243,8 +243,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'sifflement',
       label: 'Sifflement asthmatique repéré',
-      hint: 'Band-pass entre 400–1 500 Hz',
-      ricardoHint: 'Essaie le filtre passe-bande vers 800 Hz — il y a un drôle de sifflement caché là-dedans !',
+      hint: 'Outil Changer la voix activé',
+      ricardoHint: 'Utilise l\'outil Changer la voix — il y a un drôle de sifflement caché là-dedans !',
       proximity: (s) => {
         if (!s.bandPassFilter.enabled) return 0;
         const f = s.bandPassFilter.frequency;
@@ -256,8 +256,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'buzz-elec',
       label: 'Buzz électrique supprimé',
-      hint: 'Notch entre 40–80 Hz',
-      ricardoHint: 'Utilise le filtre coupe-bande (notch) vers 60 Hz — il y a un buzz électrique qui cache des bruits !',
+      hint: 'Outil NETTOYER activé',
+      ricardoHint: 'Clique sur NETTOYER — il y a un buzz électrique qui cache des bruits !',
       proximity: (s) => {
         if (!s.notchFilter.enabled) return 0;
         const f = s.notchFilter.frequency;
@@ -269,8 +269,8 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'pitch-agr',
       label: 'Voix grave restaurée',
-      hint: 'Pitch entre -6 et -2 ST',
-      ricardoHint: 'Baisse le pitch de 3 ou 4 crans — la voix a été rendue trop aiguë pour cacher l\'identité de l\'agresseur !',
+      hint: 'Tonalité entre -6 et -2 ST',
+      ricardoHint: 'Baisse la Tonalité de 3 ou 4 crans — la voix a été rendue trop aiguë pour cacher l\'identité de l\'agresseur !',
       proximity: (s) => {
         const p = s.pitchShift.semitones;
         if (p === 0) return 0;
@@ -283,16 +283,16 @@ const BRAIN_CITY: ScenarioData = {
     {
       id: 'message-larry',
       label: 'Message de Larry décodé',
-      hint: 'Reverse activé',
-      ricardoHint: 'Clique sur le bouton Inverser — Larry a caché un message à l\'envers dans l\'enregistrement !',
+      hint: 'Inverser le son activé',
+      ricardoHint: 'Clique sur Inverser le son — Larry a caché un message à l\'envers dans l\'enregistrement !',
       proximity: (s) => (s.isReversed ? 1 : 0),
       check: (s) => s.isReversed,
     },
     {
       id: 'chuchotement-agr',
       label: 'Menaces amplifiées',
-      hint: 'Compresseur activé',
-      ricardoHint: 'Active le compresseur — il y a des chuchotements trop faibles pour être entendus normalement !',
+      hint: 'Outil AMPLIFIER activé',
+      ricardoHint: 'Active l\'outil AMPLIFIER — il y a des chuchotements trop faibles pour être entendus normalement !',
       proximity: (s) => (s.compressor.enabled ? 1 : 0),
       check: (s) => s.compressor.enabled,
     },
@@ -300,7 +300,7 @@ const BRAIN_CITY: ScenarioData = {
       id: 'ralenti-agr',
       label: 'Accent industriel confirmé',
       hint: 'Vitesse ≤ 0.75×',
-      ricardoHint: 'Mets la vitesse à 0.7 — l\'accent du quartier industriel ressort bien mieux au ralenti !',
+      ricardoHint: 'Baisse la Vitesse à 0.75× — l\'accent du quartier industriel ressort bien mieux au ralenti !',
       proximity: (s) => {
         if (s.playbackSpeed <= 0.75) return 1;
         return Math.max(0, 1 - (s.playbackSpeed - 0.75) / 0.5);
@@ -315,8 +315,8 @@ const BRAIN_CITY: ScenarioData = {
   },
   analysisSteps: [
     'Écoute l\'enregistrement et repère les sons ambiants',
-    'Filtre le bruit du chantier avec les filtres',
-    'Corrige la voix modifiée (pitch)',
+    'Utilise les outils GRAVES et AIGUS',
+    'Corrige la voix modifiée avec la Tonalité',
     'Inverse le son pour décoder le message de Larry',
   ],
   successTitle: 'SUSPECT ARRÊTÉ !',
@@ -329,12 +329,12 @@ const BRAIN_CITY: ScenarioData = {
     setup: "Salut l'équipe ! On a un gros problème à Brain City. Un enregistrement compromis par Larry… et un agresseur qui court toujours dans les rues ! Je compte sur vous pour l'analyser. Prêts à mener l'enquête ?",
     play: "Ouvre bien tes oreilles, l'enregistrement commence ! Il y a des sons bizarres là-dedans…",
     filters: {
-      lowPass: "J'entends quelque chose de grave et sourd… des bruits de chantier peut-être ?",
-      highPass: "Ah, les graves disparaissent ! La voix ressort beaucoup mieux maintenant…",
-      bandPass: "On se concentre sur les médiums… j'entends comme un sifflement étrange !",
-      notch: "Ce buzz électrique agaçant… le filtre coupe-bande devrait l'éliminer !",
-      compressor: "Le compresseur amplifie les sons faibles… chut, j'entends des chuchotements !",
-      reverse: "L'audio à l'envers ! Larry a peut-être caché un message secret là-dedans…",
+      lowPass: "J'entends de gros bruits forts… essaie l'outil GRAVES !",
+      highPass: "Des sifflements gênent l'écoute… utilise l'outil AIGUS pour nettoyer ça !",
+      bandPass: "La voix est modifiée… clique sur Changer la voix, on entendra mieux !",
+      notch: "Ce buzz électrique agaçant… l'outil NETTOYER devrait l'éliminer !",
+      compressor: "L'outil AMPLIFIER permet de mieux entendre… chut, j'entends des chuchotements !",
+      reverse: "L'audio à l'envers ! Avec Inverser le son, Larry a peut-être caché un message secret là-dedans…",
     },
     hot: "Chaud chaud ! Bouge encore un peu ce curseur, on approche quelque chose !",
     veryHot: "TRÈS CHAUD !! Encore un tout petit peu… on y est presque !!",
