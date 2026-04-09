@@ -39,7 +39,6 @@ const LoginScreen = () => {
           <div className="mb-4">
             <RicardoBubble
               message="Salut ! Je suis Ricardo Pouleto 🐔 On va résoudre cette enquête ensemble !"
-              soundOnMessage="chant"
             />
           </div>
 

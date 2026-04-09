@@ -3,13 +3,11 @@ import { useAudioStore } from '@/stores/audioStore';
 import { getScenario } from '@/data/scenarios';
 
 export type RicardoEmotion = 'neutral' | 'excited' | 'thinking' | 'panicking' | 'triumphant' | 'scared';
-export type RicardoSound = 'bouche' | 'chant' | 'apeure' | 'agace';
 
 export interface RicardoState {
   message: string;
   emotion: RicardoEmotion;
   isEvent: boolean;
-  soundKey: RicardoSound;
   eventTitle?: string;
   dismissEvent: () => void;
 }
@@ -91,7 +89,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: `Il reste seulement ${timeLeft} secondes ! Vite, trouve le coupable !`,
       emotion: 'panicking',
       isEvent: true,
-      soundKey: 'agace',
       eventTitle: `⏰ PLUS QUE ${timeLeft}s !`,
       dismissEvent: dismiss,
     };
@@ -103,7 +100,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: `⭐ Excellent ! On vient de trouver : « ${eventClue} » ! Cot-cot !`,
       emotion: 'triumphant',
       isEvent: true,
-      soundKey: 'chant',
       eventTitle: 'INDICE TROUVÉ !',
       dismissEvent: dismiss,
     };
@@ -115,7 +111,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: ricardoLines?.allCluesFound ?? `Tous les ${totalClues} indices trouvés ! Accuse quelqu'un !`,
       emotion: 'triumphant',
       isEvent: false,
-      soundKey: 'chant',
       dismissEvent: dismiss,
     };
   }
@@ -134,7 +129,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: ricardoLines?.veryHot ?? 'TRÈS CHAUD !! Encore un tout petit peu…',
       emotion: 'excited',
       isEvent: false,
-      soundKey: 'agace',
       dismissEvent: dismiss,
     };
   }
@@ -144,7 +138,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: ricardoLines?.hot ?? "Chaud ! Tu t'approches de quelque chose !",
       emotion: 'excited',
       isEvent: false,
-      soundKey: 'agace',
       dismissEvent: dismiss,
     };
   }
@@ -155,7 +148,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: ricardoLines.filters[lastFilter],
       emotion: 'thinking',
       isEvent: false,
-      soundKey: 'bouche',
       dismissEvent: dismiss,
     };
   }
@@ -166,7 +158,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: ricardoLines.play,
       emotion: 'neutral',
       isEvent: false,
-      soundKey: 'bouche',
       dismissEvent: dismiss,
     };
   }
@@ -178,7 +169,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       message: nextClue?.ricardoHint ?? '🎵 Écoute bien et explore les filtres !',
       emotion: 'neutral',
       isEvent: false,
-      soundKey: 'bouche',
       dismissEvent: dismiss,
     };
   }
@@ -189,7 +179,6 @@ export function useRicardo(timeLeft?: number | null): RicardoState {
       : `Super ! ${clueCount} indices trouvés sur ${totalClues} !`,
     emotion: 'neutral',
     isEvent: false,
-    soundKey: 'bouche',
     dismissEvent: dismiss,
   };
 }

@@ -83,7 +83,6 @@ describe('useRicardo', () => {
     // Let the event timer expire
     act(() => { vi.advanceTimersByTime(2500); });
     expect(result.current.emotion).toBe('triumphant');
-    expect(result.current.soundKey).toBe('chant');
     expect(result.current.message).toContain('tous les indices');
   });
 });

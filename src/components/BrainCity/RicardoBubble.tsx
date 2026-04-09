@@ -1,19 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import type { RicardoEmotion, RicardoSound } from '@/hooks/useRicardo';
+import type { RicardoEmotion } from '@/hooks/useRicardo';
 
 interface RicardoBubbleProps {
   message: string;
   emotion?: RicardoEmotion;
-  soundOnMessage?: RicardoSound;
 }
-
-const SOUNDS: Record<RicardoSound, string> = {
-  bouche: '/audio/pouleBouche.wav',
-  agace: '/audio/pouleAgace.wav',
-  apeure: '/audio/pouleApeure.wav',
-  chant: '/audio/chantPoule.wav',
-};
 
 const IMAGE_MAP: Record<RicardoEmotion, string> = {
   neutral: '/images/inspecteur/Ricardo_Pouleto_neutral.png',
@@ -53,28 +45,12 @@ const EMOTION_GLOW: Record<RicardoEmotion, string> = {
   scared: '0 4px 0 0 #073B4C',
 };
 
-const playSound = (key: RicardoSound) => {
-  const audio = new Audio(SOUNDS[key]);
-  audio.volume = 0.2;
-  audio.play().catch(() => {});
-};
-
-const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche' }: RicardoBubbleProps) => {
-  const prevMessage = useRef<string>('');
+const RicardoBubble = ({ message, emotion = 'neutral' }: RicardoBubbleProps) => {
   const [imgSrc, setImgSrc] = useState(IMAGE_MAP[emotion]);
 
   useEffect(() => {
     setImgSrc(IMAGE_MAP[emotion]);
   }, [emotion]);
-
-  useEffect(() => {
-    if (message !== prevMessage.current) {
-      prevMessage.current = message;
-      if (soundOnMessage !== 'bouche') {
-        playSound(soundOnMessage);
-      }
-    }
-  }, [message, soundOnMessage]);
 
   const badge = EMOTION_BADGE[emotion];
   const isPanicking = emotion === 'panicking';
@@ -93,7 +69,7 @@ const RicardoBubble = ({ message, emotion = 'neutral', soundOnMessage = 'bouche'
           alt="Ricardo Pouleto"
           className="w-24 h-24 cursor-pointer object-contain drop-shadow-lg"
           onError={() => setImgSrc(FALLBACK_IMAGE)}
-          onClick={() => playSound('bouche')}
+
           whileHover={{ scale: 1.1, rotate: 4 }}
           whileTap={{ scale: 0.92 }}
           animate={isPanicking ? { x: [-3, 3, -3, 3, 0] } : { y: [0, -5, 0] }}

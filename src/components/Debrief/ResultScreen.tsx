@@ -176,7 +176,6 @@ const ResultScreen = () => {
                         ? (scenario.ricardoLines?.correctSuspect ?? scenario.successStory)
                         : (scenario.ricardoLines?.wrongSuspect ?? scenario.failureMessage)}
                       emotion={isCorrect ? 'triumphant' : 'scared'}
-                      soundOnMessage={isCorrect ? 'chant' : 'apeure'}
                     />
                   </motion.div>
 

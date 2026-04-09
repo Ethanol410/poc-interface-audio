@@ -397,7 +397,6 @@ const Dashboard = memo(() => {
                 <RicardoBubble
                   message={ricardo.message}
                   emotion={ricardo.emotion}
-                  soundOnMessage={ricardo.soundKey}
                 />
               ) : (
                 <div className="flex items-start gap-6 flex-wrap">
