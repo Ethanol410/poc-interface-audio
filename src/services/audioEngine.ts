@@ -79,11 +79,11 @@ class AudioEngine {
       this.bandpassNode.frequency.value = 1500;
       this.bandpassNode.Q.value = 1;
 
-      // Notch filter (default: allpass bypass)
+      // Notch filter (default: allpass bypass). Test audio buzz is at 120 Hz.
       this.notchNode = this.context.createBiquadFilter();
       this.notchNode.type = 'allpass';
-      this.notchNode.frequency.value = 60;
-      this.notchNode.Q.value = 10;
+      this.notchNode.frequency.value = 120;
+      this.notchNode.Q.value = 8;
 
       // Compressor (default: transparent 1:1 ratio)
       this.compressorNode = this.context.createDynamicsCompressor();

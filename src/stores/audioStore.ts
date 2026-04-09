@@ -128,8 +128,8 @@ const initialState = {
   },
   notchFilter: {
     type: 'notch' as const,
-    frequency: 60,
-    q: 10,
+    frequency: 120,
+    q: 8,
     enabled: false,
   },
   compressor: {

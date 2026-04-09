@@ -46,21 +46,21 @@ export interface DialMapping {
 }
 
 export const BUTTON_MAPPINGS: ButtonMapping[] = [
-  { index: 0, action: 'toggle-play',       label: 'PLAY',  icon: '▶',   colorOn: '#00ff88', colorOff: '#1a1a2e' },
-  { index: 1, action: 'toggle-reverse',    label: 'REV',   icon: '◀◀', colorOn: '#ff8800', colorOff: '#1a1a2e' },
-  { index: 2, action: 'toggle-lowpass',    label: 'LPF',   icon: 'LP',  colorOn: '#00d4ff', colorOff: '#1a1a2e' },
-  { index: 3, action: 'toggle-highpass',   label: 'HPF',   icon: 'HP',  colorOn: '#00d4ff', colorOff: '#1a1a2e' },
-  { index: 4, action: 'toggle-bandpass',   label: 'BPF',   icon: 'BP',  colorOn: '#00d4ff', colorOff: '#1a1a2e' },
-  { index: 5, action: 'toggle-notch',      label: 'NOTCH', icon: 'NF',  colorOn: '#ff4444', colorOff: '#1a1a2e' },
-  { index: 6, action: 'toggle-compressor', label: 'COMP',  icon: 'CMP', colorOn: '#ffff00', colorOff: '#1a1a2e' },
-  { index: 7, action: 'cycle-preset',      label: 'PRESET',icon: 'PRE', colorOn: '#dd00ff', colorOff: '#33335a' },
+  { index: 0, action: 'toggle-play',       label: 'LECTURE',  icon: '▶',  colorOn: '#00ff88', colorOff: '#1a1a2e' },
+  { index: 1, action: 'toggle-reverse',    label: 'INVERSE',  icon: '◀◀', colorOn: '#ff8800', colorOff: '#1a1a2e' },
+  { index: 2, action: 'toggle-lowpass',    label: 'GRAVES',   icon: '🔉', colorOn: '#00d4ff', colorOff: '#1a1a2e' },
+  { index: 3, action: 'toggle-highpass',   label: 'AIGUS',    icon: '🔈', colorOn: '#4ade80', colorOff: '#1a1a2e' },
+  { index: 4, action: 'toggle-bandpass',   label: 'VOIX',     icon: '🎤', colorOn: '#fbbf24', colorOff: '#1a1a2e' },
+  { index: 5, action: 'toggle-notch',      label: 'BUZZ',     icon: '⚡', colorOn: '#f87171', colorOff: '#1a1a2e' },
+  { index: 6, action: 'toggle-compressor', label: 'MURMURE',  icon: '📢', colorOn: '#c084fc', colorOff: '#1a1a2e' },
+  { index: 7, action: 'cycle-preset',      label: 'PRESET',   icon: '↺',  colorOn: '#818cf8', colorOff: '#33335a' },
 ];
 
 export const DIAL_MAPPINGS: DialMapping[] = [
-  { index: 0, action: 'set-volume',       pushAction: 'mute-toggle',    label: 'VOL',   min: 0,   max: 1,     step: 0.02, unit: '' },
-  { index: 1, action: 'set-lowpass-freq', pushAction: 'toggle-lowpass', label: 'LPF',   min: 200, max: 20000, step: 100,  unit: 'Hz' },
-  { index: 2, action: 'set-highpass-freq',pushAction: 'toggle-highpass',label: 'HPF',   min: 20,  max: 2000,  step: 10,   unit: 'Hz' },
-  { index: 3, action: 'set-pitch',        pushAction: 'reset-pitch',    label: 'PITCH', min: -12, max: 12,    step: 1,    unit: 'st' },
+  { index: 0, action: 'set-volume',       pushAction: 'mute-toggle',    label: 'VOLUME',   min: 0,   max: 1,     step: 0.02, unit: '' },
+  { index: 1, action: 'set-lowpass-freq', pushAction: 'toggle-lowpass', label: 'GRAVES',   min: 200, max: 20000, step: 100,  unit: 'Hz' },
+  { index: 2, action: 'set-highpass-freq',pushAction: 'toggle-highpass',label: 'AIGUS',    min: 20,  max: 2000,  step: 10,   unit: 'Hz' },
+  { index: 3, action: 'set-pitch',        pushAction: 'reset-pitch',    label: 'TONALIT',  min: -12, max: 12,    step: 1,    unit: 'st' },
 ];
 
 export const PRESET_CYCLE: Array<'clear' | 'remove-mask' | 'deep-analysis'> = [

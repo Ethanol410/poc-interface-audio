@@ -9,10 +9,8 @@ import {
   Spectrogram,
   FrequencyBars,
   AudioMeter,
-  ParameterDisplay,
 } from '@/components/Visualization';
 import FilterPanel from '@/components/Controls/FilterPanel';
-import PitchControl from '@/components/Controls/PitchControl';
 import { getScenario } from '@/data/scenarios';
 import StreamDeckPanel from '@/components/StreamDeck/StreamDeckPanel';
 import StreamDeckSuspectPanel from '@/components/StreamDeck/StreamDeckSuspectPanel';
@@ -23,8 +21,6 @@ import KidsToolPanel from '@/components/BrainCity/KidsToolPanel';
 import { audioEngine } from '@/services/audioEngine';
 import { useRicardo } from '@/hooks/useRicardo';
 import WorkspaceTour from '@/components/Workspace/WorkspaceTour';
-
-type ToolTab = 'filtres' | 'pitch' | 'avance';
 
 // Brain City Kid-Tech palette
 const BC = {
@@ -54,7 +50,6 @@ const Dashboard = memo(() => {
     setMissionStartTime,
   } = store;
 
-  const [activeTab, setActiveTab] = useState<ToolTab>('filtres');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [timerExpired, setTimerExpired] = useState(false);
   const [runTour, setRunTour] = useState(() => sessionStorage.getItem('tourCompleted') !== 'true');
@@ -633,41 +628,9 @@ const Dashboard = memo(() => {
                   <KidsToolPanel />
                 </div>
               ) : (
-                <>
-                  <div className="flex border-b border-forensics-cyan-dark">
-                    {(
-                      [
-                        { key: 'filtres',  label: 'FILTRES' },
-                        { key: 'pitch',    label: 'PITCH' },
-                        { key: 'avance',   label: 'PARAMÈTRES' },
-                      ] as { key: ToolTab; label: string }[]
-                    ).map(({ key, label }) => (
-                      <button
-                        key={key}
-                        onClick={() => setActiveTab(key)}
-                        className={`flex-1 py-2.5 text-xs font-mono font-bold tracking-wider transition-colors ${
-                          activeTab === key
-                            ? 'bg-forensics-cyan/10 text-forensics-cyan border-b-2 border-forensics-cyan'
-                            : 'text-gray-500 hover:text-gray-300'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="p-4 max-h-[520px] overflow-y-auto">
-                    {activeTab === 'filtres' && <FilterPanel />}
-                    {activeTab === 'pitch'   && <PitchControl />}
-                    {activeTab === 'avance'  && (
-                      <div className="space-y-4">
-                        <h4 className="text-xs font-bold text-forensics-cyan font-mono tracking-wider">
-                          PARAMÈTRES ACTIFS
-                        </h4>
-                        <ParameterDisplay />
-                      </div>
-                    )}
-                  </div>
-                </>
+                <div className="p-4 max-h-[580px] overflow-y-auto">
+                  <FilterPanel />
+                </div>
               )}
             </motion.div>
 

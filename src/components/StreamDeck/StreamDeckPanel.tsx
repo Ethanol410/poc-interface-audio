@@ -1,6 +1,5 @@
 /**
- * StreamDeckPanel — collapsible UI panel for Stream Deck+ connection control.
- * Shows in the Dashboard sidebar.
+ * StreamDeckPanel — connexion et guide visuel du Stream Deck+ audio.
  */
 
 import { useState } from 'react';
@@ -8,26 +7,54 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStreamDeck } from '@/hooks/useStreamDeck';
 import Spinner from '@/components/Layout/Spinner';
 
+// Mirrors streamDeckMappings.ts BUTTON_MAPPINGS (corbeau labels)
+const BUTTON_MAP = [
+  { label: '▶  Lecture',  color: '#4ade80' },
+  { label: '◀◀ Inverse',  color: '#fb923c' },
+  { label: '🔉 Graves',   color: '#22d3ee' },
+  { label: '🔈 Aigus',    color: '#4ade80' },
+  { label: '🎤 Voix',     color: '#fbbf24' },
+  { label: '⚡ Buzz',     color: '#f87171' },
+  { label: '📢 Murmure',  color: '#c084fc' },
+  { label: '↺  Preset',   color: '#818cf8' },
+];
+
+// Mirrors streamDeckMappings.ts DIAL_MAPPINGS
+const DIAL_MAP = [
+  { label: 'Volume',     sub: 'Push → muet',          color: '#22d3ee' },
+  { label: 'Graves',     sub: 'Push → activer/off',   color: '#22d3ee' },
+  { label: 'Aigus',      sub: 'Push → activer/off',   color: '#4ade80' },
+  { label: 'Tonalité',   sub: 'Push → réinitialiser', color: '#818cf8' },
+];
+
 const StreamDeckPanel = () => {
   const { isConnected, isConnecting, isSupported, error, connect, disconnect } = useStreamDeck();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg overflow-hidden">
-      {/* Header / toggle */}
+    <div
+      className="rounded-lg overflow-hidden border"
+      style={{ borderColor: '#1e3040', backgroundColor: '#0a1822' }}
+    >
+      {/* Header */}
       <button
         onClick={() => setIsOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors"
+        style={{ backgroundColor: isOpen ? '#0f2030' : 'transparent' }}
+        type="button"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-forensics-cyan font-mono tracking-wider">
+          <span
+            className="text-[11px] font-mono font-bold tracking-wider"
+            style={{ color: isConnected ? '#4ade80' : '#3d6a7a' }}
+          >
             STREAM DECK+
           </span>
           {isConnected && (
-            <span className="w-2 h-2 rounded-full bg-forensics-green animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
           )}
         </div>
-        <span className="text-gray-500 text-xs font-mono">
+        <span className="text-[10px] font-mono" style={{ color: '#2d4a5a' }}>
           {isOpen ? '▲' : '▼'}
         </span>
       </button>
@@ -41,51 +68,93 @@ const StreamDeckPanel = () => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-1 space-y-3">
+            <div className="px-3 pb-4 pt-1 space-y-4">
+
               {!isSupported ? (
-                <p className="text-xs font-mono text-gray-500">
-                  WebHID non disponible.
-                  <br />
-                  Utilisez Chrome ou Edge.
+                <p className="text-[11px] font-mono" style={{ color: '#4a6070' }}>
+                  WebHID non disponible — utilisez Chrome ou Edge.
                 </p>
               ) : isConnected ? (
                 <>
+                  {/* Connection status */}
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-forensics-green" />
-                    <span className="text-xs font-mono text-forensics-green">
-                      Stream Deck connecté
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                    <span className="text-[11px] font-mono" style={{ color: '#4ade80' }}>
+                      Connecté
                     </span>
+                    <button
+                      onClick={disconnect}
+                      className="ml-auto text-[10px] font-mono px-2 py-0.5 rounded border transition-colors"
+                      style={{ borderColor: '#3d1a1a', color: '#f87171' }}
+                      type="button"
+                    >
+                      Déconnecter
+                    </button>
                   </div>
-                  <div className="text-[10px] font-mono text-gray-500 space-y-0.5">
-                    <div>● Boutons 0-6 : toggles filtres / lecture</div>
-                    <div>● Bouton 7 : cycle presets</div>
-                    <div>● Molettes : Vol / LPF / HPF / Pitch</div>
-                    <div>● Push molettes : mute / toggle / reset</div>
+
+                  {/* Buttons grid */}
+                  <div>
+                    <p className="text-[9px] font-mono tracking-widest uppercase mb-1.5" style={{ color: '#2d4a5a' }}>
+                      Boutons (haut)
+                    </p>
+                    <div className="grid grid-cols-4 gap-1">
+                      {BUTTON_MAP.map(({ label, color }, i) => (
+                        <div
+                          key={i}
+                          className="rounded p-1.5 text-center border"
+                          style={{ borderColor: `${color}40`, backgroundColor: `${color}0a` }}
+                        >
+                          <div className="text-[9px] font-mono leading-snug" style={{ color }}>
+                            {label}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <button
-                    onClick={disconnect}
-                    className="w-full py-1.5 text-xs font-mono font-bold border border-red-500/50 text-red-400 rounded hover:bg-red-500/10 transition-colors"
-                  >
-                    Déconnecter
-                  </button>
+
+                  {/* Dials row */}
+                  <div>
+                    <p className="text-[9px] font-mono tracking-widest uppercase mb-1.5" style={{ color: '#2d4a5a' }}>
+                      Molettes (bas)
+                    </p>
+                    <div className="grid grid-cols-4 gap-1">
+                      {DIAL_MAP.map(({ label, sub, color }, i) => (
+                        <div
+                          key={i}
+                          className="rounded p-1.5 text-center border"
+                          style={{ borderColor: `${color}40`, backgroundColor: `${color}0a` }}
+                        >
+                          <div className="text-[10px] mb-0.5 font-bold leading-none" style={{ color }}>⟳</div>
+                          <div className="text-[9px] font-mono leading-tight" style={{ color }}>
+                            {label}
+                          </div>
+                          <div className="text-[8px] font-mono mt-0.5 leading-tight" style={{ color: '#2d4a5a' }}>
+                            {sub}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </>
               ) : (
                 <>
-                  <p className="text-[11px] font-mono text-gray-400">
+                  <p className="text-[11px] font-mono" style={{ color: '#4a6070' }}>
                     Fermez le logiciel Elgato avant de connecter.
                   </p>
                   {error && (
-                    <p className="text-[11px] font-mono text-red-400">{error}</p>
+                    <p className="text-[11px] font-mono" style={{ color: '#f87171' }}>{error}</p>
                   )}
                   <button
                     onClick={connect}
                     disabled={isConnecting}
-                    className="w-full py-2 text-xs font-mono font-bold bg-forensics-cyan/10 border border-forensics-cyan text-forensics-cyan rounded hover:bg-forensics-cyan/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    type="button"
+                    className="w-full py-2 text-[11px] font-mono font-bold rounded border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{ borderColor: '#22d3ee50', color: '#22d3ee', backgroundColor: '#22d3ee0a' }}
                   >
                     {isConnecting ? (
                       <Spinner size="sm" color="border-forensics-cyan" label="Connexion..." />
                     ) : (
-                      'Connecter Stream Deck'
+                      'Connecter Stream Deck+'
                     )}
                   </button>
                 </>
