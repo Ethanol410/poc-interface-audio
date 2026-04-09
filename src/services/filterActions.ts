@@ -70,3 +70,18 @@ export function imperativeApplyPreset(preset: 'clear' | 'remove-mask' | 'deep-an
       break;
   }
 }
+
+export function imperativeSetSpeed(rate: number): void {
+  const clamped = Math.max(0.25, Math.min(2, rate));
+  useAudioStore.getState().setPlaybackSpeed(clamped);
+  audioEngine.setPlaybackSpeed(clamped);
+}
+
+export function imperativeResetAllFilters(): void {
+  imperativeUpdateLowPassFilter({ frequency: 8000, enabled: false });
+  imperativeUpdateHighPassFilter({ frequency: 200, enabled: false });
+  imperativeUpdateBandPassFilter({ frequency: 1500, enabled: false });
+  imperativeUpdateNotchFilter({ frequency: 120, enabled: false });
+  imperativeUpdateCompressor({ enabled: false });
+  imperativeSetPitch(0);
+}

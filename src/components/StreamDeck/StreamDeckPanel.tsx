@@ -1,14 +1,15 @@
 /**
  * StreamDeckPanel — connexion et guide visuel du Stream Deck+ audio.
+ * Deux pages : Page A (filtres) et Page B (contrôles avancés).
  */
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStreamDeck } from '@/hooks/useStreamDeck';
+import { useAudioStore } from '@/stores/audioStore';
 import Spinner from '@/components/Layout/Spinner';
 
-// Mirrors streamDeckMappings.ts BUTTON_MAPPINGS (corbeau labels)
-const BUTTON_MAP = [
+const PAGE_A_BUTTONS = [
   { label: '▶  Lecture',  color: '#4ade80' },
   { label: '◀◀ Inverse',  color: '#fb923c' },
   { label: '🔉 Graves',   color: '#22d3ee' },
@@ -16,20 +17,44 @@ const BUTTON_MAP = [
   { label: '🎤 Voix',     color: '#fbbf24' },
   { label: '⚡ Buzz',     color: '#f87171' },
   { label: '📢 Murmure',  color: '#c084fc' },
-  { label: '↺  Preset',   color: '#818cf8' },
+  { label: '▼  Avancé',   color: '#4a7090' },
 ];
 
-// Mirrors streamDeckMappings.ts DIAL_MAPPINGS
-const DIAL_MAP = [
-  { label: 'Volume',     sub: 'Push → muet',          color: '#22d3ee' },
-  { label: 'Graves',     sub: 'Push → activer/off',   color: '#22d3ee' },
-  { label: 'Aigus',      sub: 'Push → activer/off',   color: '#4ade80' },
-  { label: 'Tonalité',   sub: 'Push → réinitialiser', color: '#818cf8' },
+const PAGE_B_BUTTONS = [
+  { label: '▶  Lecture',  color: '#4ade80' },
+  { label: '⚖  Compar',   color: '#22d3ee' },
+  { label: '♻  Reset',    color: '#f87171' },
+  { label: '○  Brut',     color: '#94a3b8' },
+  { label: '🔍 Masque',   color: '#818cf8' },
+  { label: '🔬 Analyse',  color: '#34d399' },
+  { label: '◀◀ Inverse',  color: '#fb923c' },
+  { label: '▲  Filtres',  color: '#4a7090' },
+];
+
+const PAGE_A_DIALS = [
+  { label: 'Volume',    sub: 'Push → muet',          color: '#22d3ee' },
+  { label: 'Graves',    sub: 'Push → activer/off',   color: '#22d3ee' },
+  { label: 'Aigus',     sub: 'Push → activer/off',   color: '#4ade80' },
+  { label: 'Tonalité',  sub: 'Push → réinitialiser', color: '#818cf8' },
+];
+
+const PAGE_B_DIALS = [
+  { label: 'Volume',    sub: 'Push → muet',          color: '#22d3ee' },
+  { label: 'Voix Hz',   sub: 'Push → activer/off',   color: '#fbbf24' },
+  { label: 'Buzz Hz',   sub: 'Push → activer/off',   color: '#f87171' },
+  { label: 'Vitesse',   sub: 'Push → réinitialiser', color: '#34d399' },
 ];
 
 const StreamDeckPanel = () => {
   const { isConnected, isConnecting, isSupported, error, connect, disconnect } = useStreamDeck();
+  const scenario = useAudioStore((s) => s.scenario);
+  const isBrainCity = scenario === 'braincity';
   const [isOpen, setIsOpen] = useState(false);
+  const [viewPage, setViewPage] = useState<'A' | 'B'>('A');
+
+  const activePage = isBrainCity ? 'A' : viewPage;
+  const buttons = activePage === 'A' ? PAGE_A_BUTTONS : PAGE_B_BUTTONS;
+  const dials   = activePage === 'A' ? PAGE_A_DIALS   : PAGE_B_DIALS;
 
   return (
     <div
@@ -68,7 +93,7 @@ const StreamDeckPanel = () => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-4 pt-1 space-y-4">
+            <div className="px-3 pb-4 pt-1 space-y-3">
 
               {!isSupported ? (
                 <p className="text-[11px] font-mono" style={{ color: '#4a6070' }}>
@@ -76,7 +101,7 @@ const StreamDeckPanel = () => {
                 </p>
               ) : isConnected ? (
                 <>
-                  {/* Connection status */}
+                  {/* Status */}
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
                     <span className="text-[11px] font-mono" style={{ color: '#4ade80' }}>
@@ -92,13 +117,34 @@ const StreamDeckPanel = () => {
                     </button>
                   </div>
 
+                  {/* Page tabs — hidden for Brain City (single page only) */}
+                  {!isBrainCity && (
+                    <div className="flex gap-1">
+                      {(['A', 'B'] as const).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setViewPage(p)}
+                          type="button"
+                          className="flex-1 py-1 text-[9px] font-mono font-bold rounded border transition-colors"
+                          style={{
+                            borderColor: viewPage === p ? '#22d3ee50' : '#1e3040',
+                            color: viewPage === p ? '#22d3ee' : '#334455',
+                            backgroundColor: viewPage === p ? '#22d3ee0a' : 'transparent',
+                          }}
+                        >
+                          {p === 'A' ? '▼ FILTRES' : '▼ AVANCÉ'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Buttons grid */}
                   <div>
                     <p className="text-[9px] font-mono tracking-widest uppercase mb-1.5" style={{ color: '#2d4a5a' }}>
                       Boutons (haut)
                     </p>
                     <div className="grid grid-cols-4 gap-1">
-                      {BUTTON_MAP.map(({ label, color }, i) => (
+                      {buttons.map(({ label, color }, i) => (
                         <div
                           key={i}
                           className="rounded p-1.5 text-center border"
@@ -118,7 +164,7 @@ const StreamDeckPanel = () => {
                       Molettes (bas)
                     </p>
                     <div className="grid grid-cols-4 gap-1">
-                      {DIAL_MAP.map(({ label, sub, color }, i) => (
+                      {dials.map(({ label, sub, color }, i) => (
                         <div
                           key={i}
                           className="rounded p-1.5 text-center border"
@@ -135,6 +181,13 @@ const StreamDeckPanel = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Page hint — only for scenarios with multiple pages */}
+                  {!isBrainCity && (
+                    <p className="text-[9px] font-mono" style={{ color: '#2d4a5a' }}>
+                      Btn 8 → changer de page sur le hardware
+                    </p>
+                  )}
                 </>
               ) : (
                 <>

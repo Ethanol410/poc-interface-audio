@@ -23,8 +23,12 @@ class AudioEngine {
   private bandpassNode: BiquadFilterNode | null = null;
   private notchNode: BiquadFilterNode | null = null;
   private compressorNode: DynamicsCompressorNode | null = null;
+  private makeupGainNode: GainNode | null = null;
   private gainNode: GainNode | null = null;
   private analyserNode: AnalyserNode | null = null;
+
+  // Queued element waiting for initialization to complete
+  private pendingMediaElement: HTMLMediaElement | null = null;
 
   private isInitialized = false;
   private listeners: Map<string, Set<(data?: unknown) => void>> = new Map();
@@ -89,8 +93,13 @@ class AudioEngine {
       this.compressorNode = this.context.createDynamicsCompressor();
       this.compressorNode.threshold.value = 0;
       this.compressorNode.ratio.value = 1;
+      this.compressorNode.knee.value = 40;
       this.compressorNode.attack.value = 0.003;
       this.compressorNode.release.value = 0.25;
+
+      // Makeup gain node (boosted when compressor is active)
+      this.makeupGainNode = this.context.createGain();
+      this.makeupGainNode.gain.value = 1.0;
 
       // Master gain
       this.gainNode = this.context.createGain();
@@ -101,12 +110,13 @@ class AudioEngine {
       this.analyserNode.fftSize = 2048;
       this.analyserNode.smoothingTimeConstant = 0.8;
 
-      // Chain: source → lpFilter → hpFilter → bandpass → notch → compressor → gain → analyser → destination
+      // Chain: source → lpFilter → hpFilter → bandpass → notch → compressor → makeupGain → gain → analyser → destination
       this.lpFilterNode.connect(this.hpFilterNode);
       this.hpFilterNode.connect(this.bandpassNode);
       this.bandpassNode.connect(this.notchNode);
       this.notchNode.connect(this.compressorNode);
-      this.compressorNode.connect(this.gainNode);
+      this.compressorNode.connect(this.makeupGainNode);
+      this.makeupGainNode.connect(this.gainNode);
       this.gainNode.connect(this.analyserNode);
       this.analyserNode.connect(this.context.destination);
 
@@ -116,6 +126,13 @@ class AudioEngine {
 
       this.isInitialized = true;
       this.emit('initialized');
+
+      // Connect any element that arrived before initialization completed
+      if (this.pendingMediaElement) {
+        const el = this.pendingMediaElement;
+        this.pendingMediaElement = null;
+        this.connectMediaElement(el);
+      }
     } catch (error) {
       console.error('Failed to initialize audio engine:', error);
       throw error;
@@ -128,7 +145,8 @@ class AudioEngine {
    */
   public connectMediaElement(element: HTMLMediaElement): void {
     if (!this.isInitialized || !this.context || !this.lpFilterNode) {
-      console.warn('AudioEngine not initialized yet, skipping connectMediaElement');
+      // Queue the element — will be connected once initialize() completes
+      this.pendingMediaElement = element;
       return;
     }
 
@@ -284,17 +302,25 @@ class AudioEngine {
   /**
    * Apply dynamic compression.
    * When disabled, ratio=1 threshold=0 (transparent).
+   * When enabled, uses aggressive settings + makeup gain for a clearly audible "Grosse Loupe" effect.
    */
   public applyCompressor(config: CompressorConfig): void {
     if (!this.compressorNode) return;
     if (!config.enabled) {
       this.compressorNode.threshold.value = 0;
       this.compressorNode.ratio.value = 1;
-    } else {
-      this.compressorNode.threshold.value = config.threshold;
-      this.compressorNode.ratio.value = config.ratio;
+      this.compressorNode.knee.value = 40;
       this.compressorNode.attack.value = 0.003;
       this.compressorNode.release.value = 0.25;
+      if (this.makeupGainNode) this.makeupGainNode.gain.value = 1.0;
+    } else {
+      // Aggressive limiting + +6 dB makeup gain → very audible "louder & squashed" effect
+      this.compressorNode.threshold.value = -30;
+      this.compressorNode.ratio.value = 12;
+      this.compressorNode.knee.value = 0;
+      this.compressorNode.attack.value = 0.001;
+      this.compressorNode.release.value = 0.08;
+      if (this.makeupGainNode) this.makeupGainNode.gain.value = 2.0;
     }
     this.emit('compressor', config);
   }
@@ -410,8 +436,10 @@ class AudioEngine {
     this.bandpassNode = null;
     this.notchNode = null;
     this.compressorNode = null;
+    this.makeupGainNode = null;
     this.gainNode = null;
     this.bypassNode = null;
+    this.pendingMediaElement = null;
     this.analyserNode = null;
     this.isInitialized = false;
     this.currentPitchSemitones = 0;

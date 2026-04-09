@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { resetTour } from '@/utils/tourState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Suspect } from '@/types/suspects';
@@ -27,6 +28,7 @@ const ResultScreen = () => {
     missionDuration,
     missionStartTime,
     setMissionStartTime,
+    reset,
   } = useAudioStore();
 
   const scenario = getScenario(scenarioId);
@@ -51,9 +53,15 @@ const ResultScreen = () => {
   };
 
   const handleRestart = useCallback(() => {
-    setMissionStartTime(null);
-    navigate('/');
-  }, [navigate, setMissionStartTime]);
+    resetTour();
+    if (isBrainCity) {
+      reset();
+      navigate('/setup');
+    } else {
+      setMissionStartTime(null);
+      navigate('/');
+    }
+  }, [navigate, setMissionStartTime, isBrainCity, reset]);
 
   const handleExportPDF = useCallback(() => {
     window.print();
@@ -239,14 +247,6 @@ const ResultScreen = () => {
                         className="w-full py-4 bg-white border-4 border-[#073B4C] text-[#073B4C] font-bangers text-2xl rounded-2xl shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
                       >
                         ← RETOUR AUX SUSPECTS
-                      </button>
-                    )}
-                    {isCorrect && (
-                      <button
-                        onClick={handleExportPDF}
-                        className="w-full py-4 bg-white border-4 border-[#073B4C] text-[#EF476F] font-bangers text-2xl rounded-2xl shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider print:hidden"
-                      >
-                        📄 IMPRIMER MON DIPLÔME
                       </button>
                     )}
                   </motion.div>

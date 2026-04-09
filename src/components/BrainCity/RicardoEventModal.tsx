@@ -10,19 +10,28 @@ interface RicardoEventModalProps {
   onDismiss: () => void;
 }
 
-const GRADIENT: Partial<Record<RicardoEmotion, string>> = {
-  triumphant: 'from-emerald-400 to-blue-500',
-  panicking: 'from-red-500 to-red-700',
-  scared: 'from-gray-500 to-red-400',
-};
-
 const IMAGE_MAP: Partial<Record<RicardoEmotion, string>> = {
   triumphant: '/images/inspecteur/Ricardo_Pouleto_triumphant.png',
   panicking: '/images/inspecteur/Ricardo_Pouleto_panicking.png',
   scared: '/images/inspecteur/Ricardo_Pouleto_scared.png',
+  excited: '/images/inspecteur/Ricardo_Pouleto_excited.png',
 };
 
 const FALLBACK = '/images/inspecteur/Ricardo_Pouleto_sticker.png';
+
+const EMOTION_BORDER: Partial<Record<RicardoEmotion, string>> = {
+  triumphant: '#06D6A0',
+  excited: '#FFD166',
+  panicking: '#EF476F',
+  scared: '#9D4EDD',
+};
+
+const EMOTION_TITLE_COLOR: Partial<Record<RicardoEmotion, string>> = {
+  triumphant: '#06D6A0',
+  excited: '#FFD166',
+  panicking: '#EF476F',
+  scared: '#9D4EDD',
+};
 
 const RicardoEventModal = ({
   emotion,
@@ -32,12 +41,14 @@ const RicardoEventModal = ({
   onDismiss,
 }: RicardoEventModalProps) => {
   useEffect(() => {
-    const t = setTimeout(onDismiss, 2500);
+    const t = setTimeout(onDismiss, 3000);
     return () => clearTimeout(t);
   }, [onDismiss]);
 
-  const gradient = GRADIENT[emotion] ?? 'from-blue-400 to-purple-500';
+  const borderColor = EMOTION_BORDER[emotion] ?? '#073B4C';
+  const titleColor = EMOTION_TITLE_COLOR[emotion] ?? '#073B4C';
   const imgSrc = IMAGE_MAP[emotion] ?? FALLBACK;
+  const isPanicking = emotion === 'panicking';
 
   return (
     <motion.div
@@ -48,34 +59,75 @@ const RicardoEventModal = ({
     >
       <motion.button
         type="button"
-        className={`bg-gradient-to-br ${gradient} rounded-3xl px-8 py-6 flex flex-col items-center gap-3 shadow-2xl pointer-events-auto cursor-pointer border-4 border-white/30`}
+        className="bg-white rounded-[32px] p-5 flex items-start gap-4 pointer-events-auto cursor-pointer"
+        style={{
+          border: `4px solid ${borderColor}`,
+          boxShadow: `0 8px 0 0 #073B4C`,
+          maxWidth: '380px',
+          width: '90vw',
+        }}
         initial={{ scale: 0.6, y: 40 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.6, y: 40 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         onClick={onDismiss}
       >
+        {/* Ricardo image */}
         <motion.img
           src={imgSrc}
           alt="Ricardo"
-          className="w-20 h-20 object-contain"
+          className="w-20 h-20 object-contain flex-shrink-0"
           onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK; }}
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 0.6, repeat: Infinity }}
+          animate={isPanicking
+            ? { x: [-3, 3, -3, 3, 0] }
+            : { y: [0, -8, 0] }
+          }
+          transition={isPanicking
+            ? { duration: 0.25, repeat: Infinity }
+            : { duration: 0.6, repeat: Infinity, repeatDelay: 0.5 }
+          }
         />
-        <div className="text-center">
-          <p className="text-white font-black text-xl tracking-wide drop-shadow">{title}</p>
-          <p className="text-white/90 font-semibold text-sm mt-1">{message}</p>
+
+        {/* Content */}
+        <div className="flex-1 text-left min-w-0">
+          <p
+            className="font-bangers text-2xl tracking-wider leading-none"
+            style={{ color: titleColor, textShadow: '1px 1px 0px #073B4C' }}
+          >
+            {title}
+          </p>
+          <p
+            className="font-fredoka font-semibold text-sm mt-1.5 leading-snug"
+            style={{ color: '#073B4C' }}
+          >
+            {message}
+          </p>
+
+          {/* Stars progress */}
+          {clueProgress && (
+            <div className="flex gap-1.5 mt-2 flex-wrap">
+              {Array.from({ length: clueProgress.total }, (_, i) => (
+                <motion.span
+                  key={i}
+                  className="text-lg leading-none"
+                  style={{
+                    filter: i < clueProgress.found
+                      ? 'drop-shadow(1px 1px 0px #073B4C)'
+                      : 'grayscale(1) opacity(0.3)',
+                  }}
+                  animate={i < clueProgress.found ? { scale: [1, 1.4, 1] } : {}}
+                  transition={{ duration: 0.3, delay: i * 0.06 }}
+                >
+                  ⭐
+                </motion.span>
+              ))}
+            </div>
+          )}
+
+          <p className="font-fredoka text-[11px] mt-2" style={{ color: '#9CA3AF' }}>
+            Appuie pour continuer
+          </p>
         </div>
-        {clueProgress && (
-          <div className="flex gap-1">
-            {Array.from({ length: clueProgress.total }, (_, i) => (
-              <span key={i} className="text-lg leading-none">
-                {i < clueProgress.found ? '⭐' : '☆'}
-              </span>
-            ))}
-          </div>
-        )}
       </motion.button>
     </motion.div>
   );

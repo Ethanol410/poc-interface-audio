@@ -67,17 +67,32 @@ const KidsToolPanel = () => {
     compressor, setCompressor,
     bandPassFilter, setBandPassFilter,
     playbackSpeed, setPlaybackSpeed,
-    pitchShift, setPitchShift,
   } = useAudioStore();
 
   const { lowPassFilter, highPassFilter, updateLowPassFilter, updateHighPassFilter } = useFilterControls();
 
-  const handleLowPass = () => updateLowPassFilter({ enabled: !lowPassFilter.enabled });
-  const handleHighPass = () => updateHighPassFilter({ enabled: !highPassFilter.enabled });
+  const handleLowPass = () => {
+    if (!lowPassFilter.enabled) {
+      // 500 Hz cutoff with slight resonance → very muffled, unmistakable effect
+      updateLowPassFilter({ enabled: true, frequency: 500, q: 3 });
+    } else {
+      updateLowPassFilter({ enabled: false });
+    }
+  };
+
+  const handleHighPass = () => {
+    if (!highPassFilter.enabled) {
+      // 400 Hz cutoff → very thin/tinny, no bass at all
+      updateHighPassFilter({ enabled: true, frequency: 400, q: 2 });
+    } else {
+      updateHighPassFilter({ enabled: false });
+    }
+  };
 
   const handleNotch = () => {
-    const next = { ...notchFilter, enabled: !notchFilter.enabled };
-    setNotchFilter({ enabled: next.enabled });
+    // 60 Hz matches the buzz in the distorted audio
+    const next = { ...notchFilter, enabled: !notchFilter.enabled, frequency: 60, q: 15 };
+    setNotchFilter({ enabled: next.enabled, frequency: next.frequency, q: next.q });
     audioEngine.applyNotchFilter(next);
   };
 
@@ -88,20 +103,15 @@ const KidsToolPanel = () => {
   };
 
   const handleBandPass = () => {
-    const next = { ...bandPassFilter, enabled: !bandPassFilter.enabled };
-    setBandPassFilter({ enabled: next.enabled });
+    const next = { ...bandPassFilter, enabled: !bandPassFilter.enabled, frequency: 800, q: 2 };
+    setBandPassFilter({ enabled: next.enabled, frequency: next.frequency, q: next.q });
     audioEngine.applyBandPassFilter(next);
   };
 
   const handleSpeed = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const speed = parseFloat(e.target.value);
+    const speed = Math.round(parseFloat(e.target.value) / 0.25) * 0.25;
     setPlaybackSpeed(speed);
     audioEngine.setPlaybackSpeed(speed);
-  };
-
-  const handlePitch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const semitones = parseFloat(e.target.value);
-    setPitchShift({ semitones, enabled: semitones !== 0 });
   };
 
   const handleReverse = () => {
@@ -163,53 +173,26 @@ const KidsToolPanel = () => {
         />
       </div>
 
-      {/* Sliders Container */}
-      <div className="bg-white border-4 border-braincity-border rounded-[24px] p-4 space-y-5" style={{ boxShadow: '0 6px 0 0 #073B4C' }}>
-        
-        {/* Pitch Slider */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="font-bangers tracking-wide text-lg text-braincity-text flex items-center gap-2">
-              🎈 BALLON HÉLIUM
-            </div>
-            <div className="text-sm font-fredoka font-bold text-braincity-dim bg-gray-100 px-2 rounded-full border-2 border-gray-200">
-              {pitchShift.semitones > 0 ? `+${pitchShift.semitones}` : pitchShift.semitones} crans
-            </div>
+      {/* Speed Slider */}
+      <div className="bg-white border-4 border-braincity-border rounded-[24px] p-4" style={{ boxShadow: '0 6px 0 0 #073B4C' }}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="font-bangers tracking-wide text-lg text-braincity-text flex items-center gap-2">
+            🐢 MODE TORTUE
           </div>
-          <input
-            type="range"
-            min="-12"
-            max="12"
-            step="1"
-            value={pitchShift.semitones}
-            onChange={handlePitch}
-            className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: '#FFD166' }} // mustard
-          />
-        </div>
-
-        {/* Speed Slider */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="font-bangers tracking-wide text-lg text-braincity-text flex items-center gap-2">
-              🐢 MODE TORTUE
-            </div>
-            <div className="text-sm font-fredoka font-bold text-braincity-dim bg-gray-100 px-2 rounded-full border-2 border-gray-200">
-              {playbackSpeed}×
-            </div>
+          <div className="text-sm font-fredoka font-bold text-braincity-dim bg-gray-100 px-2 rounded-full border-2 border-gray-200">
+            {parseFloat(playbackSpeed.toFixed(2))}×
           </div>
-          <input
-            type="range"
-            min="0.25"
-            max="2"
-            step="0.25"
-            value={playbackSpeed}
-            onChange={handleSpeed}
-            className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: '#06D6A0' }} // teal
-          />
         </div>
-
+        <input
+          type="range"
+          min="0.25"
+          max="2"
+          step="0.25"
+          value={playbackSpeed}
+          onChange={handleSpeed}
+          className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
+          style={{ accentColor: '#06D6A0' }}
+        />
       </div>
     </div>
   );

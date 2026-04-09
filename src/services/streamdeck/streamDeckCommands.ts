@@ -13,12 +13,12 @@ import {
   imperativeUpdateCompressor,
   imperativeSetVolume,
   imperativeSetPitch,
+  imperativeSetSpeed,
   imperativeApplyPreset,
+  imperativeResetAllFilters,
 } from '@/services/filterActions';
-import { PRESET_CYCLE } from './streamDeckMappings';
 import type { ButtonAction, DialAction, DialPushAction } from './streamDeckMappings';
 
-let presetIndex = 0;
 let isMuted = false;
 let savedVolumeBeforeMute = 0.8;
 
@@ -46,9 +46,23 @@ export function dispatchButtonAction(action: ButtonAction): void {
     case 'toggle-compressor':
       imperativeUpdateCompressor({ enabled: !state.compressor.enabled });
       break;
-    case 'cycle-preset':
-      imperativeApplyPreset(PRESET_CYCLE[presetIndex]);
-      presetIndex = (presetIndex + 1) % PRESET_CYCLE.length;
+    case 'toggle-comparison':
+      state.toggleComparisonMode();
+      break;
+    case 'reset-all-filters':
+      imperativeResetAllFilters();
+      break;
+    case 'apply-preset-clear':
+      imperativeApplyPreset('clear');
+      break;
+    case 'apply-preset-masque':
+      imperativeApplyPreset('remove-mask');
+      break;
+    case 'apply-preset-analyse':
+      imperativeApplyPreset('deep-analysis');
+      break;
+    case 'switch-page':
+      // Handled by StreamDeckService — should not reach here
       break;
   }
 }
@@ -76,6 +90,21 @@ export function dispatchDialAction(action: DialAction, ticks: number, step: numb
       imperativeSetPitch(newPitch);
       break;
     }
+    case 'set-bandpass-freq': {
+      const newFreq = Math.max(200, Math.min(8000, state.bandPassFilter.frequency + ticks * step));
+      imperativeUpdateBandPassFilter({ frequency: newFreq });
+      break;
+    }
+    case 'set-notch-freq': {
+      const newFreq = Math.max(50, Math.min(500, state.notchFilter.frequency + ticks * step));
+      imperativeUpdateNotchFilter({ frequency: newFreq });
+      break;
+    }
+    case 'set-speed': {
+      const newSpeed = Math.max(0.25, Math.min(2, state.playbackSpeed + ticks * step));
+      imperativeSetSpeed(newSpeed);
+      break;
+    }
   }
 }
 
@@ -100,6 +129,15 @@ export function dispatchDialPushAction(action: DialPushAction): void {
       break;
     case 'reset-pitch':
       imperativeSetPitch(0);
+      break;
+    case 'toggle-bandpass':
+      imperativeUpdateBandPassFilter({ enabled: !state.bandPassFilter.enabled });
+      break;
+    case 'toggle-notch':
+      imperativeUpdateNotchFilter({ enabled: !state.notchFilter.enabled });
+      break;
+    case 'reset-speed':
+      imperativeSetSpeed(1.0);
       break;
   }
 }

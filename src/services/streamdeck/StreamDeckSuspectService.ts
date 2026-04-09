@@ -1,31 +1,45 @@
 /**
  * Stream Deck Suspect Service — deuxième Stream Deck dédié aux suspects.
- * Affiche les photos + noms sur les boutons LCD, joue la voix au clic.
+ * Buttons 0-3: play suspect audio + popup.
+ * Button 4: stop.
+ * Button 5: loop toggle.
+ * Button 6: slow mode toggle (0.75x voice pitch).
+ * Button 7: reset voice pitch to 1.0.
+ * Dial 0: global volume (push = mute).
+ * Dial 1: suspect voice pitch (push = reset to 1.0).
  */
 
 import type { StreamDeckWeb } from '@elgato-stream-deck/webhid';
 import { requestFreshStreamDeck, openNextStreamDeck } from './streamDeckConnector';
 import type {
   StreamDeckButtonControlDefinition,
+  StreamDeckEncoderControlDefinition,
   StreamDeckLcdSegmentControlDefinition,
 } from '@elgato-stream-deck/core';
 import { useAudioStore } from '@/stores/audioStore';
+import { imperativeSetVolume } from '@/services/filterActions';
 import { getScenario } from '@/data/scenarios';
 import {
   renderSuspectKey,
   renderStopKey,
   renderEmptyKey,
+  renderLoopKey,
+  renderSlowKey,
+  renderResetPitchKey,
   renderSuspectStrips,
 } from './streamDeckSuspectDisplay';
 import type { SuspectRenderData } from './streamDeckSuspectDisplay';
 
 const SUSPECT_BUTTON_INDICES = [0, 1, 2, 3] as const;
 const STOP_BUTTON_INDEX = 4;
-const EMPTY_BUTTON_INDICES = [5, 6, 7] as const;
+const LOOP_BUTTON_INDEX = 5;
+const SLOW_BUTTON_INDEX = 6;
+const RESET_PITCH_BUTTON_INDEX = 7;
 
-// Maps button index → audioUrls key
 const SUSPECT_AUDIO_KEYS = ['suspect1', 'suspect2', 'suspect3', 'suspect4'] as const;
 type SuspectKey = (typeof SUSPECT_AUDIO_KEYS)[number];
+
+const SLOW_PITCH_RATE = 0.75;
 
 type ServiceListener = () => void;
 
@@ -35,11 +49,18 @@ class StreamDeckSuspectService {
   private deck: StreamDeckWeb | null = null;
   private unsubscribeStore: (() => void) | null = null;
   private player: HTMLAudioElement | null = null;
-  private playingSuspectIndex = -1; // -1 = none
+  private playingSuspectIndex = -1;
+  private isLooping = false;
+  private isSlowMode = false;
   private photoCache = new Map<string, ImageBitmap>();
   private lcdSegment: StreamDeckLcdSegmentControlDefinition | null = null;
   private listeners = new Map<string, Set<ServiceListener>>();
   private syncTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Acceleration for dial rotation
+  private lastRotateTime: number[] = [0, 0, 0, 0];
+  private isMuted = false;
+  private savedVolumeBeforeMute = 0.8;
 
   private constructor() {}
 
@@ -75,6 +96,8 @@ class StreamDeckSuspectService {
     this.deck.close().catch(() => {});
     this.deck = null;
     this.lcdSegment = null;
+    this.isLooping = false;
+    this.isSlowMode = false;
     this.emit('disconnected');
   }
 
@@ -94,14 +117,12 @@ class StreamDeckSuspectService {
         this.disconnect();
         return;
       }
-      // Mise à jour en temps réel du pitch vocal
       if (state.suspectVoicePitch !== prevState.suspectVoicePitch && this.player) {
         this.player.playbackRate = state.suspectVoicePitch;
       }
       this.syncDebounced();
     });
 
-    // Pre-fetch suspect photos before first draw
     await this.prefetchPhotos();
     await this.syncAllDisplays();
     this.emit('connected');
@@ -109,14 +130,41 @@ class StreamDeckSuspectService {
 
   private registerEvents(deck: StreamDeckWeb): void {
     deck.on('down', (control) => {
-      if (control.type !== 'button') return;
-      const btn = control as StreamDeckButtonControlDefinition;
+      if (control.type === 'button') {
+        const btn = control as StreamDeckButtonControlDefinition;
+        if ((SUSPECT_BUTTON_INDICES as readonly number[]).includes(btn.index)) {
+          this.toggleSuspect(btn.index);
+        } else if (btn.index === STOP_BUTTON_INDEX) {
+          this.stopSuspect();
+          useAudioStore.getState().setSuspectPopupIndex(null);
+        } else if (btn.index === LOOP_BUTTON_INDEX) {
+          this.toggleLoop();
+        } else if (btn.index === SLOW_BUTTON_INDEX) {
+          this.toggleSlowMode();
+        } else if (btn.index === RESET_PITCH_BUTTON_INDEX) {
+          this.resetPitch();
+        }
+      } else if (control.type === 'encoder') {
+        const enc = control as StreamDeckEncoderControlDefinition;
+        if (enc.index === 0) {
+          this.handleVolumeMuteToggle();
+        } else if (enc.index === 1) {
+          this.resetPitch();
+        }
+      }
+    });
 
-      if ((SUSPECT_BUTTON_INDICES as readonly number[]).includes(btn.index)) {
-        this.toggleSuspect(btn.index);
-      } else if (btn.index === STOP_BUTTON_INDEX) {
-        this.stopSuspect();
-        useAudioStore.getState().setSuspectPopupIndex(null);
+    deck.on('rotate', (control, amount) => {
+      const enc = control as StreamDeckEncoderControlDefinition;
+      const accel = this.getAcceleration(enc.index);
+      if (enc.index === 0) {
+        const state = useAudioStore.getState();
+        const newVol = Math.max(0, Math.min(1, state.volume + amount * accel * 0.02));
+        imperativeSetVolume(newVol);
+      } else if (enc.index === 1) {
+        const state = useAudioStore.getState();
+        const newPitch = Math.max(0.5, Math.min(2.0, state.suspectVoicePitch + amount * accel * 0.05));
+        state.setSuspectVoicePitch(newPitch);
       }
     });
 
@@ -125,13 +173,55 @@ class StreamDeckSuspectService {
     });
   }
 
+  private getAcceleration(encoderIndex: number): number {
+    const now = Date.now();
+    const delta = now - (this.lastRotateTime[encoderIndex] ?? 0);
+    this.lastRotateTime[encoderIndex] = now;
+    if (delta < 30) return 4;
+    if (delta < 80) return 2;
+    return 1;
+  }
+
+  private handleVolumeMuteToggle(): void {
+    const state = useAudioStore.getState();
+    if (this.isMuted) {
+      imperativeSetVolume(this.savedVolumeBeforeMute);
+      this.isMuted = false;
+    } else {
+      this.savedVolumeBeforeMute = state.volume;
+      imperativeSetVolume(0);
+      this.isMuted = true;
+    }
+  }
+
+  private toggleLoop(): void {
+    this.isLooping = !this.isLooping;
+    if (this.player) {
+      this.player.loop = this.isLooping;
+    }
+    this.syncDebounced();
+  }
+
+  private toggleSlowMode(): void {
+    this.isSlowMode = !this.isSlowMode;
+    const state = useAudioStore.getState();
+    const newPitch = this.isSlowMode ? SLOW_PITCH_RATE : 1.0;
+    state.setSuspectVoicePitch(newPitch);
+    this.syncDebounced();
+  }
+
+  private resetPitch(): void {
+    this.isSlowMode = false;
+    useAudioStore.getState().setSuspectVoicePitch(1.0);
+    this.syncDebounced();
+  }
+
   public toggleSuspect(suspectButtonIndex: number): void {
     const store = useAudioStore.getState();
-    // Toujours ouvrir le popup sur ce suspect
     store.setSuspectPopupIndex(suspectButtonIndex);
 
     if (this.playingSuspectIndex === suspectButtonIndex) {
-      this.stopSuspect(/* silent */ false, /* keepPopup */ true);
+      this.stopSuspect(false, true);
       return;
     }
 
@@ -139,18 +229,21 @@ class StreamDeckSuspectService {
     const url = store.audioUrls?.[key];
     if (!url) return;
 
-    this.stopSuspect(/* silent */ true, /* keepPopup */ true);
+    this.stopSuspect(true, true);
 
     this.player = new Audio(url);
     this.player.volume = store.volume;
     this.player.playbackRate = store.suspectVoicePitch;
+    this.player.loop = this.isLooping;
     this.playingSuspectIndex = suspectButtonIndex;
     store.setSuspectPlayingIndex(suspectButtonIndex);
 
     this.player.onended = () => {
-      this.playingSuspectIndex = -1;
-      useAudioStore.getState().setSuspectPlayingIndex(-1);
-      this.syncDebounced();
+      if (!this.isLooping) {
+        this.playingSuspectIndex = -1;
+        useAudioStore.getState().setSuspectPlayingIndex(-1);
+        this.syncDebounced();
+      }
     };
 
     this.player.play().catch(() => {
@@ -200,7 +293,7 @@ class StreamDeckSuspectService {
     const state = useAudioStore.getState();
     const suspects = getScenario(state.scenario).suspects;
 
-    // Suspect buttons (top row: 0-3)
+    // Suspect buttons (0-3)
     for (let i = 0; i < SUSPECT_BUTTON_INDICES.length; i++) {
       const suspect = suspects[i];
       if (suspect) {
@@ -216,13 +309,17 @@ class StreamDeckSuspectService {
       }
     }
 
-    // Stop button (index 4)
+    // Stop (4)
     await renderStopKey(this.deck, STOP_BUTTON_INDEX, this.playingSuspectIndex >= 0);
 
-    // Empty buttons (5-7)
-    for (const idx of EMPTY_BUTTON_INDICES) {
-      await renderEmptyKey(this.deck, idx);
-    }
+    // Loop (5)
+    await renderLoopKey(this.deck, LOOP_BUTTON_INDEX, this.isLooping);
+
+    // Slow (6)
+    await renderSlowKey(this.deck, SLOW_BUTTON_INDEX, this.isSlowMode);
+
+    // Reset pitch (7)
+    await renderResetPitchKey(this.deck, RESET_PITCH_BUTTON_INDEX, state.suspectVoicePitch !== 1.0);
 
     // LCD strips
     if (this.lcdSegment) {
@@ -236,7 +333,14 @@ class StreamDeckSuspectService {
             photoUrl: playingSuspect.photoUrl,
           }
         : null;
-      await renderSuspectStrips(this.deck, this.lcdSegment.id, stripData);
+      await renderSuspectStrips(
+        this.deck,
+        this.lcdSegment.id,
+        stripData,
+        state.suspectVoicePitch,
+        state.volume,
+        this.isLooping,
+      );
     }
   }
 

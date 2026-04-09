@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useCallback, memo, useState } from 'react';
+
+import { isTourCompleted, markTourCompleted } from '@/utils/tourState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAudioStore } from '@/stores/audioStore';
@@ -52,7 +54,7 @@ const Dashboard = memo(() => {
 
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [timerExpired, setTimerExpired] = useState(false);
-  const [runTour, setRunTour] = useState(() => sessionStorage.getItem('tourCompleted') !== 'true');
+  const [runTour, setRunTour] = useState(() => !isTourCompleted());
 
   const { isComparisonMode, toggleComparison } = useABComparison();
 
@@ -773,7 +775,7 @@ const Dashboard = memo(() => {
         {/* ── Interactive Tour ── */}
         <WorkspaceTour
           run={runTour}
-          onFinish={() => { sessionStorage.setItem('tourCompleted', 'true'); setRunTour(false); }}
+          onFinish={() => { markTourCompleted(); setRunTour(false); }}
         />
       </div>
     </div>

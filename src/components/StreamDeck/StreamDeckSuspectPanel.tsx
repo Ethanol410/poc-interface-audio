@@ -12,7 +12,17 @@ const SUSPECT_BUTTONS = [
   { label: 'Suspect 2', color: '#f87171' },
   { label: 'Suspect 3', color: '#4ade80' },
   { label: 'Suspect 4', color: '#818cf8' },
-  { label: '⏹ Stop',   color: '#3d6a7a' },
+  { label: '⏹ Stop',    color: '#3d6a7a' },
+  { label: '🔁 Boucle', color: '#22d3ee' },
+  { label: '🐢 Lent',   color: '#fbbf24' },
+  { label: '↺  Reset',  color: '#f87171' },
+];
+
+const SUSPECT_DIALS = [
+  { label: 'Volume',      sub: 'Push → muet',          color: '#22d3ee' },
+  { label: 'Pitch vocal', sub: 'Push → réinitialiser', color: '#fbbf24' },
+  { label: 'Pitch bar',   sub: 'LCD info',             color: '#334455' },
+  { label: 'Alibi',       sub: 'LCD info',             color: '#334455' },
 ];
 
 const StreamDeckSuspectPanel = () => {
@@ -56,7 +66,7 @@ const StreamDeckSuspectPanel = () => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-4 pt-1 space-y-4">
+            <div className="px-3 pb-4 pt-1 space-y-3">
 
               {!isSupported ? (
                 <p className="text-[11px] font-mono" style={{ color: '#4a6070' }}>
@@ -64,7 +74,7 @@ const StreamDeckSuspectPanel = () => {
                 </p>
               ) : isConnected ? (
                 <>
-                  {/* Connection status */}
+                  {/* Status */}
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
                     <span className="text-[11px] font-mono" style={{ color: '#fbbf24' }}>
@@ -80,12 +90,12 @@ const StreamDeckSuspectPanel = () => {
                     </button>
                   </div>
 
-                  {/* Buttons */}
+                  {/* Buttons grid */}
                   <div>
                     <p className="text-[9px] font-mono tracking-widest uppercase mb-1.5" style={{ color: '#2d4a5a' }}>
-                      Boutons
+                      Boutons (haut)
                     </p>
-                    <div className="grid grid-cols-5 gap-1">
+                    <div className="grid grid-cols-4 gap-1">
                       {SUSPECT_BUTTONS.map(({ label, color }, i) => (
                         <div
                           key={i}
@@ -100,12 +110,30 @@ const StreamDeckSuspectPanel = () => {
                     </div>
                   </div>
 
-                  {/* LCD info */}
-                  <div
-                    className="rounded p-2 border text-[10px] font-mono"
-                    style={{ borderColor: '#fbbf2430', color: '#4a6070' }}
-                  >
-                    📺 LCD — affiche le nom du suspect en cours d'écoute
+                  {/* Dials */}
+                  <div>
+                    <p className="text-[9px] font-mono tracking-widest uppercase mb-1.5" style={{ color: '#2d4a5a' }}>
+                      Molettes (bas)
+                    </p>
+                    <div className="grid grid-cols-4 gap-1">
+                      {SUSPECT_DIALS.map(({ label, sub, color }, i) => (
+                        <div
+                          key={i}
+                          className="rounded p-1.5 text-center border"
+                          style={{ borderColor: `${color}40`, backgroundColor: `${color}0a` }}
+                        >
+                          <div className="text-[10px] mb-0.5 font-bold leading-none" style={{ color }}>
+                            {i < 2 ? '⟳' : '📺'}
+                          </div>
+                          <div className="text-[9px] font-mono leading-tight" style={{ color }}>
+                            {label}
+                          </div>
+                          <div className="text-[8px] font-mono mt-0.5 leading-tight" style={{ color: '#2d4a5a' }}>
+                            {sub}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </>
               ) : (
