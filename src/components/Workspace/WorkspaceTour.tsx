@@ -119,7 +119,6 @@ const WorkspaceTour = memo(({ run, onFinish }: WorkspaceTourProps) => {
       run={run}
       continuous
       scrollToFirstStep
-      disableScrolling
       onEvent={handleJoyrideCallback}
       tooltipComponent={TourTooltip}
       options={{
