@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { reverseAudioBlob, createAudioURL } from '@/utils/audioGenerator';
 import { useAudioStore } from '@/stores/audioStore';
 import type { ScenarioId } from '@/data/scenarios';
+import { SCENARIOS } from '@/data/scenarios';
 import Spinner from '@/components/Layout/Spinner';
 
 const OFFICIAL_AUDIO: Record<ScenarioId, {
@@ -178,24 +179,16 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                     className="space-y-2.5 mt-2"
                   >
                     <div className="flex gap-4 text-xs font-mono">
-                      <span className="text-forensics-cyan/45 w-20 flex-shrink-0 uppercase">Mission</span>
-                      <span className="text-gray-400">Démasquer le ravisseur avant le train de 14h15</span>
+                      <span className="text-forensics-cyan/45 w-20 flex-shrink-0 uppercase">Affaire</span>
+                      <span className="text-gray-400">Un enfant disparu. Une voix anonyme. Une seule piste&nbsp;: l'enregistrement.</span>
                     </div>
                     <div className="flex gap-4 text-xs font-mono">
-                      <span className="text-forensics-cyan/45 w-20 flex-shrink-0 uppercase">Suspects</span>
-                      <span className="text-gray-400">4 individus identifiés</span>
+                      <span className="text-forensics-cyan/45 w-20 flex-shrink-0 uppercase">Objectif</span>
+                      <span className="text-gray-400">{SCENARIOS.corbeau.missionBrief.mission}</span>
                     </div>
                     <div className="flex gap-4 text-xs font-mono items-center">
-                      <span className="text-forensics-cyan/45 w-20 flex-shrink-0 uppercase">Difficulté</span>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className="w-2.5 h-2.5 rounded-sm"
-                            style={{ background: i <= 4 ? '#00d4ff' : 'rgba(255,255,255,0.08)' }}
-                          />
-                        ))}
-                      </div>
+                      <span className="text-forensics-cyan/45 w-20 flex-shrink-0 uppercase">Suspects</span>
+                      <span className="text-gray-400">{SCENARIOS.corbeau.suspects.length} individus identifiés</span>
                     </div>
                   </motion.div>
                 )}
@@ -342,27 +335,15 @@ export const AudioSetup = ({ onAudiosReady }: AudioSetupProps) => {
                   >
                     <div className="flex gap-3 text-sm font-nunito items-start">
                       <span className="text-lg leading-snug flex-shrink-0">🎯</span>
-                      <span style={{ color: 'rgba(7,59,76,0.65)' }}>
-                        Retrouvez l'agresseur du quartier industriel
-                      </span>
+                      <span style={{ color: 'rgba(7,59,76,0.65)' }}>La Ballerina Cappuccina attaquée&nbsp;! La piste audio sabotée par Larry.</span>
+                    </div>
+                    <div className="flex gap-3 text-sm font-nunito items-start">
+                      <span className="text-lg leading-snug flex-shrink-0">🔍</span>
+                      <span style={{ color: 'rgba(7,59,76,0.65)' }}>{SCENARIOS.braincity.missionBrief.mission}</span>
                     </div>
                     <div className="flex gap-3 text-sm font-nunito items-start">
                       <span className="text-lg leading-snug flex-shrink-0">👥</span>
-                      <span style={{ color: 'rgba(7,59,76,0.65)' }}>4 suspects à confronter</span>
-                    </div>
-                    <div className="flex gap-3 text-sm font-nunito items-center">
-                      <span className="text-lg leading-snug flex-shrink-0">⭐</span>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className="w-2.5 h-2.5 rounded-sm"
-                            style={{
-                              background: i <= 3 ? '#EF476F' : 'rgba(7,59,76,0.1)',
-                            }}
-                          />
-                        ))}
-                      </div>
+                      <span style={{ color: 'rgba(7,59,76,0.65)' }}>{SCENARIOS.braincity.suspects.length} suspects à confronter</span>
                     </div>
                   </motion.div>
                 )}
