@@ -17,6 +17,7 @@ const BC_CARD = 'bg-white border-4 border-braincity-border rounded-2xl overflow-
 
 const TourTooltip = memo(({
   index,
+  size,
   step,
   backProps,
   primaryProps,
@@ -79,8 +80,7 @@ const TourTooltip = memo(({
             ? "font-bangers text-lg tracking-widest"
             : "font-mono text-[10px] text-gray-500"
         } style={isBrainCity ? { color: BC.dim } : {}}>
-          {index + 1} / {step.target ? '...?' : '???'} {/* Fallback si pb de sizing, joyride gère totalSteps via context normalement. On met juste l'étape. */}
-          ÉTAPE {index + 1}
+          ÉTAPE {index + 1} / {size}
         </div>
 
         <div className="flex gap-2">

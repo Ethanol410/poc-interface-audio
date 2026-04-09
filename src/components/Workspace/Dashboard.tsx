@@ -57,7 +57,7 @@ const Dashboard = memo(() => {
   const [activeTab, setActiveTab] = useState<ToolTab>('filtres');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [timerExpired, setTimerExpired] = useState(false);
-  const [runTour, setRunTour] = useState(true);
+  const [runTour, setRunTour] = useState(() => sessionStorage.getItem('tourCompleted') !== 'true');
 
   const { isComparisonMode, toggleComparison } = useABComparison();
 
@@ -811,7 +811,7 @@ const Dashboard = memo(() => {
         {/* ── Interactive Tour ── */}
         <WorkspaceTour
           run={runTour}
-          onFinish={() => setRunTour(false)}
+          onFinish={() => { sessionStorage.setItem('tourCompleted', 'true'); setRunTour(false); }}
         />
       </div>
     </div>

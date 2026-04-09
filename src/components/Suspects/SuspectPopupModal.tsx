@@ -30,8 +30,7 @@ const SuspectPopupModal = () => {
 
   const scenario = getScenario(scenarioId);
   const suspect = suspectPopupIndex !== null ? scenario.suspects[suspectPopupIndex] : null;
-  const matchScore = suspect ? scenario.matchScores[suspect.id] ?? 0 : 0;
-  const isPlaying = suspectPopupIndex !== null && suspectPlayingIndex === suspectPopupIndex;
+const isPlaying = suspectPopupIndex !== null && suspectPlayingIndex === suspectPopupIndex;
   const isBrainCity = scenarioId === 'braincity';
 
   const handleTogglePlay = () => {
@@ -122,35 +121,6 @@ const SuspectPopupModal = () => {
                   <p className={isBrainCity ? "text-sm text-braincity-text font-fredoka font-medium" : "text-sm text-gray-300 font-mono"}>{suspect.notes}</p>
                 </div>
 
-                {/* Match score */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className={isBrainCity ? "text-lg text-braincity-text font-bangers tracking-wide" : "text-xs font-mono text-gray-500"}>
-                      {isBrainCity ? "SCORE MAGIQUE" : "CONCORDANCE VOCALE"}
-                    </span>
-                    <span
-                      className={
-                        isBrainCity
-                          ? "font-fredoka font-bold text-lg bg-gray-100 px-2 rounded-full border-2 border-gray-200"
-                          : (matchScore >= 80 ? 'text-forensics-red font-bold' : matchScore >= 40 ? 'text-forensics-orange' : 'text-gray-400') + " text-xs font-mono"
-                      }
-                    >
-                      {matchScore}%
-                    </span>
-                  </div>
-                  <div className={isBrainCity ? "h-4 bg-gray-100 rounded-full border-2 border-gray-300 overflow-hidden" : "h-2 bg-forensics-bg rounded-full overflow-hidden"}>
-                    <motion.div
-                      className={`h-full ${isBrainCity ? '' : 'rounded-full'} ${
-                        isBrainCity
-                          ? (matchScore >= 80 ? 'bg-[#EF476F]' : matchScore >= 40 ? 'bg-[#FFD166]' : 'bg-[#118AB2]')
-                          : (matchScore >= 80 ? 'bg-forensics-red' : matchScore >= 40 ? 'bg-forensics-orange' : 'bg-forensics-cyan-dark')
-                      }`}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${matchScore}%` }}
-                      transition={{ duration: 0.6 }}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
 

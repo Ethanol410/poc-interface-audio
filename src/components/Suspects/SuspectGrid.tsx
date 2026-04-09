@@ -8,18 +8,6 @@ import { getScenario } from '@/data/scenarios';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
 import RicardoBubble from '@/components/BrainCity/RicardoBubble';
 
-const BC = {
-  mustard: '#FFD166',
-  teal: '#06D6A0',
-  coral: '#EF476F',
-  blue: '#118AB2',
-  pink: '#FF70A6',
-  violet: '#9D4EDD',
-  border: '#073B4C',
-  bg: '#FFF9EC',
-  text: '#073B4C',
-  dim: '#6b7280',
-} as const;
 
 const BC_CARD = 'bg-white border-4 border-[#073B4C] rounded-[32px] overflow-hidden shadow-[0_6px_0_0_#073B4C]';
 
@@ -218,7 +206,6 @@ const SuspectGrid = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {suspects.map((suspect, index) => {
             const storedNote = suspectNotes[suspect.id] ?? suspect.notes;
-            const matchScore = scenario.matchScores[suspect.id];
             return (
               <motion.div
                 key={suspect.id}
@@ -257,42 +244,6 @@ const SuspectGrid = () => {
                   <p className={`text-sm mb-3 ${isBrainCity ? 'text-[#6b7280] font-fredoka font-semibold' : 'text-gray-400 font-mono'}`}>
                     {suspect.role}
                   </p>
-
-                  {/* Match score */}
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className={isBrainCity ? 'text-[#6b7280] font-fredoka font-bold' : 'text-gray-500 font-mono'}>
-                        {isBrainCity ? 'RESSEMBLANCE VOCALE' : 'CONCORDANCE VOCALE'}
-                      </span>
-                      <span className={`font-bold ${matchScore >= 80 ? 'text-red-500' : isBrainCity ? 'text-[#6b7280] font-fredoka' : 'text-gray-500 font-mono'}`}>
-                        {matchScore}%
-                      </span>
-                    </div>
-                    <div className={`h-2 rounded-full overflow-hidden ${isBrainCity ? 'bg-gray-100' : 'bg-forensics-bg'}`}>
-                      {isBrainCity ? (
-                        <div
-                          className="h-full rounded-full transition-all duration-1000"
-                          style={{
-                            width: `${matchScore}%`,
-                            background: matchScore >= 80
-                              ? BC.coral
-                              : BC.teal,
-                          }}
-                        />
-                      ) : (
-                        <div
-                          className={`h-full rounded-full transition-all duration-1000 ${
-                            matchScore >= 80
-                              ? 'bg-forensics-red'
-                              : matchScore >= 40
-                              ? 'bg-forensics-orange'
-                              : 'bg-forensics-cyan-dark'
-                          }`}
-                          style={{ width: `${matchScore}%` }}
-                        />
-                      )}
-                    </div>
-                  </div>
 
                   {/* Notes indicator — adult only */}
                   {!isBrainCity && storedNote && (
