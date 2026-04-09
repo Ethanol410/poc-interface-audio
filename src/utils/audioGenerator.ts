@@ -65,8 +65,8 @@ export async function generateTestAudio(
     const t = i / sampleRate;
     const fade = Math.min(1, t / 0.3, (duration - t) / 0.3);
 
-    // Add low-frequency pitch hum for distorted version
-    const buzz = distorted ? Math.sin(2 * Math.PI * 120 * t) * 0.08 : 0;
+    // Add prominent 60 Hz electrical hum for distorted version (notch filter target)
+    const buzz = distorted ? Math.sin(2 * Math.PI * 60 * t) * 0.3 : 0;
 
     data[i] = Math.max(-1, Math.min(1, (out * 2 + buzz) * envelope * fade));
   }
