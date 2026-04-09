@@ -10,6 +10,7 @@ import { useAudioStore } from './stores/audioStore';
 import { useNavigate } from 'react-router-dom';
 
 // Lazy load route components
+const IntroScreen = lazy(() => import('./components/Intro/IntroScreen'));
 const LoginScreen = lazy(() => import('./components/Auth/LoginScreen'));
 const StoryBriefScreen = lazy(() => import('./components/Auth/StoryBriefScreen'));
 const Dashboard = lazy(() => import('./components/Workspace/Dashboard'));
@@ -21,7 +22,7 @@ function RequireAudio({ children }: { children: React.ReactNode }) {
   const audioUrls = useAudioStore((state) => state.audioUrls);
   
   if (!audioUrls) {
-    return <Navigate to="/setup" replace />;
+    return <Navigate to="/intro" replace />;
   }
   
   return <>{children}</>;
@@ -60,6 +61,7 @@ function App() {
         <AnimatePresence mode="wait">
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
+              <Route path="/intro" element={<IntroScreen />} />
               <Route path="/setup" element={<AudioSetupWrapper />} />
               <Route 
                 path="/" 
