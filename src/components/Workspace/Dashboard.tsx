@@ -135,12 +135,12 @@ const Dashboard = memo(() => {
   // RENDER
   // ─────────────────────────────────────────────
   return (
-    <div className={`min-h-screen p-4 ${isBrainCity ? 'bg-braincity-bg' : ''}`} style={isBrainCity ? { backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' } : {}}>
-      <div className="max-w-[1800px] mx-auto space-y-4">
+    <div className={`min-h-screen p-2 ${isBrainCity ? 'bg-braincity-bg' : ''}`} style={isBrainCity ? { backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' } : {}}>
+      <div className="max-w-[1800px] mx-auto space-y-2">
 
         {/* ── HEADER ── */}
         <motion.header
-          className={`flex items-center justify-between rounded-xl px-5 py-3 ${
+          className={`flex items-center justify-between rounded-xl px-4 py-2 ${
             isBrainCity
               ? `${BC_CARD}`
               : 'bg-forensics-bg-light border border-forensics-cyan-dark'
@@ -163,7 +163,7 @@ const Dashboard = memo(() => {
                 />
                 <div>
                   <h1
-                    className="font-bangers text-3xl tracking-wider leading-none"
+                    className="font-bangers text-2xl tracking-wider leading-none"
                     style={{ color: BC.coral, textShadow: '2px 2px 0px #073B4C' }}
                   >
                     BRAIN CITY
@@ -374,17 +374,17 @@ const Dashboard = memo(() => {
         </AnimatePresence>
 
         {/* ── MAIN GRID ── */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-12 gap-3">
 
           {/* ═══ LEFT: Visualisations ═══ */}
-          <div className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="col-span-12 lg:col-span-8 space-y-3">
 
             {/* Mission brief / Ricardo bubble */}
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg px-5 py-3'
+                  ? `${BC_CARD} p-3`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg px-4 py-2'
               }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -432,14 +432,14 @@ const Dashboard = memo(() => {
               id="tour-waveform"
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+                  ? `${BC_CARD} p-3`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
               }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 {isBrainCity ? (
                   <>
                     <h3 className="font-bangers text-xl tracking-wider" style={{ color: BC.blue }}>
@@ -490,7 +490,7 @@ const Dashboard = memo(() => {
                   </>
                 )}
               </div>
-              <Waveform audioUrl={activeAudioUrl} isBrainCity={isBrainCity} />
+              <Waveform audioUrl={activeAudioUrl} isBrainCity={isBrainCity} height={96} />
             </motion.div>
 
             {/* Spectrogram */}
@@ -498,59 +498,59 @@ const Dashboard = memo(() => {
               id="tour-spectrogram"
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+                  ? `${BC_CARD} p-3`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
               }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
               <h3
-                className={`mb-3 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                className={`mb-2 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
                 style={isBrainCity ? { color: BC.violet } : {}}
               >
                 {isBrainCity ? 'CARTE DES SONS' : 'SPECTROGRAMME'}
               </h3>
-              <Spectrogram audioUrl={activeAudioUrl} isBrainCity={isBrainCity} />
+              <Spectrogram audioUrl={activeAudioUrl} isBrainCity={isBrainCity} height={130} />
             </motion.div>
 
             {/* Frequency Bars */}
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+                  ? `${BC_CARD} p-3`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
               }
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
               <h3
-                className={`mb-3 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                className={`mb-2 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
                 style={isBrainCity ? { color: BC.teal } : {}}
               >
                 {isBrainCity ? 'FRÉQUENCES' : 'ANALYSE FRÉQUENTIELLE'}
               </h3>
-              <FrequencyBars isPlaying={isPlaying} height={120} isBrainCity={isBrainCity} />
+              <FrequencyBars isPlaying={isPlaying} height={80} isBrainCity={isBrainCity} />
             </motion.div>
           </div>
 
           {/* ═══ RIGHT: Controls ═══ */}
-          <div className="col-span-12 lg:col-span-4 space-y-4">
+          <div className="col-span-12 lg:col-span-4 space-y-3">
 
             {/* Steps guide */}
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+                  ? `${BC_CARD} p-3`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
               }
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 }}
             >
               <h3
-                className={`mb-3 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                className={`mb-2 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
                 style={isBrainCity ? { color: BC.blue } : {}}
               >
                 {isBrainCity ? 'ÉTAPES' : "GUIDE D'ANALYSE"}
@@ -600,20 +600,20 @@ const Dashboard = memo(() => {
             <motion.div
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+                  ? `${BC_CARD} p-3`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
               }
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.25 }}
             >
               <h3
-                className={`mb-3 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
+                className={`mb-2 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
                 style={isBrainCity ? { color: BC.mustard } : {}}
               >
                 {isBrainCity ? 'NIVEAUX' : 'NIVEAUX AUDIO'}
               </h3>
-              <AudioMeter isPlaying={isPlaying} height={150} isBrainCity={isBrainCity} />
+              <AudioMeter isPlaying={isPlaying} height={100} isBrainCity={isBrainCity} />
             </motion.div>
 
             {/* Tools */}
@@ -629,9 +629,9 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.35 }}
             >
               {isBrainCity ? (
-                <div className="p-4">
+                <div className="p-3">
                   <h3
-                    className="font-bangers text-lg tracking-wider mb-3"
+                    className="font-bangers text-lg tracking-wider mb-2"
                     style={{ color: BC.mustard }}
                   >
                     OUTILS DÉTECTIVE
@@ -639,7 +639,7 @@ const Dashboard = memo(() => {
                   <KidsToolPanel />
                 </div>
               ) : (
-                <div className="p-4 max-h-[580px] overflow-y-auto">
+                <div className="p-3 max-h-[420px] overflow-y-auto">
                   <FilterPanel />
                 </div>
               )}
@@ -650,14 +650,14 @@ const Dashboard = memo(() => {
               id="tour-clues"
               className={
                 isBrainCity
-                  ? `${BC_CARD} p-4`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-4'
+                  ? `${BC_CARD} p-3`
+                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
               }
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.45 }}
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <h3
                   className={`${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
                   style={isBrainCity ? { color: BC.pink } : {}}
