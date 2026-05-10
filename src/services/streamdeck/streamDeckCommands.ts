@@ -14,8 +14,6 @@ import {
   imperativeSetVolume,
   imperativeSetPitch,
   imperativeSetSpeed,
-  imperativeApplyPreset,
-  imperativeResetAllFilters,
 } from '@/services/filterActions';
 import type { ButtonAction, DialAction, DialPushAction } from './streamDeckMappings';
 
@@ -46,24 +44,6 @@ export function dispatchButtonAction(action: ButtonAction): void {
     case 'toggle-compressor':
       imperativeUpdateCompressor({ enabled: !state.compressor.enabled });
       break;
-    case 'toggle-comparison':
-      state.toggleComparisonMode();
-      break;
-    case 'reset-all-filters':
-      imperativeResetAllFilters();
-      break;
-    case 'apply-preset-clear':
-      imperativeApplyPreset('clear');
-      break;
-    case 'apply-preset-masque':
-      imperativeApplyPreset('remove-mask');
-      break;
-    case 'apply-preset-analyse':
-      imperativeApplyPreset('deep-analysis');
-      break;
-    case 'switch-page':
-      // Handled by StreamDeckService — should not reach here
-      break;
   }
 }
 
@@ -88,16 +68,6 @@ export function dispatchDialAction(action: DialAction, ticks: number, step: numb
     case 'set-pitch': {
       const newPitch = Math.max(-12, Math.min(12, state.pitchShift.semitones + ticks * step));
       imperativeSetPitch(newPitch);
-      break;
-    }
-    case 'set-bandpass-freq': {
-      const newFreq = Math.max(200, Math.min(8000, state.bandPassFilter.frequency + ticks * step));
-      imperativeUpdateBandPassFilter({ frequency: newFreq });
-      break;
-    }
-    case 'set-notch-freq': {
-      const newFreq = Math.max(50, Math.min(500, state.notchFilter.frequency + ticks * step));
-      imperativeUpdateNotchFilter({ frequency: newFreq });
       break;
     }
     case 'set-speed': {
@@ -129,12 +99,6 @@ export function dispatchDialPushAction(action: DialPushAction): void {
       break;
     case 'reset-pitch':
       imperativeSetPitch(0);
-      break;
-    case 'toggle-bandpass':
-      imperativeUpdateBandPassFilter({ enabled: !state.bandPassFilter.enabled });
-      break;
-    case 'toggle-notch':
-      imperativeUpdateNotchFilter({ enabled: !state.notchFilter.enabled });
       break;
     case 'reset-speed':
       imperativeSetSpeed(1.0);
