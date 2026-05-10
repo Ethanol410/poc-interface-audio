@@ -340,10 +340,7 @@ const SuspectGrid = () => {
         )}
 
         {showAccusation && identifiedSuspect && (
-          <AccusationOverlay
-            isCorrect={identifiedSuspect.id === scenario.guiltyId}
-            isBrainCity={isBrainCity}
-          />
+          <AccusationOverlay isBrainCity={isBrainCity} />
         )}
 
         {showConfirmDialog && identifiedSuspect && (

@@ -2,23 +2,18 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface AccusationOverlayProps {
-  isCorrect: boolean;
   isBrainCity: boolean;
 }
 
 const BAR_COUNT = 7;
 
-const AccusationOverlay = ({ isCorrect, isBrainCity }: AccusationOverlayProps) => {
+const AccusationOverlay = ({ isBrainCity }: AccusationOverlayProps) => {
   const [imageFailed, setImageFailed] = useState(false);
 
-  const ricardoSrc = isCorrect
-    ? '/images/inspecteur/Ricardo_Pouleto_triumphant.png'
-    : '/images/inspecteur/Ricardo_Pouleto_scared.png';
-
-  const headline = isCorrect ? 'EN PRISON !' : 'ATTENTION...';
-  const headlineColor = isBrainCity
-    ? isCorrect ? '#06D6A0' : '#EF476F'
-    : isCorrect ? '#22d3ee' : '#f87171';
+  // Image neutre : ne révèle pas le résultat avant le debrief
+  const ricardoSrc = '/images/inspecteur/Ricardo_Pouleto_thinking.png';
+  const headline = isBrainCity ? 'ANALYSE…' : 'VÉRIFICATION…';
+  const headlineColor = isBrainCity ? '#FFD166' : '#22d3ee';
 
   return (
     <motion.div
@@ -31,11 +26,11 @@ const AccusationOverlay = ({ isCorrect, isBrainCity }: AccusationOverlayProps) =
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/85" />
 
-      {/* Ricardo behind bars */}
+      {/* Ricardo (neutre) */}
       {!imageFailed && (
         <motion.img
           src={ricardoSrc}
-          alt={isCorrect ? 'Ricardo triomphant' : 'Ricardo inquiet'}
+          alt="Ricardo réfléchit"
           onError={() => setImageFailed(true)}
           className="absolute z-10 w-64 h-64 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
           initial={{ scale: 0, rotate: -10 }}
@@ -44,7 +39,7 @@ const AccusationOverlay = ({ isCorrect, isBrainCity }: AccusationOverlayProps) =
         />
       )}
 
-      {/* Headline */}
+      {/* Headline neutre */}
       <motion.div
         className="absolute bottom-24 z-20 text-center"
         initial={{ opacity: 0, y: 20 }}

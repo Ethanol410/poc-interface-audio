@@ -391,19 +391,10 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.1 }}
             >
               {isBrainCity ? (
-                <div className="flex items-center gap-3">
-                  <img
-                    src="/images/balerina_outch.png"
-                    alt="Ballerina Cappuccina (victime)"
-                    className="w-16 h-16 object-contain shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <RicardoBubble
-                      message={ricardo.message}
-                      emotion={ricardo.emotion}
-                    />
-                  </div>
-                </div>
+                <RicardoBubble
+                  message={ricardo.message}
+                  emotion={ricardo.emotion}
+                />
               ) : (
                 <div className="flex items-start gap-6 flex-wrap">
                   <div className="flex items-center gap-2 text-sm font-mono">
@@ -514,46 +505,35 @@ const Dashboard = memo(() => {
               <Spectrogram audioUrl={activeAudioUrl} isBrainCity={isBrainCity} height={130} />
             </motion.div>
 
-            {/* Frequency Bars */}
-            <motion.div
-              className={
-                isBrainCity
-                  ? `${BC_CARD} p-3`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
-              }
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h3
-                className={`mb-2 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
-                style={isBrainCity ? { color: BC.teal } : {}}
+            {/* Frequency Bars (Corbeau seulement) */}
+            {!isBrainCity && (
+              <motion.div
+                className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3"
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
               >
-                {isBrainCity ? 'FRÉQUENCES' : 'ANALYSE FRÉQUENTIELLE'}
-              </h3>
-              <FrequencyBars isPlaying={isPlaying} height={80} isBrainCity={isBrainCity} />
-            </motion.div>
+                <h3 className="mb-2 text-sm font-bold text-forensics-cyan font-mono tracking-wider">
+                  ANALYSE FRÉQUENTIELLE
+                </h3>
+                <FrequencyBars isPlaying={isPlaying} height={80} isBrainCity={isBrainCity} />
+              </motion.div>
+            )}
           </div>
 
           {/* ═══ RIGHT: Controls ═══ */}
           <div className="col-span-12 lg:col-span-4 space-y-3 overflow-y-auto pr-1">
 
-            {/* Steps guide */}
+            {/* Steps guide (Corbeau seulement — Brain City utilise RicardoBubble) */}
+            {!isBrainCity && (
             <motion.div
-              className={
-                isBrainCity
-                  ? `${BC_CARD} p-3`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
-              }
+              className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 }}
             >
-              <h3
-                className={`mb-2 ${isBrainCity ? 'font-bangers text-xl tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
-                style={isBrainCity ? { color: BC.blue } : {}}
-              >
-                {isBrainCity ? 'ÉTAPES' : "GUIDE D'ANALYSE"}
+              <h3 className="mb-2 text-sm font-bold text-forensics-cyan font-mono tracking-wider">
+                GUIDE D'ANALYSE
               </h3>
               <ol className="space-y-2">
                 {analysisSteps.map((text, i) => {
@@ -562,30 +542,15 @@ const Dashboard = memo(() => {
                     <li
                       key={i}
                       className={`flex items-start gap-3 text-xs transition-colors ${
-                        isBrainCity
-                          ? ''
-                          : done ? 'text-forensics-green font-mono' : 'text-gray-500 font-mono'
+                        done ? 'text-forensics-green font-mono' : 'text-gray-500 font-mono'
                       }`}
-                      style={isBrainCity ? { color: done ? BC.text : BC.dim, fontWeight: done ? 'bold' : 'normal', fontFamily: 'Fredoka, sans-serif', fontSize: '13px' } : {}}
                     >
                       <span
                         className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                          !isBrainCity
-                            ? done
-                              ? 'border-forensics-green bg-forensics-green/20 text-forensics-green border'
-                              : 'border border-gray-600 text-gray-600'
-                            : ''
+                          done
+                            ? 'border-forensics-green bg-forensics-green/20 text-forensics-green border'
+                            : 'border border-gray-600 text-gray-600'
                         }`}
-                        style={isBrainCity ? (done ? {
-                          background: BC.teal,
-                          color: '#000',
-                          border: '2px solid #073B4C',
-                          boxShadow: `0 2px 0 0 #073B4C`,
-                        } : {
-                          background: '#F3F4F6',
-                          border: '2px solid #D1D5DB',
-                          color: '#9CA3AF',
-                        }) : {}}
                       >
                         {done ? '✓' : i + 1}
                       </span>
@@ -595,26 +560,22 @@ const Dashboard = memo(() => {
                 })}
               </ol>
             </motion.div>
+            )}
 
-            {/* Audio Meter */}
+            {/* Audio Meter (Corbeau seulement) */}
+            {!isBrainCity && (
             <motion.div
-              className={
-                isBrainCity
-                  ? `${BC_CARD} p-3`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
-              }
+              className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.25 }}
             >
-              <h3
-                className={`mb-2 ${isBrainCity ? 'font-bangers text-lg tracking-wider' : 'text-sm font-bold text-forensics-cyan font-mono tracking-wider'}`}
-                style={isBrainCity ? { color: BC.mustard } : {}}
-              >
-                {isBrainCity ? 'NIVEAUX' : 'NIVEAUX AUDIO'}
+              <h3 className="mb-2 text-sm font-bold text-forensics-cyan font-mono tracking-wider">
+                NIVEAUX AUDIO
               </h3>
               <AudioMeter isPlaying={isPlaying} height={100} isBrainCity={isBrainCity} />
             </motion.div>
+            )}
 
             {/* Tools */}
             <motion.div
@@ -645,14 +606,11 @@ const Dashboard = memo(() => {
               )}
             </motion.div>
 
-            {/* Clue tracker */}
+            {/* Clue tracker (Corbeau seulement — Brain City affiche les étoiles dans le header) */}
+            {!isBrainCity && (
             <motion.div
               id="tour-clues"
-              className={
-                isBrainCity
-                  ? `${BC_CARD} p-3`
-                  : 'bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3'
-              }
+              className="bg-forensics-bg-light border border-forensics-cyan-dark rounded-lg p-3"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.45 }}
@@ -726,6 +684,7 @@ const Dashboard = memo(() => {
                 })}
               </div>
             </motion.div>
+            )}
 
             {/* Stream Deck panels */}
             <div id="tour-streamdeck" className="space-y-4">
@@ -745,39 +704,25 @@ const Dashboard = memo(() => {
               </motion.div>
             </div>
 
-            {/* Continue CTA */}
+            {/* Continue CTA (Corbeau seulement — Brain City a déjà J'ACCUSE dans le header) */}
+            {!isBrainCity && (
             <motion.div
               id="tour-jaccuse"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.55 }}
             >
-              {isBrainCity ? (
-                <motion.button
-                  onClick={handleContinueToSuspects}
-                  className="w-full font-bangers text-xl tracking-widest py-4 rounded-xl text-black"
-                  style={{
-                    background: BC.mustard,
-                    boxShadow: `0 0 20px rgba(240,229,0,0.4), 0 4px 12px rgba(0,0,0,0.4)`,
-                  }}
-                  whileHover={{ scale: 1.02, boxShadow: `0 0 32px rgba(240,229,0,0.7)` }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  ⚡ J'ACCUSE !
-                </motion.button>
-              ) : (
-                <button
-                  onClick={handleContinueToSuspects}
-                  className="w-full bg-forensics-green text-forensics-bg font-mono font-bold py-4 rounded-2xl uppercase tracking-wider text-sm hover:bg-white transition-colors"
-                >
-                  → Identifier le Suspect
-                </button>
-              )}
-              <p className={`text-xs text-center mt-1.5 ${isBrainCity ? '' : 'text-gray-600 font-mono'}`}
-                 style={isBrainCity ? { color: '#44447a' } : {}}>
-                {isBrainCity ? "Tu penses savoir qui c'est ?" : 'Passez à la comparaison vocale'}
+              <button
+                onClick={handleContinueToSuspects}
+                className="w-full bg-forensics-green text-forensics-bg font-mono font-bold py-4 rounded-2xl uppercase tracking-wider text-sm hover:bg-white transition-colors"
+              >
+                → Identifier le Suspect
+              </button>
+              <p className="text-xs text-center mt-1.5 text-gray-600 font-mono">
+                Passez à la comparaison vocale
               </p>
             </motion.div>
+            )}
           </div>
         </div>
 
