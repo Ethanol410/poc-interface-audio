@@ -63,10 +63,6 @@ const ResultScreen = () => {
     }
   }, [navigate, setMissionStartTime, isBrainCity, reset]);
 
-  const handleExportPDF = useCallback(() => {
-    window.print();
-  }, []);
-
   if (!suspect) {
     navigate('/suspects');
     return null;
@@ -407,12 +403,6 @@ const ResultScreen = () => {
                         ← RETOUR SUSPECTS
                       </button>
                     )}
-                    <button
-                      onClick={handleExportPDF}
-                      className="px-8 py-3 bg-forensics-bg-light border-2 border-forensics-orange text-forensics-orange font-mono font-bold rounded-lg hover:bg-forensics-orange hover:text-forensics-bg transition-all"
-                    >
-                      📄 EXPORTER PDF
-                    </button>
                   </motion.div>
                 </>
               )}
