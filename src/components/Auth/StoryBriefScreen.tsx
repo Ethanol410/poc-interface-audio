@@ -67,15 +67,19 @@ const StoryBriefScreen = () => {
           </div>
 
           {/* Crime scene banner */}
-          <motion.img
-            src="/images/crime_scene.png"
-            alt="Scène de crime — Brain City"
-            className="w-full h-48 object-cover rounded-2xl border-4 border-braincity-border mb-6"
+          <motion.div
+            className="w-full rounded-2xl border-4 border-braincity-border mb-6 overflow-hidden bg-[#FFF9EC]"
             style={{ boxShadow: '0 4px 0 0 #073B4C' }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-          />
+          >
+            <img
+              src="/images/crime_scene.png"
+              alt="Scène de crime — Brain City"
+              className="w-full h-auto max-h-72 object-contain"
+            />
+          </motion.div>
 
           <div className="min-h-[180px] mb-6">
             <AnimatePresence mode="wait">
