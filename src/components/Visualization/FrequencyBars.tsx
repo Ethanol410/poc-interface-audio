@@ -120,8 +120,8 @@ const FrequencyBars = memo(({
             }
 
             ctx.fillStyle = gradient;
-            let barSpace = isBrainCity ? 6 : 2; // Flat blocky style for toys
-            let finalWidth = Math.max(1, barWidth - barSpace);
+            const barSpace = isBrainCity ? 6 : 2; // Flat blocky style for toys
+            const finalWidth = Math.max(1, barWidth - barSpace);
             
             if (isBrainCity) {
               ctx.beginPath();
@@ -156,7 +156,7 @@ const FrequencyBars = memo(({
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [barCount]);
+  }, [barCount, isBrainCity]);
 
   if (!isSupported) {
     return (

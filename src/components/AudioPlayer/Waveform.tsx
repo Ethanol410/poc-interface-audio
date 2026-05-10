@@ -128,7 +128,7 @@ const Waveform = memo(({
         }
       }
     };
-  }, [audioUrl, height, setIsPlaying, setCurrentTime, setDuration, onReady, onError]);
+  }, [audioUrl, height, setIsPlaying, setCurrentTime, setDuration, onReady, onError, isBrainCity]);
 
   // Play/pause control - memoized
   const togglePlayPause = useCallback(() => {
