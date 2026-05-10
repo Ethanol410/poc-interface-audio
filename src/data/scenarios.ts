@@ -92,7 +92,7 @@ const CORBEAU: ScenarioData = {
       name: 'Juliette Meyer',
       role: 'Conseillère bancaire',
       photoUrl: '/images/suspects/juliette_meyer.png',
-      notes: 'Alibi : "J\'étais partis boire un cappuccino en ville"',
+      notes: 'Alibi : "J\'étais partie boire un cappuccino en ville"',
     },
     {
       id: 'suspect-4',
