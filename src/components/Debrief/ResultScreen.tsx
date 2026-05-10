@@ -52,7 +52,12 @@ const ResultScreen = () => {
     return `${m}m${String(s % 60).padStart(2, '0')}s`;
   };
 
-  const handleRestart = useCallback(() => {
+  const handleRetry = useCallback(() => {
+    audioEngine.pause();
+    navigate('/workspace');
+  }, [navigate]);
+
+  const handleQuit = useCallback(() => {
     audioEngine.pause();
     resetTour();
     reset();
@@ -226,21 +231,25 @@ const ResultScreen = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.6 }}
                   >
-                    <button
-                      onClick={handleRestart}
-                      className="w-full py-4 text-[#073B4C] font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
-                      style={{ background: isCorrect ? '#06D6A0' : '#FFD166' }}
-                    >
-                      {isCorrect ? '🏠 RETOUR ACCUEIL' : '🔄 RÉESSAYER'}
-                    </button>
                     {!isCorrect && (
                       <button
-                        onClick={() => navigate('/suspects')}
-                        className="w-full py-4 bg-white border-4 border-[#073B4C] text-[#073B4C] font-bangers text-2xl rounded-2xl shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
+                        onClick={handleRetry}
+                        className="w-full py-4 text-[#073B4C] font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
+                        style={{ background: '#FFD166' }}
                       >
-                        ← RETOUR AUX SUSPECTS
+                        🔄 RÉESSAYER
                       </button>
                     )}
+                    <button
+                      onClick={handleQuit}
+                      className="w-full py-4 font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
+                      style={{
+                        background: isCorrect ? '#06D6A0' : 'white',
+                        color: '#073B4C',
+                      }}
+                    >
+                      {isCorrect ? '🏠 QUITTER LA PARTIE' : '🚪 QUITTER LA PARTIE'}
+                    </button>
                   </motion.div>
                 </>
               ) : (
@@ -385,20 +394,20 @@ const ResultScreen = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.7 }}
                   >
-                    <button
-                      onClick={handleRestart}
-                      className="px-8 py-3 bg-forensics-cyan text-forensics-bg font-mono font-bold rounded-lg hover:bg-white transition-all"
-                    >
-                      {isCorrect ? '🏠 RETOUR ACCUEIL' : '🔄 RÉESSAYER'}
-                    </button>
                     {!isCorrect && (
                       <button
-                        onClick={() => navigate('/suspects')}
-                        className="px-8 py-3 bg-forensics-bg-light border-2 border-forensics-cyan text-forensics-cyan font-mono font-bold rounded-lg hover:bg-forensics-cyan hover:text-forensics-bg transition-all"
+                        onClick={handleRetry}
+                        className="px-8 py-3 bg-forensics-cyan text-forensics-bg font-mono font-bold rounded-lg hover:bg-white transition-all"
                       >
-                        ← RETOUR SUSPECTS
+                        🔄 RÉESSAYER
                       </button>
                     )}
+                    <button
+                      onClick={handleQuit}
+                      className="px-8 py-3 bg-forensics-bg-light border-2 border-forensics-cyan text-forensics-cyan font-mono font-bold rounded-lg hover:bg-forensics-cyan hover:text-forensics-bg transition-all"
+                    >
+                      🚪 QUITTER LA PARTIE
+                    </button>
                   </motion.div>
                 </>
               )}

@@ -151,10 +151,16 @@ const SuspectGrid = () => {
     if (identifiedSuspect) {
       setSuspects(suspects.map((s) => s.id === identifiedSuspect.id ? { ...s, isIdentified: true } : s));
       setShowConfirmDialog(false);
-      setShowAccusation(true);
-      setTimeout(() => {
-        navigate('/debrief', { state: { suspect: identifiedSuspect } });
-      }, 2000);
+      if (isBrainCity) {
+        setShowAccusation(true);
+        setTimeout(() => {
+          navigate('/debrief', { state: { suspect: identifiedSuspect } });
+        }, 2000);
+      } else {
+        setTimeout(() => {
+          navigate('/debrief', { state: { suspect: identifiedSuspect } });
+        }, 1000);
+      }
     }
   };
 
