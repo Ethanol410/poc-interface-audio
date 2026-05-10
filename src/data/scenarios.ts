@@ -291,20 +291,6 @@ const BRAIN_CITY: ScenarioData = {
       check: (s) => s.notchFilter.enabled && s.notchFilter.frequency >= 40 && s.notchFilter.frequency <= 80,
     },
     {
-      id: 'pitch-agr',
-      label: 'Voix grave restaurée',
-      hint: 'Ballon Hélium entre -6 et -2',
-      ricardoHint: 'Dégonfle un peu le Ballon Hélium — la voix a été rendue trop aiguë pour cacher l\'identité de l\'agresseur !',
-      proximity: (s) => {
-        const p = s.pitchShift.semitones;
-        if (p === 0) return 0;
-        if (p >= -6 && p <= -2) return 1;
-        if (p > -2) return Math.max(0, 1 - (p + 2) / 6);
-        return Math.max(0, 1 - (-6 - p) / 6);
-      },
-      check: (s) => s.pitchShift.semitones >= -6 && s.pitchShift.semitones <= -2,
-    },
-    {
       id: 'message-larry',
       label: 'Message de Larry décodé',
       hint: 'Tourne-disque activé',
@@ -340,7 +326,7 @@ const BRAIN_CITY: ScenarioData = {
   analysisSteps: [
     'Écoute l\'enregistrement et repère les sons ambiants',
     'Utilise l\'Éléphant et l\'Abeille pour nettoyer le son',
-    'Corrige la voix modifiée avec le Ballon Hélium',
+    'Active le Filtre Robot et le Balai Magique pour isoler la voix',
     'Utilise le Tourne-disque pour décoder le message de Larry',
   ],
   successTitle: 'SUSPECT ARRÊTÉ !',
@@ -384,7 +370,7 @@ const BRAIN_CITY: ScenarioData = {
     greeting: "Salut la jeune recrue ! Prêt(e) à mener l'enquête ?",
     instructions: [
       "Ta mission est de retrouver le coupable en écoutant cet enregistrement mystère !",
-      "Utilise nos supers outils de détective (comme l'Éléphant ou le Ballon Hélium) pour nettoyer le son.",
+      "Utilise nos supers outils de détective (comme l'Éléphant ou l'Abeille) pour nettoyer le son.",
       "Regarde bien les couleurs sur l'écran pour trouver tous les indices, comme des bruits cachés !",
       "Quand tu penses avoir trouvé le coupable, clique très vite sur le gros bouton J'ACCUSE !"
     ],
