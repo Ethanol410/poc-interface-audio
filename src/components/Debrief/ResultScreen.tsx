@@ -7,6 +7,7 @@ import { useAudioStore } from '@/stores/audioStore';
 import { getScenario } from '@/data/scenarios';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
 import RicardoBubble from '@/components/BrainCity/RicardoBubble';
+import { audioEngine } from '@/services/audioEngine';
 
 interface LocationState {
   suspect?: Suspect;
@@ -27,7 +28,6 @@ const ResultScreen = () => {
     missionTimerEnabled,
     missionDuration,
     missionStartTime,
-    setMissionStartTime,
     reset,
   } = useAudioStore();
 
@@ -53,15 +53,11 @@ const ResultScreen = () => {
   };
 
   const handleRestart = useCallback(() => {
+    audioEngine.pause();
     resetTour();
-    if (isBrainCity) {
-      reset();
-      navigate('/setup');
-    } else {
-      setMissionStartTime(null);
-      navigate('/');
-    }
-  }, [navigate, setMissionStartTime, isBrainCity, reset]);
+    reset();
+    navigate('/setup');
+  }, [navigate, reset]);
 
   if (!suspect) {
     navigate('/suspects');
