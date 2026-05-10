@@ -39,7 +39,7 @@ const StoryBriefScreen = () => {
           className="max-w-2xl bg-white border-4 border-braincity-border rounded-[32px] p-8 shadow-[0_8px_0_0_#073B4C] relative"
         >
           {/* Ricardo Header */}
-          <div className="flex items-center gap-4 mb-6 pb-4 border-b-4 border-braincity-border border-dashed">
+          <div className="flex items-center gap-4 mb-4 pb-4 border-b-4 border-braincity-border border-dashed">
             <img src="/images/inspecteur/Ricardo_Pouleto_sticker.png" alt="Ricardo" className="w-16 h-16 object-contain" />
             <div>
               <h2 className="font-bangers text-3xl tracking-wider" style={{ color: BC.coral }}>
@@ -50,6 +50,17 @@ const StoryBriefScreen = () => {
               </p>
             </div>
           </div>
+
+          {/* Crime scene banner */}
+          <motion.img
+            src="/images/crime_scene.png"
+            alt="Scène de crime — Brain City"
+            className="w-full h-48 object-cover rounded-2xl border-4 border-braincity-border mb-6"
+            style={{ boxShadow: '0 4px 0 0 #073B4C' }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+          />
 
           <div className="space-y-4 mb-8">
             {scenario.storyBrief.map((paragraph, idx) => (

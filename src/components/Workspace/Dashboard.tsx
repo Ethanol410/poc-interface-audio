@@ -391,10 +391,19 @@ const Dashboard = memo(() => {
               transition={{ delay: 0.1 }}
             >
               {isBrainCity ? (
-                <RicardoBubble
-                  message={ricardo.message}
-                  emotion={ricardo.emotion}
-                />
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/images/balerina_outch.png"
+                    alt="Ballerina Cappuccina (victime)"
+                    className="w-16 h-16 object-contain shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <RicardoBubble
+                      message={ricardo.message}
+                      emotion={ricardo.emotion}
+                    />
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-start gap-6 flex-wrap">
                   <div className="flex items-center gap-2 text-sm font-mono">
