@@ -7,6 +7,7 @@ import { audioEngine } from '@/services/audioEngine';
 import { getScenario } from '@/data/scenarios';
 import { useScenarioTheme } from '@/hooks/useScenarioTheme';
 import RicardoBubble from '@/components/BrainCity/RicardoBubble';
+import AccusationOverlay from '@/components/Suspects/AccusationOverlay';
 
 
 const BC_CARD = 'bg-white border-4 border-[#073B4C] rounded-[32px] overflow-hidden shadow-[0_6px_0_0_#073B4C]';
@@ -80,6 +81,7 @@ const SuspectGrid = () => {
   const [identifiedSuspect, setIdentifiedSuspect] = useState<Suspect | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [hoveredSuspectId, setHoveredSuspectId] = useState<string | null>(null);
+  const [showAccusation, setShowAccusation] = useState(false);
 
   const ricardoSuspectMessage = (() => {
     if (!hoveredSuspectId) return "🎧 Survole un suspect pour avoir mon avis — compare avec l'enregistrement !";
@@ -149,9 +151,10 @@ const SuspectGrid = () => {
     if (identifiedSuspect) {
       setSuspects(suspects.map((s) => s.id === identifiedSuspect.id ? { ...s, isIdentified: true } : s));
       setShowConfirmDialog(false);
+      setShowAccusation(true);
       setTimeout(() => {
         navigate('/debrief', { state: { suspect: identifiedSuspect } });
-      }, 1000);
+      }, 2000);
     }
   };
 
@@ -333,6 +336,13 @@ const SuspectGrid = () => {
             initialNote={suspectNotes[selectedSuspect.id] ?? selectedSuspect.notes}
             onClose={() => setShowNotesModal(false)}
             onSave={(notes) => handleSaveNotes(selectedSuspect.id, notes)}
+          />
+        )}
+
+        {showAccusation && identifiedSuspect && (
+          <AccusationOverlay
+            isCorrect={identifiedSuspect.id === scenario.guiltyId}
+            isBrainCity={isBrainCity}
           />
         )}
 
