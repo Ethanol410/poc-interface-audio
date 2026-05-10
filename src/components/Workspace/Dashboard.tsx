@@ -135,8 +135,8 @@ const Dashboard = memo(() => {
   // RENDER
   // ─────────────────────────────────────────────
   return (
-    <div className={`min-h-screen p-2 ${isBrainCity ? 'bg-braincity-bg' : ''}`} style={isBrainCity ? { backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' } : {}}>
-      <div className="max-w-[1800px] mx-auto space-y-2">
+    <div className={`h-screen flex flex-col p-2 ${isBrainCity ? 'bg-braincity-bg' : ''}`} style={isBrainCity ? { backgroundImage: 'radial-gradient(circle, #E0D4C3 2px, transparent 2px)', backgroundSize: '24px 24px' } : {}}>
+      <div className="max-w-[1800px] w-full mx-auto flex-1 flex flex-col min-h-0 space-y-2">
 
         {/* ── HEADER ── */}
         <motion.header
@@ -374,10 +374,10 @@ const Dashboard = memo(() => {
         </AnimatePresence>
 
         {/* ── MAIN GRID ── */}
-        <div className="grid grid-cols-12 gap-3">
+        <div className="grid grid-cols-12 gap-3 flex-1 min-h-0">
 
           {/* ═══ LEFT: Visualisations ═══ */}
-          <div className="col-span-12 lg:col-span-8 space-y-3">
+          <div className="col-span-12 lg:col-span-8 space-y-3 overflow-y-auto pr-1">
 
             {/* Mission brief / Ricardo bubble */}
             <motion.div
@@ -536,7 +536,7 @@ const Dashboard = memo(() => {
           </div>
 
           {/* ═══ RIGHT: Controls ═══ */}
-          <div className="col-span-12 lg:col-span-4 space-y-3">
+          <div className="col-span-12 lg:col-span-4 space-y-3 overflow-y-auto pr-1">
 
             {/* Steps guide */}
             <motion.div
