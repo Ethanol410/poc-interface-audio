@@ -155,7 +155,7 @@ const SuspectGrid = () => {
         setShowAccusation(true);
         setTimeout(() => {
           navigate('/debrief', { state: { suspect: identifiedSuspect } });
-        }, 2000);
+        }, 3200);
       } else {
         setTimeout(() => {
           navigate('/debrief', { state: { suspect: identifiedSuspect } });
@@ -346,7 +346,12 @@ const SuspectGrid = () => {
         )}
 
         {showAccusation && identifiedSuspect && (
-          <AccusationOverlay isBrainCity={isBrainCity} />
+          <AccusationOverlay
+            isBrainCity={isBrainCity}
+            isCorrect={identifiedSuspect.id === scenario.guiltyId}
+            suspectName={identifiedSuspect.name}
+            suspectPhotoUrl={identifiedSuspect.photoUrl}
+          />
         )}
 
         {showConfirmDialog && identifiedSuspect && (
