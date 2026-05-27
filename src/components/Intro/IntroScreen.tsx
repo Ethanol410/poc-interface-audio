@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAudioStore } from '@/stores/audioStore';
 
 // ─── Waveform data (fixed, no Math.random in render) ─────────────────────────
 
@@ -397,11 +398,171 @@ const ConceptsPhase = ({ onContinue }: { onContinue: () => void }) => (
   </motion.div>
 );
 
+// ─── Brain City Intro ─────────────────────────────────────────────────────────
+
+const BC_CONCEPTS: Array<{ emoji: string; title: string; desc: string; color: string }> = [
+  {
+    emoji: '🎧',
+    title: 'Écoute attentivement',
+    desc: "Le coupable a laissé sa voix sur la bande, mais Larry le Malicieux l'a saboté ! À toi de bien tendre l'oreille.",
+    color: '#118AB2',
+  },
+  {
+    emoji: '🧰',
+    title: 'Utilise tes super outils',
+    desc: "L'Éléphant, l'Abeille, le Balai Magique, la Loupe… chaque outil enlève un bruit ou révèle un détail caché.",
+    color: '#FFD166',
+  },
+  {
+    emoji: '🎯',
+    title: 'Démasque le coupable',
+    desc: "Compare la voix nettoyée à celle des suspects. Tralalero ? Chimpanzini ? Brrbrr ? Ou Tung Tung Tung Sahur ?",
+    color: '#EF476F',
+  },
+];
+
+interface BrainCityIntroProps {
+  onContinue: () => void;
+}
+
+const BrainCityIntro = ({ onContinue }: BrainCityIntroProps) => (
+  <div
+    className="min-h-screen flex flex-col items-center justify-center px-6 py-10 overflow-hidden relative"
+    style={{
+      background: 'linear-gradient(145deg, #FFF9EC 0%, #FFF3D4 55%, #FFEBC0 100%)',
+      backgroundImage:
+        'radial-gradient(circle, rgba(7,59,76,0.18) 1.5px, transparent 1.5px), linear-gradient(145deg, #FFF9EC 0%, #FFF3D4 55%, #FFEBC0 100%)',
+      backgroundSize: '26px 26px, 100% 100%',
+    }}
+  >
+    {/* Decorative blobs */}
+    <div
+      className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none"
+      style={{ background: 'radial-gradient(circle, rgba(239,71,111,0.22) 0%, transparent 70%)' }}
+    />
+    <div
+      className="absolute -bottom-28 -left-24 w-[28rem] h-[28rem] rounded-full pointer-events-none"
+      style={{ background: 'radial-gradient(circle, rgba(17,138,178,0.18) 0%, transparent 70%)' }}
+    />
+    <div
+      className="absolute top-1/3 left-1/4 w-20 h-20 rounded-full pointer-events-none"
+      style={{ background: 'radial-gradient(circle, rgba(6,214,160,0.4) 0%, transparent 70%)' }}
+    />
+
+    <div className="relative z-10 max-w-5xl w-full">
+      {/* Header with Ricardo */}
+      <motion.div
+        className="flex items-center justify-center gap-5 mb-6"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.img
+          src="/images/inspecteur/Ricardo_Pouleto_sticker.png"
+          alt="Ricardo Pouleto"
+          className="w-20 h-20 object-contain"
+          animate={{ rotate: [0, -8, 8, 0] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        />
+        <div className="text-left">
+          <h1
+            className="font-bangers leading-none"
+            style={{
+              color: '#118AB2',
+              fontSize: 'clamp(2rem, 4vw, 3.2rem)',
+              textShadow: '2px 2px 0 rgba(7,59,76,0.18)',
+            }}
+          >
+            BIENVENUE À
+          </h1>
+          <h1
+            className="font-bangers leading-none"
+            style={{
+              color: '#EF476F',
+              fontSize: 'clamp(3rem, 6vw, 5rem)',
+              textShadow: '3px 3px 0 rgba(7,59,76,0.2)',
+            }}
+          >
+            BRAIN CITY !
+          </h1>
+        </div>
+      </motion.div>
+
+      <motion.p
+        className="font-nunito font-bold text-center text-lg mb-10"
+        style={{ color: 'rgba(7,59,76,0.75)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        L'enquête sonore la plus déjantée de la ville t'attend !<br />
+        Es-tu prêt&nbsp;à devenir détective&nbsp;?
+      </motion.p>
+
+      {/* Concept cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+        {BC_CONCEPTS.map((c, i) => (
+          <motion.div
+            key={c.title}
+            className="bg-white border-4 border-[#073B4C] rounded-[28px] p-5 shadow-[0_6px_0_0_#073B4C]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 + i * 0.12, duration: 0.45 }}
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-3 border-2 border-[#073B4C]"
+              style={{ background: c.color, boxShadow: '0 3px 0 0 #073B4C' }}
+            >
+              {c.emoji}
+            </div>
+            <h3
+              className="font-bangers text-2xl tracking-wider leading-tight mb-1"
+              style={{ color: c.color, textShadow: '1.5px 1.5px 0 rgba(7,59,76,0.18)' }}
+            >
+              {c.title}
+            </h3>
+            <p
+              className="font-nunito font-semibold text-sm leading-snug"
+              style={{ color: 'rgba(7,59,76,0.7)' }}
+            >
+              {c.desc}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <motion.div
+        className="flex justify-center"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.95 }}
+      >
+        <motion.button
+          onClick={onContinue}
+          className="px-10 py-4 font-bangers text-2xl tracking-widest text-white border-4 border-[#073B4C] rounded-full"
+          style={{ background: '#EF476F', boxShadow: '0 5px 0 0 #073B4C' }}
+          whileHover={{ scale: 1.04, translateY: -2, boxShadow: '0 7px 0 0 #073B4C' }}
+          whileTap={{ scale: 0.97, translateY: 4, boxShadow: '0 0 0 0 #073B4C' }}
+        >
+          🚀 JE SUIS PRÊT&nbsp;!
+        </motion.button>
+      </motion.div>
+    </div>
+  </div>
+);
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const IntroScreen = () => {
   const [phase, setPhase] = useState<0 | 1>(0);
   const navigate = useNavigate();
+  const scenario = useAudioStore((s) => s.scenario);
+  const isBrainCity = scenario === 'braincity';
+
+  if (isBrainCity) {
+    return <BrainCityIntro onContinue={() => navigate('/setup')} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden relative" style={{ background: '#060810' }}>

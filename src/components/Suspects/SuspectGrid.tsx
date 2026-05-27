@@ -361,7 +361,7 @@ const SuspectGrid = () => {
             onQuit={() => {
               audioEngine.pause();
               reset();
-              navigate('/setup');
+              navigate('/');
             }}
           />
         )}

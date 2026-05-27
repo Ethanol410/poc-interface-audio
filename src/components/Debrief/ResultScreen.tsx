@@ -76,7 +76,7 @@ const ResultScreen = () => {
     audioEngine.pause();
     resetTour();
     reset();
-    navigate('/setup');
+    navigate('/');
   }, [navigate, reset]);
 
   if (!suspect) {
