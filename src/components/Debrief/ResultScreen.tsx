@@ -35,12 +35,15 @@ const ResultScreen = () => {
   const { isBrainCity } = useScenarioTheme();
   const isCorrect = suspect?.id === scenario.guiltyId;
 
-  const [showResult, setShowResult] = useState(false);
+  // Brain City a déjà joué l'animation d'analyse via AccusationOverlay
+  // sur la page /suspects → on saute la phase d'analyse du debrief.
+  const [showResult, setShowResult] = useState(isBrainCity);
 
   useEffect(() => {
+    if (isBrainCity) return;
     const timer = setTimeout(() => setShowResult(true), 1500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isBrainCity]);
 
   const missionElapsed =
     missionTimerEnabled && missionStartTime
