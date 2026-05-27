@@ -67,7 +67,7 @@ const NotesModal = ({ suspect, initialNote, onClose, onSave }: NotesModalProps) 
 
 const SuspectGrid = () => {
   const navigate = useNavigate();
-  const { audioUrls, scenario: scenarioId, suspectNotes, setSuspectNote, suspectVoicePitch } = useAudioStore();
+  const { audioUrls, scenario: scenarioId, suspectNotes, setSuspectNote, suspectVoicePitch, reset } = useAudioStore();
   const scenario = getScenario(scenarioId);
   const { isBrainCity } = useScenarioTheme();
 
@@ -152,10 +152,9 @@ const SuspectGrid = () => {
       setSuspects(suspects.map((s) => s.id === identifiedSuspect.id ? { ...s, isIdentified: true } : s));
       setShowConfirmDialog(false);
       if (isBrainCity) {
+        // Brain City : l'overlay gère lui-même les actions (Réessayer / Quitter)
+        // → on n'auto-navigate PAS vers /debrief, l'utilisateur clique un bouton.
         setShowAccusation(true);
-        setTimeout(() => {
-          navigate('/debrief', { state: { suspect: identifiedSuspect } });
-        }, 3200);
       } else {
         setTimeout(() => {
           navigate('/debrief', { state: { suspect: identifiedSuspect } });
@@ -351,6 +350,18 @@ const SuspectGrid = () => {
             isCorrect={identifiedSuspect.id === scenario.guiltyId}
             suspectName={identifiedSuspect.name}
             suspectPhotoUrl={identifiedSuspect.photoUrl}
+            onRetry={() => {
+              audioEngine.pause();
+              setShowAccusation(false);
+              setIdentifiedSuspect(null);
+              setSuspects((prev) => prev.map((s) => ({ ...s, isIdentified: false })));
+              navigate('/workspace');
+            }}
+            onQuit={() => {
+              audioEngine.pause();
+              reset();
+              navigate('/setup');
+            }}
           />
         )}
 

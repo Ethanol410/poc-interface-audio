@@ -6,31 +6,47 @@ interface AccusationOverlayProps {
   isCorrect: boolean;
   suspectName: string;
   suspectPhotoUrl: string;
+  /** Brain City uniquement — callback quand le joueur veut retenter (cas échec) */
+  onRetry?: () => void;
+  /** Brain City uniquement — callback quand le joueur quitte la partie */
+  onQuit?: () => void;
 }
 
-type Phase = 'analyzing' | 'verdict';
+type Phase = 'analyzing' | 'verdict' | 'actions';
 
 const BAR_COUNT = 7;
 const ANALYSIS_DURATION_MS = 1200;
+const VERDICT_DURATION_MS = 1800;
 
 const AccusationOverlay = ({
   isBrainCity,
   isCorrect,
   suspectName,
   suspectPhotoUrl,
+  onRetry,
+  onQuit,
 }: AccusationOverlayProps) => {
   const [phase, setPhase] = useState<Phase>('analyzing');
   const [ricardoFailed, setRicardoFailed] = useState(false);
   const [suspectFailed, setSuspectFailed] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setPhase('verdict'), ANALYSIS_DURATION_MS);
-    return () => clearTimeout(timer);
+    const t1 = setTimeout(() => setPhase('verdict'), ANALYSIS_DURATION_MS);
+    const t2 = setTimeout(
+      () => setPhase('actions'),
+      ANALYSIS_DURATION_MS + VERDICT_DURATION_MS,
+    );
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   const ricardoVerdictSrc = isCorrect
     ? '/images/inspecteur/Ricardo_Pouleto_triumphant.png'
     : '/images/inspecteur/Ricardo_Pouleto_scared.png';
+
+  const showActions = phase === 'actions' && (onRetry || onQuit);
 
   return (
     <motion.div
@@ -83,8 +99,8 @@ const AccusationOverlay = ({
           </motion.div>
         )}
 
-        {/* ── PHASE 2 : VERDICT ── */}
-        {phase === 'verdict' && (
+        {/* ── PHASE 2 & 3 : VERDICT + ACTIONS ── */}
+        {(phase === 'verdict' || phase === 'actions') && (
           <motion.div
             key="verdict"
             className="absolute inset-0 z-10 flex items-center justify-center"
@@ -95,7 +111,6 @@ const AccusationOverlay = ({
             {isCorrect ? (
               // ─── CORRECT : suspect derrière barreaux + Ricardo triomphant ───
               <>
-                {/* Photo du suspect derrière les barreaux */}
                 {!suspectFailed && (
                   <motion.div
                     className="relative z-10 flex flex-col items-center"
@@ -110,7 +125,7 @@ const AccusationOverlay = ({
                       className="w-72 h-72 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
                     />
                     <p
-                      className={`mt-2 font-bangers text-3xl tracking-widest`}
+                      className="mt-2 font-bangers text-3xl tracking-widest"
                       style={{ color: '#FFD166', textShadow: '3px 3px 0px #073B4C' }}
                     >
                       {suspectName.toUpperCase()}
@@ -118,7 +133,7 @@ const AccusationOverlay = ({
                   </motion.div>
                 )}
 
-                {/* Barreaux de prison qui tombent */}
+                {/* Barreaux de prison */}
                 <div className="absolute inset-0 z-30 pointer-events-none flex justify-around px-2">
                   {Array.from({ length: BAR_COUNT }).map((_, i) => (
                     <motion.div
@@ -143,7 +158,7 @@ const AccusationOverlay = ({
                   ))}
                 </div>
 
-                {/* Ricardo triomphant en bas + "BIEN JOUÉ !" */}
+                {/* Ricardo triomphant + BIEN JOUÉ */}
                 <motion.div
                   className="absolute bottom-6 z-40 flex items-end gap-4"
                   initial={{ opacity: 0, y: 40 }}
@@ -170,7 +185,7 @@ const AccusationOverlay = ({
                 </motion.div>
               </>
             ) : (
-              // ─── INCORRECT : Ricardo déçu seul, pas de barreaux ───
+              // ─── INCORRECT : Ricardo déçu seul ───
               <motion.div
                 className="relative z-10 flex flex-col items-center"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -200,6 +215,41 @@ const AccusationOverlay = ({
                   {isBrainCity ? 'PAS LUI…' : 'CE N’EST PAS LUI'}
                 </motion.h1>
               </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── PHASE 3 : ACTIONS (Brain City uniquement) ── */}
+      <AnimatePresence>
+        {showActions && (
+          <motion.div
+            className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 w-[min(420px,90vw)]"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {!isCorrect && onRetry && (
+              <button
+                onClick={onRetry}
+                className="w-full py-4 text-[#073B4C] font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
+                style={{ background: '#FFD166' }}
+              >
+                🔄 RÉESSAYER
+              </button>
+            )}
+            {onQuit && (
+              <button
+                onClick={onQuit}
+                className="w-full py-4 font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
+                style={{
+                  background: isCorrect ? '#06D6A0' : 'white',
+                  color: '#073B4C',
+                }}
+              >
+                {isCorrect ? '🏠 QUITTER LA PARTIE' : '🚪 QUITTER LA PARTIE'}
+              </button>
             )}
           </motion.div>
         )}
