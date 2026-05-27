@@ -20,8 +20,8 @@ const OFFICIAL_AUDIO: Record<ScenarioId, {
   suspect4: string;
 }> = {
   corbeau: {
-    evidenceDistorted: '/audio/Coupable.m4a',
-    evidenceClean: '/audio/Coupable.m4a',
+    evidenceDistorted: '/audio/voixModifie.mp3',
+    evidenceClean: '/audio/voixModifie.mp3',
     suspect1: '/audio/voix_theo.m4a',
     suspect2: '/audio/voix_robin.m4a',
     suspect3: '/audio/voix_juliette.m4a',
