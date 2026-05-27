@@ -55,6 +55,18 @@ const ResultScreen = () => {
     return `${m}m${String(s % 60).padStart(2, '0')}s`;
   };
 
+  // Métadonnées rapport (côté Corbeau)
+  const reportId = suspect
+    ? `SRIS-${scenarioId.slice(0, 3).toUpperCase()}-${new Date().getFullYear()}-${suspect.id.slice(0, 4).toUpperCase()}`
+    : '';
+  const reportTimestamp = new Date().toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
   const handleRetry = useCallback(() => {
     audioEngine.pause();
     navigate('/workspace');
@@ -100,29 +112,29 @@ const ResultScreen = () => {
                   <p className="text-[#6b7280] font-fredoka font-bold text-lg mt-2">Comparaison des voix en cours !</p>
                 </>
               ) : (
-                <>
-                  <motion.div
-                    className="inline-block"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                  >
-                    <span className="text-6xl">⚙</span>
-                  </motion.div>
-                  <h2 className="text-2xl font-bold text-forensics-cyan font-mono mt-6">
-                    ANALYSE VOCALE EN COURS...
+                <div className="font-mono">
+                  <div className="flex items-center justify-center gap-3 text-[11px] tracking-[0.3em] text-forensics-cyan-dark uppercase mb-6">
+                    <span className="w-2 h-2 rounded-full bg-forensics-cyan animate-pulse" />
+                    <span>Canal sécurisé 08 — Transmission en cours</span>
+                  </div>
+                  <h2 className="text-xl text-forensics-cyan tracking-[0.25em] uppercase mb-3">
+                    Analyse vocale en cours
                   </h2>
-                  <p className="text-gray-400 font-mono mt-2">Comparaison des empreintes vocales</p>
+                  <p className="text-gray-500 text-xs tracking-widest uppercase">
+                    Comparaison des empreintes — patientez
+                  </p>
                   <div className="mt-8 flex items-center justify-center gap-2">
-                    {[0, 1, 2, 3, 4].map((i) => (
+                    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-2 h-8 bg-forensics-cyan rounded"
+                        className="w-1 bg-forensics-cyan/70"
+                        style={{ height: 32 }}
                         animate={{ height: [32, 8, 32] }}
-                        transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1 }}
+                        transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.08 }}
                       />
                     ))}
                   </div>
-                </>
+                </div>
               )}
             </motion.div>
           )}
@@ -256,163 +268,187 @@ const ResultScreen = () => {
                   </motion.div>
                 </>
               ) : (
-                /* ── ADULT RESULT (unchanged) ── */
-                <>
-                  {/* Verdict header */}
-                  <motion.div
-                    className="text-center"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 200 }}
-                  >
-                    <motion.div
-                      className="text-9xl mb-4"
-                      animate={isCorrect ? { rotate: [0, 10, -10, 0] } : { rotate: [0, -5, 5, 0] }}
-                      transition={{ duration: 0.5, repeat: isCorrect ? 0 : 3 }}
-                    >
-                      {isCorrect ? '✓' : '✗'}
-                    </motion.div>
-                    <h1
-                      className={`text-5xl font-bold font-mono mb-3 ${
-                        isCorrect ? 'text-forensics-green' : 'text-red-500'
-                      }`}
-                    >
-                      {isCorrect ? scenario.successTitle : scenario.failureTitle}
-                    </h1>
-                    <p className="text-xl text-gray-300 font-mono">
-                      {isCorrect
-                        ? `Identification positive : `
-                        : `${suspect.name} n'est pas coupable`}
-                      {isCorrect && (
-                        <span className="text-forensics-cyan">{suspect.name}</span>
-                      )}
-                    </p>
-                  </motion.div>
+                /* ── CORBEAU REPORT — Rapport SRIS classifié ── */
+                (() => {
+                  const accentText = isCorrect ? 'text-forensics-green' : 'text-red-500';
+                  const verdictLabel = isCorrect ? 'IDENTIFICATION POSITIVE' : 'IDENTIFICATION NÉGATIVE';
+                  const matchScore = scenario.matchScores[suspect.id] ?? 0;
+                  return (
+                    <div className="font-mono text-gray-200 bg-forensics-bg-light border border-forensics-cyan-dark rounded-sm overflow-hidden shadow-2xl">
+                      {/* Top status bar */}
+                      <div className="flex items-center justify-between px-5 py-2 bg-forensics-bg border-b border-forensics-cyan-dark text-[10px] tracking-[0.25em] uppercase">
+                        <div className="flex items-center gap-3">
+                          <span className="px-2 py-0.5 border border-forensics-cyan/40 text-forensics-cyan">
+                            Classifié — TOP SECRET
+                          </span>
+                          <span className="text-gray-500">{reportId}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-500">
+                          <span>{reportTimestamp}</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-forensics-cyan animate-pulse" />
+                        </div>
+                      </div>
 
-                  {/* Analysis report */}
-                  <motion.div
-                    className={`border-2 rounded-lg p-6 ${
-                      isCorrect
-                        ? 'bg-forensics-green/10 border-forensics-green'
-                        : 'bg-red-500/10 border-red-500'
-                    }`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <h2
-                      className={`text-xl font-bold font-mono mb-4 ${
-                        isCorrect ? 'text-forensics-green' : 'text-red-500'
-                      }`}
-                    >
-                      📊 RAPPORT D'ANALYSE — {scenario.title}
-                    </h2>
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 font-mono text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Suspect identifié :</span>
-                        <span className={isCorrect ? 'text-forensics-green font-bold' : 'text-red-500 font-bold'}>
-                          {suspect.name}
-                        </span>
+                      <div className="p-7 space-y-7">
+                        {/* Title + verdict */}
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                        >
+                          <p className="text-[11px] tracking-[0.4em] text-gray-500 uppercase mb-1">
+                            Service de Recherche et d'Investigation Sonore
+                          </p>
+                          <h1 className="text-2xl tracking-[0.18em] text-white uppercase font-bold">
+                            Rapport final d'identification
+                          </h1>
+                          <p className="text-xs text-gray-500 mt-1 tracking-wider">
+                            Dossier : <span className="text-gray-300">{scenario.title.toUpperCase()}</span>
+                          </p>
+                        </motion.div>
+
+                        {/* Verdict block */}
+                        <motion.div
+                          className={`border ${isCorrect ? 'border-forensics-green' : 'border-red-500'} bg-black/30 px-6 py-5`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.15 }}
+                        >
+                          <div className="flex items-baseline justify-between gap-6 flex-wrap">
+                            <div>
+                              <p className="text-[10px] tracking-[0.4em] uppercase text-gray-500 mb-1">
+                                Verdict
+                              </p>
+                              <p className={`text-2xl tracking-[0.2em] font-bold uppercase ${accentText}`}>
+                                [ {verdictLabel} ]
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] tracking-[0.4em] uppercase text-gray-500 mb-1">
+                                Sujet désigné
+                              </p>
+                              <p className="text-base text-white tracking-wider">{suspect.name}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        {/* Technical report */}
+                        <motion.section
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          <h2 className="text-[11px] tracking-[0.35em] uppercase text-forensics-cyan border-b border-forensics-cyan-dark pb-2 mb-4">
+                            § 1 — Empreinte technique
+                          </h2>
+                          <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm">
+                            <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                              <span className="text-gray-500 tracking-wider text-xs uppercase">Correspondance vocale</span>
+                              <span className={`${accentText} font-bold`}>{matchScore}%</span>
+                            </div>
+                            <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                              <span className="text-gray-500 tracking-wider text-xs uppercase">Signature spectrale</span>
+                              <span className={`${accentText} font-bold`}>{isCorrect ? 'POSITIVE' : 'NÉGATIVE'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                              <span className="text-gray-500 tracking-wider text-xs uppercase">Indices recueillis</span>
+                              <span className="text-forensics-cyan font-bold">
+                                {discoveredClues.length} / {scenario.clueTriggers.length}
+                              </span>
+                            </div>
+                            {pitchShift.semitones !== 0 && (
+                              <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                                <span className="text-gray-500 tracking-wider text-xs uppercase">Correction tonale</span>
+                                <span className="text-forensics-cyan font-bold">
+                                  {pitchShift.semitones > 0 ? '+' : ''}{pitchShift.semitones} ST
+                                </span>
+                              </div>
+                            )}
+                            {lowPassFilter.enabled && (
+                              <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                                <span className="text-gray-500 tracking-wider text-xs uppercase">Coupe-haut (LP)</span>
+                                <span className="text-forensics-cyan font-bold">{Math.round(lowPassFilter.frequency)} Hz</span>
+                              </div>
+                            )}
+                            {highPassFilter.enabled && (
+                              <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                                <span className="text-gray-500 tracking-wider text-xs uppercase">Coupe-bas (HP)</span>
+                                <span className="text-forensics-cyan font-bold">{Math.round(highPassFilter.frequency)} Hz</span>
+                              </div>
+                            )}
+                            {isReversed && (
+                              <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                                <span className="text-gray-500 tracking-wider text-xs uppercase">Lecture inversée</span>
+                                <span className="text-forensics-orange font-bold">DÉCODÉE</span>
+                              </div>
+                            )}
+                            {missionElapsed !== null && (
+                              <div className="flex justify-between border-b border-dotted border-gray-700/60 py-1">
+                                <span className="text-gray-500 tracking-wider text-xs uppercase">Durée d'enquête</span>
+                                <span className={`font-bold ${missionElapsed <= missionDuration ? 'text-forensics-green' : 'text-red-500'}`}>
+                                  {formatTime(missionElapsed)} / {formatTime(missionDuration)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </motion.section>
+
+                        {/* Narrative */}
+                        <motion.section
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.45 }}
+                        >
+                          <h2 className="text-[11px] tracking-[0.35em] uppercase text-forensics-cyan border-b border-forensics-cyan-dark pb-2 mb-3">
+                            § 2 — Conclusion d'enquête
+                          </h2>
+                          <p className="text-sm text-gray-300 leading-relaxed text-justify">
+                            {isCorrect ? scenario.successStory : scenario.failureMessage}
+                          </p>
+                        </motion.section>
+
+                        {/* Signature line */}
+                        <motion.div
+                          className="flex items-end justify-between pt-4 border-t border-gray-700/60"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.55 }}
+                        >
+                          <div className="text-[10px] tracking-widest uppercase text-gray-500">
+                            <p>Agent en mission : V.</p>
+                            <p className="mt-1">Référent : Commissariat — SRIS / Cellule audio</p>
+                          </div>
+                          <div className="text-[10px] tracking-[0.3em] text-gray-600 uppercase">
+                            // Fin de rapport //
+                          </div>
+                        </motion.div>
+
+                        {/* Actions */}
+                        <motion.div
+                          className="flex gap-3 justify-end pt-2 print:hidden"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.7 }}
+                        >
+                          {!isCorrect && (
+                            <button
+                              onClick={handleRetry}
+                              className="px-6 py-2.5 border border-forensics-cyan text-forensics-cyan tracking-[0.25em] text-xs uppercase hover:bg-forensics-cyan hover:text-forensics-bg transition-colors"
+                            >
+                              Nouvelle tentative
+                            </button>
+                          )}
+                          <button
+                            onClick={handleQuit}
+                            className="px-6 py-2.5 border border-gray-600 text-gray-300 tracking-[0.25em] text-xs uppercase hover:border-white hover:text-white transition-colors"
+                          >
+                            Clore le dossier
+                          </button>
+                        </motion.div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Match vocal :</span>
-                        <span className={isCorrect ? 'text-forensics-green font-bold' : 'text-red-500 font-bold'}>
-                          {suspect ? scenario.matchScores[suspect.id] : 0}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Signature spectrale :</span>
-                        <span className={isCorrect ? 'text-forensics-green font-bold' : 'text-red-500 font-bold'}>
-                          {isCorrect ? 'POSITIVE' : 'NÉGATIVE'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Indices découverts :</span>
-                        <span className="text-forensics-cyan font-bold">
-                          {discoveredClues.length}/{scenario.clueTriggers.length}
-                        </span>
-                      </div>
-                      {pitchShift.semitones !== 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Correction pitch :</span>
-                          <span className="text-forensics-cyan font-bold">
-                            {pitchShift.semitones > 0 ? '+' : ''}{pitchShift.semitones} ST
-                          </span>
-                        </div>
-                      )}
-                      {lowPassFilter.enabled && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Filtre LP :</span>
-                          <span className="text-forensics-cyan font-bold">{Math.round(lowPassFilter.frequency)} Hz</span>
-                        </div>
-                      )}
-                      {highPassFilter.enabled && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Filtre HP :</span>
-                          <span className="text-forensics-cyan font-bold">{Math.round(highPassFilter.frequency)} Hz</span>
-                        </div>
-                      )}
-                      {isReversed && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Message inversé :</span>
-                          <span className="text-forensics-orange font-bold">DÉCODÉ</span>
-                        </div>
-                      )}
-                      {missionElapsed !== null && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Temps de mission :</span>
-                          <span className={`font-bold ${missionElapsed <= missionDuration ? 'text-forensics-green' : 'text-red-500'}`}>
-                            {formatTime(missionElapsed)} / {formatTime(missionDuration)}
-                          </span>
-                        </div>
-                      )}
                     </div>
-                  </motion.div>
-
-                  {/* Narrative */}
-                  <motion.div
-                    className={`bg-forensics-bg-light border rounded-lg p-5 ${
-                      isCorrect ? 'border-forensics-cyan' : 'border-red-500'
-                    }`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <h3
-                      className={`text-lg font-bold font-mono mb-3 ${
-                        isCorrect ? 'text-forensics-cyan' : 'text-red-500'
-                      }`}
-                    >
-                      {isCorrect ? '🏆 MISSION ACCOMPLIE' : '📨 MESSAGE'}
-                    </h3>
-                    <p className="text-gray-300 font-mono text-sm italic">
-                      {isCorrect ? scenario.successStory : scenario.failureMessage}
-                    </p>
-                  </motion.div>
-
-                  {/* Actions */}
-                  <motion.div
-                    className="flex gap-4 justify-center flex-wrap print:hidden"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.7 }}
-                  >
-                    {!isCorrect && (
-                      <button
-                        onClick={handleRetry}
-                        className="px-8 py-3 bg-forensics-cyan text-forensics-bg font-mono font-bold rounded-lg hover:bg-white transition-all"
-                      >
-                        🔄 RÉESSAYER
-                      </button>
-                    )}
-                    <button
-                      onClick={handleQuit}
-                      className="px-8 py-3 bg-forensics-bg-light border-2 border-forensics-cyan text-forensics-cyan font-mono font-bold rounded-lg hover:bg-forensics-cyan hover:text-forensics-bg transition-all"
-                    >
-                      🚪 QUITTER LA PARTIE
-                    </button>
-                  </motion.div>
-                </>
+                  );
+                })()
               )}
             </motion.div>
           )}
