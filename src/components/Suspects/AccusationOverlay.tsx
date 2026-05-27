@@ -6,13 +6,13 @@ interface AccusationOverlayProps {
   isCorrect: boolean;
   suspectName: string;
   suspectPhotoUrl: string;
-  /** Brain City uniquement — callback quand le joueur veut retenter (cas échec) */
+  /** Brain City — callback après échec (retour auto aux suspects) */
   onRetry?: () => void;
-  /** Brain City uniquement — callback quand le joueur quitte la partie */
+  /** Brain City — callback quand le joueur quitte la partie depuis la page de félicitations */
   onQuit?: () => void;
 }
 
-type Phase = 'analyzing' | 'verdict' | 'actions';
+type Phase = 'analyzing' | 'verdict' | 'celebration';
 
 const BAR_COUNT = 7;
 const ANALYSIS_DURATION_MS = 1200;
@@ -32,21 +32,33 @@ const AccusationOverlay = ({
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('verdict'), ANALYSIS_DURATION_MS);
+
+    if (isCorrect) {
+      // Succès → afficher la page de félicitations après le verdict
+      const t2 = setTimeout(
+        () => setPhase('celebration'),
+        ANALYSIS_DURATION_MS + VERDICT_DURATION_MS,
+      );
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+
+    // Échec → retour automatique aux suspects après le verdict
     const t2 = setTimeout(
-      () => setPhase('actions'),
+      () => onRetry?.(),
       ANALYSIS_DURATION_MS + VERDICT_DURATION_MS,
     );
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, []);
+  }, [isCorrect, onRetry]);
 
   const ricardoVerdictSrc = isCorrect
     ? '/images/inspecteur/Ricardo_Pouleto_triumphant.png'
     : '/images/inspecteur/Ricardo_Pouleto_scared.png';
-
-  const showActions = phase === 'actions' && (onRetry || onQuit);
 
   return (
     <motion.div
@@ -56,8 +68,23 @@ const AccusationOverlay = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/85" />
+      {/* Backdrop : sombre pendant analyse/verdict, crème pour la célébration */}
+      <motion.div
+        className="absolute inset-0"
+        animate={{
+          backgroundColor: phase === 'celebration' ? '#FFF9EC' : 'rgba(0,0,0,0.85)',
+        }}
+        transition={{ duration: 0.4 }}
+        style={
+          phase === 'celebration'
+            ? {
+                backgroundImage:
+                  'radial-gradient(circle, #E0D4C3 2px, transparent 2px)',
+                backgroundSize: '24px 24px',
+              }
+            : undefined
+        }
+      />
 
       <AnimatePresence mode="wait">
         {/* ── PHASE 1 : ANALYSE ── */}
@@ -99,17 +126,17 @@ const AccusationOverlay = ({
           </motion.div>
         )}
 
-        {/* ── PHASE 2 & 3 : VERDICT + ACTIONS ── */}
-        {(phase === 'verdict' || phase === 'actions') && (
+        {/* ── PHASE 2 : VERDICT ── */}
+        {phase === 'verdict' && (
           <motion.div
             key="verdict"
             className="absolute inset-0 z-10 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2 }}
           >
             {isCorrect ? (
-              // ─── CORRECT : suspect derrière barreaux + Ricardo triomphant ───
               <>
                 {!suspectFailed && (
                   <motion.div
@@ -133,7 +160,7 @@ const AccusationOverlay = ({
                   </motion.div>
                 )}
 
-                {/* Barreaux de prison */}
+                {/* Barreaux */}
                 <div className="absolute inset-0 z-30 pointer-events-none flex justify-around px-2">
                   {Array.from({ length: BAR_COUNT }).map((_, i) => (
                     <motion.div
@@ -158,7 +185,7 @@ const AccusationOverlay = ({
                   ))}
                 </div>
 
-                {/* Ricardo triomphant + BIEN JOUÉ */}
+                {/* Ricardo + BIEN JOUÉ */}
                 <motion.div
                   className="absolute bottom-6 z-40 flex items-end gap-4"
                   initial={{ opacity: 0, y: 40 }}
@@ -185,7 +212,6 @@ const AccusationOverlay = ({
                 </motion.div>
               </>
             ) : (
-              // ─── INCORRECT : Ricardo déçu seul ───
               <motion.div
                 className="relative z-10 flex flex-col items-center"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -214,42 +240,147 @@ const AccusationOverlay = ({
                 >
                   {isBrainCity ? 'PAS LUI…' : 'CE N’EST PAS LUI'}
                 </motion.h1>
+                <motion.p
+                  className="mt-3 font-fredoka font-semibold text-lg text-white/80"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  On retente !
+                </motion.p>
               </motion.div>
             )}
           </motion.div>
         )}
-      </AnimatePresence>
 
-      {/* ── PHASE 3 : ACTIONS (Brain City uniquement) ── */}
-      <AnimatePresence>
-        {showActions && (
+        {/* ── PHASE 3 : PAGE DE FÉLICITATIONS (succès uniquement) ── */}
+        {phase === 'celebration' && isCorrect && (
           <motion.div
-            className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 w-[min(420px,90vw)]"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            key="celebration"
+            className="relative z-10 flex flex-col items-center w-[min(600px,92vw)] px-6 py-8 rounded-[32px] bg-white border-4 border-[#073B4C]"
+            style={{ boxShadow: '0 8px 0 0 #073B4C' }}
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 160, damping: 18 }}
           >
-            {!isCorrect && onRetry && (
-              <button
-                onClick={onRetry}
-                className="w-full py-4 text-[#073B4C] font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
-                style={{ background: '#FFD166' }}
+            {/* Confettis */}
+            <div className="text-4xl mb-2 tracking-widest">🎉 🎊 🎈 🎊 🎉</div>
+
+            <h1
+              className="font-bangers text-6xl tracking-widest text-center"
+              style={{ color: '#06D6A0', textShadow: '4px 4px 0px #073B4C' }}
+            >
+              FÉLICITATIONS !
+            </h1>
+            <p
+              className="font-fredoka font-bold text-xl mt-2 text-center"
+              style={{ color: '#073B4C' }}
+            >
+              Tu as résolu l'enquête de Brain&nbsp;City !
+            </p>
+
+            {/* Photo du suspect + Ricardo */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              {!suspectFailed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex flex-col items-center"
+                >
+                  <img
+                    src={suspectPhotoUrl}
+                    alt={suspectName}
+                    onError={() => setSuspectFailed(true)}
+                    className="w-28 h-28 object-contain"
+                  />
+                  <span
+                    className="mt-1 font-bangers text-base tracking-wider"
+                    style={{ color: '#EF476F' }}
+                  >
+                    {suspectName.toUpperCase()}
+                  </span>
+                  <span
+                    className="font-fredoka font-semibold text-xs"
+                    style={{ color: '#073B4C' }}
+                  >
+                    🚨 Coupable !
+                  </span>
+                </motion.div>
+              )}
+
+              {!ricardoFailed && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex flex-col items-center"
+                >
+                  <img
+                    src="/images/inspecteur/Ricardo_Pouleto_triumphant.png"
+                    alt="Ricardo triomphant"
+                    onError={() => setRicardoFailed(true)}
+                    className="w-28 h-28 object-contain"
+                  />
+                  <span
+                    className="mt-1 font-bangers text-base tracking-wider"
+                    style={{ color: '#118AB2' }}
+                  >
+                    RICARDO
+                  </span>
+                  <span
+                    className="font-fredoka font-semibold text-xs"
+                    style={{ color: '#073B4C' }}
+                  >
+                    🐔 Cot-cot-COT !
+                  </span>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Message de Ricardo */}
+            <motion.div
+              className="mt-6 w-full px-5 py-3 rounded-2xl border-4 border-[#073B4C] bg-[#FFF9EC]"
+              style={{ boxShadow: '0 4px 0 0 #073B4C' }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+            >
+              <p
+                className="font-fredoka font-bold text-center text-base"
+                style={{ color: '#073B4C' }}
               >
-                🔄 RÉESSAYER
-              </button>
-            )}
+                Bravo détective ! Grâce à toi, Ballerina Cappuccina est sauvée
+                et Brain&nbsp;City peut respirer&nbsp;! 🦸
+              </p>
+            </motion.div>
+
+            {/* Bouton Quitter */}
             {onQuit && (
-              <button
+              <motion.button
                 onClick={onQuit}
-                className="w-full py-4 font-bangers text-2xl rounded-2xl border-4 border-[#073B4C] shadow-[0_4px_0_0_#073B4C] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#073B4C] active:translate-y-[4px] active:shadow-[0_0_0_0_#073B4C] transition-all tracking-wider"
+                className="mt-6 w-full py-4 font-bangers text-2xl tracking-widest rounded-2xl border-4 border-[#073B4C]"
                 style={{
-                  background: isCorrect ? '#06D6A0' : 'white',
+                  background: '#06D6A0',
                   color: '#073B4C',
+                  boxShadow: '0 4px 0 0 #073B4C',
                 }}
+                whileHover={{
+                  scale: 1.02,
+                  translateY: -2,
+                  boxShadow: '0 6px 0 0 #073B4C',
+                }}
+                whileTap={{
+                  scale: 0.98,
+                  translateY: 4,
+                  boxShadow: '0 0 0 0 #073B4C',
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
               >
-                {isCorrect ? '🏠 QUITTER LA PARTIE' : '🚪 QUITTER LA PARTIE'}
-              </button>
+                🏠 QUITTER LA PARTIE
+              </motion.button>
             )}
           </motion.div>
         )}

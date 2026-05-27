@@ -351,11 +351,12 @@ const SuspectGrid = () => {
             suspectName={identifiedSuspect.name}
             suspectPhotoUrl={identifiedSuspect.photoUrl}
             onRetry={() => {
+              // Échec : ferme l'overlay et désincriminé le suspect.
+              // L'utilisateur reste sur /suspects pour re-choisir directement.
               audioEngine.pause();
               setShowAccusation(false);
               setIdentifiedSuspect(null);
               setSuspects((prev) => prev.map((s) => ({ ...s, isIdentified: false })));
-              navigate('/workspace');
             }}
             onQuit={() => {
               audioEngine.pause();
